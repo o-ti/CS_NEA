@@ -1,0 +1,305 @@
+In order to be able to write the program, we need to break down the problem into smaller problems, which are much easier to address, and link them together to create the final product.
+\vspace{11pt}
+
+I have created the following table highlighting the different sectors involved within the project.
+\vspace{11pt}
+
+
+\begin{tabular}{|p{4cm}|p{11.5cm}|}
+    \hline
+    Section & Purpose\\
+    \hline
+    \hline
+    Base & This will contain the basics of the \mintinline{python}{Player} class, such as the hit-box, position, and collisions with the map.\\
+    \hline
+    Gameplay & Controls the length and state of the game, and will be responsible for display winners, managing teams and tracking player scores. Additionally, it will also control the game mode being played.\\
+    \hline
+    Weapon & This will have a base class and derived classes for individual weapons, and its methods and attributes, such as ammo, reloading, and weapon switching.\\
+    \hline
+    Database / Account Management & This will be done in SQLite as it is a lightweight database. Alongside this, a login system can be made, where the server is run on a web server. This is linked to the UI, which will allow users to enter their details and login.\\
+    \hline
+    UI & This will allow users to navigate the game, start games and login.\\
+    \hline
+    AI & A large part of the game will be AI. This will ensure that a player can join a game immediately and not have to wait for a queue. The player will be able to select different levels of difficulty.\\
+    \hline
+\end{tabular}
+\vspace{11pt}
+
+Here is a top-down diagram showing all of the different sections of the project. We will break down and discuss each section individually in depth, as well as justifying why these modules are necessary.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=15cm]{Design/Images/TopDownDiagram.png}
+    \caption{A top down diagram of the project}
+    \label{fig:td_diagram}
+\end{figure}
+
+\tbr
+
+
+\subsection{\textcolor{red}{Game States}}
+
+We will need several classes in order to run the game effectively. The first one is the \mintinline{python}{Game} class. This will control the whole application and contains the loop from which all other functions are called. This is justified because it allows us to encapsulate the entire application into one project, and we can have modules within it. It also makes certain things easier, such as managing all of the different states.
+
+\vspace{11pt}
+Then, we have the game state manager. This is effectively going to let us get and set which state we are in currently, and allows us to change it from within menus and other states. This makes it much easier to process and understand the game. This is justified because it gives us a centralised way to edit the current state in the game. This is useful because it means that we can move between states easily, and we can define this behaviour according to what we have done, just as clicking buttons in the menu, or pressing certain buttons.
+
+\vspace{11pt}
+\begin{table}[H]
+\centering\sffamily
+\begin{tabular}{|p{3cm}|p{5cm}|p{7cm}|}
+    \hline
+    State & Explanation & Justification\\
+    \hline
+    \hline
+    Start & This will be the main menu of the game, and will allow us to create a game, options, set timer, and exit game. & This is the main interface through which the user will interact with the game. Therefore, we need to have this in order to allow a user to intuitively interact with the game.\\
+    \hline
+    Options & This will be the options menu, containing things like TODO & This is important because it allows the users to customise the game to their standards and this makes it more enjoyable for the player, since it is to their liking.\\
+    \hline
+    Login & This will let a user who already has an account to submit their login credentials and will then verify these details. If they are valid, they are redirected to the start menu. & This is important because we need to have some way to track user progress in an accurate way, and so we also need \\
+    \hline
+    Register & & \\
+    \hline
+    Create Game & & \\
+    \hline
+    Set Timer & & \\
+    \hline
+    Game Loop & & \\
+    \hline
+    Game Over & & \\
+    \hline
+\end{tabular}
+\end{table}
+
+\tbc
+
+\subsection{\textcolor{red}{Game Loop}}
+
+We need to create a base of the game loop and will house all of the mechanics which are relevant to the game, such as the time left in the round, the score of each player, the position of each player, etc. This is important since we need to be able to track all of these statistics as we will need to update the user's profile after the game is over.
+
+\vspace{11pt}
+Firstly, we will define the processes and events which take place in the game loop.
+\begin{table}[H]
+\centering\sffamily
+\begin{tabular}{|p{3cm}|p{5cm}|p{7cm}|}
+    \hline
+    Event & Explanation & Justification\\
+    \hline
+    \hline
+    Movement & This will allow the player to move and control their character on the screen. The player will move relative to the world. & The game relies on players interacting with each other which is only possible if they are able to move. The AI will use this movement and input system to simulate a real player but this will be fed into the inputs for another instance of a character.\\
+    \hline
+    Time Tracking & We will show the amount of time left in the round, and how much time they have left in their play session. & This was one of the features that appealed to a lot of the people that I interviewed. Having this feature will let them control how long they are playing for and to not exceed that.\\
+    \hline
+    Score & This will be updated every time someone makes an elimination, or is eliminated. & This will be used to update the ranking rating at the end of the game, so is essential to track accurately. During training this will be used to monitor rewards to train the model.\\
+    \hline
+    Weapons & Will look for events to fire weapons, and will check for any intersections between rays and players. This will then be used to update the ammo of the player and the health of the player if one is hit. & This is essential to the game since we must be able to interact with other players, and eliminate them in order to move the game forward, and to allow players to gain a score.\\
+    \hline
+    Rendering & The player will need to be able to see their character and HUD, but this is not relayed to each of the bots, and so therefore, this needs to be done independently of the current game. In other words, we take input from the state of the map right now, but the player's view does not interfere with the game's progress.\\
+    \hline
+    Collisions & We need a way of reliably tracking where players and whether they are colliding with the map or not. & This is important since otherwise, the game would be very dull and this adds more complexity to the strategies possible.\\
+\end{tabular}
+\end{table}
+
+\vspace{11pt}
+We will have the player on the centre of the screen. We know the dimensions of the screen we are drawing, so for efficiency, if a player is not within those dimensions, we will not draw them, but they will still exist. We can do this, by calculating their relative positions to the player, and then translating to this to where they should be on the screen. We can do this with the formula shown below.
+\begin{align*}
+    x_\text{screen} &= x_\text{object} - x_\text{player} + \frac{x_\text{width}}{2}\\
+\end{align*}
+
+A similar expression is produced for the $y$ direction. We can calculate these co-ordinates for each object and then rule out those where the $x$ or $y$ ordinate is not on the screen. In the initial parts of the game's development, we will ignore this, and just render the whole map.
+
+\tbc
+
+\subsection{\textcolor{red}{Movement}}
+
+In order to create forwards and backwards movement, we just simply apply a multiple of the forward vector to the character. When the player presses W they will be moved forward, and when the player presses S they will be moved backwards. This is justified as this is the standard for most modern games, and so will be what most people are familiar with, hence making the game easier to start learning.
+
+\vspace{11pt}
+In order to rotate the character, a mouse will be used and the position of the cursor from the character will determine the angle which the character faces. This is justified because this will be the only way of allowing the user to accurately rotate the character where they want, since the only other common input is a keyboard, but this has binary readouts which will not allow the user as much control as they would with a mouse, which provides a much more refined output. This is then the angle at which any shooting is done, and the movement vectors will stay consistent with the direction the player is facing. The player will see a rotated player, and the world will stay in the same direction on the screen. This is justified because it allows for a much more intuitive experience. 
+
+\vspace{11pt}
+We can find this angle using the following formula, where we use $(x_0, y_0)$ to find the centre of the screen, and $(x_1, y_1)$ to represent the position of the cursor. Then, the angle below the horizontal line is $\theta$. If $\theta$ is negative, this just represents it points above the horizontal line. We will not run the code if the cursor is at the centre since otherwise this would return an infinite value. In that case, we can manually deal with the cases. We can see that if the cursor is below the centre of the screen then we must point downwards, and vice versa. We can justify using this formula since it is optimal for our application, as it has a constant complexity, and other ways that are not formulaic must have a larger time complexity. In a game, optimisation and efficiency are very important and so it is key that we use this formula to reduce computation time per frame, which is essential, since we are going to be using this formula very frequently.
+
+\vspace{11pt}
+\begin{align*}
+    \tan \theta &= \frac{y_1 - y_0}{x_1 - x_0}\\
+\end{align*}
+
+\vspace{11pt}
+The shift button will be used to dash which will move the player very quickly across the map, and will be put on a cool-down. This will be done by adding a sudden acceleration to the character in the direction they are currently moving, and then removing this acceleration, and decreasing the speed drastically. This effectively creates the illusion of dashing or jumping which is what we want to achieve. This is a justified 
+
+\vspace{11pt}
+Additionally, we will need a procedure to calculate position. We will set an initial position for each player. This will be where they spawn into the game initial, and where they respawn after each death. We will need to create an initial direction vector as well, in order to preserve the orientation of the player relative to the map.
+
+\vspace{11pt}
+There are two aspects to the development of the game. The first is the underlying framework which handles the "back-end", such as physically moving the players on the map, firing projectiles, detecting collisions, and tracking scores. Then, we have another section which handles the user's point of view of the game, such as the menus, the camera which tracks the player's character, and the UI.
+
+\vspace{11pt}
+Hence, in the development, we must consider the back-end of the project first, since this will allow us to train AI, who don't have a front-end to the game. The reason for this will be shown in the AI section.
+
+\tbc
+
+\subsection{\textcolor{red}{Weapons}}
+
+There will be one parent weapon class which will contain all of the common methods and parameters that each weapon will take, such as handling ray casting to detect collisions with objects, and then further to see whether damage should be dealt to it. From this, individual weapon classes will be created which will allow for individual weapon categories to be made and customised, which players will then be able to select at the start of a game.
+
+\begin{enumerate}[label=\alph*)]
+    \item Assault Rifle
+    \item Shotgun
+    \item Sniper Rifle
+    \item Sub-machine gun
+\end{enumerate}
+
+The base class will be as follows.
+
+\vspace{11pt}
+\begin{tabular}{|p{4cm}|p{11.5cm}|}
+    \hline
+    Attribute & Purpose\\
+    \hline
+    \hline
+    Direction Vector & This will be a unit vector pointing in the direction that the player is facing.\\
+    \hline
+    Ammo & We will store the maximum ammo in each cartridge and the current ammo. This will be deducted by one each time we fire.\\
+    \hline
+    Firing & Each time we fire the weapon, we will create a ray which can be traced to detect collisions with the enemy players.\\
+    \hline
+    Reloading & This will cause the weapon to be unable to fire a period of time, but refills the ammo in the weapon.\\
+    \hline
+\end{tabular}
+
+\subsubsection{Firing Procedure}
+
+We need to be able to fire a projectile in the direction of the weapon. We set the source to be the centre of the player. We will then create a sprite centred at the source and will have a constant velocity in the direction of the of the weapon (the player's forward vector). We can then 
+
+\vspace{11pt}
+
+\subsubsection{Collision Detection}
+
+As mentioned before we need a way to detect collisions between a ray and an object. There 
+
+
+\tbc
+\subsection{\textcolor{red}{Database / Account Management}}
+
+To do this, there is a class in the Unreal Engine framework that will enable me to connect the game to a database. This will be stored on a central server so that no user can access it directly, and a login page will be created. This login page will take a user's player name and password, hash the password locally, and transmit this data to the server. This ensures that no plain-text passwords are being transmitted which improves security. The server will then check whether such a player exists and whether their password hash matches what is stored. If it is correct, then the user is sent to the main menu, where they will be able to select from different options.
+
+
+\vspace{11pt}
+The database is normalised to reduce data redundancy and maintain data integrity. It also allows for a more flexible structure and so should any new information or variables need to be stored we will be able to easily incorporate it into our database. We need to be able to hold the following fields as described by our success criteria.
+
+
+\vspace{11pt}
+
+\begin{table}[ht]
+\centering\sffamily
+\begin{tabular}{|p{3cm}|p{2cm}|p{9cm}|}
+    \hline
+    Field & Type & Justification\\
+    \hline
+    \hline
+    Player ID & String & This will be part of what the user uses in order to login, and so therefore it also acts as a username of sorts. This will be linked to every bit of information about the user, which means that we can implement features showing the user statistics if they want to find out.\\
+    \hline
+    Email & String & This will let us create the account initially. Additionally, if the user needs to reset their password, then if they have their email they can get the game to send them an automatically generated password that they can change later.\\
+    \hline
+    Player XP & Int & This will be the basis for the level system in the game and will be one of the criterion for the leaderboard. The leaderboard will be a key feature of the game as it will add a sense of competition to the game for those that enjoy it.\\
+    \hline
+    Password & String & This will actually store the hash of the password, since storing the actual password in plain-text is extremely insecure, and will leave user details susceptible to being hacked. For example, if the database is somehow leaked, we don't also want it to mean that the passwords are all immediately revealed as well. However, we still need a secure way of authenticating users so that they can login, so the client version of the game will hash the password and then send a query to the server asking to verify the information.\\
+    \hline
+    Matches Won & Integer & One of the leaderboards will be based on the number of games won, and so therefore, we will need to store this information. Additionally, this might be one of the statistics that the users may want to know.\\
+    \hline
+    Matches Played & Integer & This is another thing which a player may be interesting in tracking. This will form part of the leaderboard as well.\\
+    \hline
+    Rating & Integer & This will be tracked and form another leaderboard and will give the player a larger sense of achievement and so encourages them to play more often.\\
+    \hline
+\end{tabular}
+\end{table}
+
+\vspace{11pt}
+This gives us the following database structure.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=15cm]{Design/Images/Database_Structure.png}
+    \caption{An ER diagram of the database structure}
+    \label{fig:db_structure}
+\end{figure}
+
+\vspace{11pt}
+This database structure is justified because it is in 3NF. This means that we can query and search the database effectively and maintain referential integrity across the tables. We have chosen Player ID to be a key across the entire database because this will allow us to access all user information given the ID of the player. They will also be using this to login, and so we can quickly verify their login credentials when they are trying to login.
+
+\tbc
+
+\subsection{\textcolor{red}{UI}}
+
+UI is essential to ensure that a user is able to quickly understand what each button does, and how to access what they need. For this reason, the only buttons present on the main menu will be "Play", "Settings", "Exit". This reduces any confusions that players may have, and allows the game to be much easier to pick up.
+
+\vspace{11pt}
+Here are some flowcharts detailing how the UI will lead to different sections of the game.
+
+\tbc
+
+\subsection{\textcolor{red}{AI}}
+
+I will be using PyTorch in order to handle the reinforcement learning aspect of the project. This is because it has extensive reinforcement learning tools, and is something which I am familiar with. Reinforcement learning works by using neural networks to create an output given a set of inputs. This is then processed and the action is taken. A reward is then assigned to this new state, and based on this, the model is adjusted through back-propagation and another step is taken. This continues millions of times, and this allows for the model to become progressively better. In order to create a game-like scenario, there will be 8 bots in two teams which will play against each other. The inputs to the bots are as follows, and all of this information will be condensed into a vector which is fed into the model.
+
+\vspace{11pt}
+\begin{enumerate}[label=\arabic*)]
+    \item Current ammo - Provided as a real value between 0 and 1, denoting the proportion of ammo left, and computed by dividing the current amount of ammo by the ammo in a full weapon
+    \item Current Health - Provided as real value between 0 and 1, and is computed by dividing the current health by the total health
+    \item Distance to nearest health pad - This is given as a real value, and will be calculated using $r = \sqrt{(x_0 - x_1)^2 + (y_0 - y_1)^2}$, for the bot at $(x_0, y_0)$, and a health pack at $(x_1, y_1)$.
+    \item Angle to nearest health pad - This is given as a real value, and can be calculated by $\arctan \frac{y_1 - y_0}{x_1 - x_0}$
+    \item Spokes protruding from the centre of the players will extend to a set distance $r$, and will return 0 if there is no objects obstructing the spoke, will return $d$ if there is any enemy at distance $d$ from the centre of the player along that spoke, where $d<r$, and $-d$ if there is a wall obstructing the spoke at a distance $d<r$.
+\end{enumerate}
+
+\vspace{11pt}
+The best model for this project is multi-agent reinforcement learning, as this will allow me to generate multiple bots which can compete against each other. Something like Deep Q Networks would not function in this environment because of the continuous nature of the game and the complex nature of the game.
+
+\vspace{11pt}
+The algorithm we will be using is Proximal Policy Optimisation, which relies on a clipped surrogate objective. This is an algorithm which can be expanded to a multi-agent version, which is what we want.
+
+\vspace{11pt}
+In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the data buffer from the player to be transferred to the other two bots. This gives the game the feeling of playing with a team, rather than a more individual experience. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have 
+
+\vs
+Additionally, during training, the rendering can be disabled, and the frame rate set to a very high value, in order to increase the speed at which the models can be trained. Because the model will progress from one frame to the next, the speed between frames can be altered without any consequence on the other bots on the team.
+
+\vs
+Furthermore, we will use a technique known as self-play. This is relevant since this is a competitive / co-operative game, we will put two separate versions of the model against each other. This will allow the model to play against "players" of it's own strength, and will produce better training results. Additionally, we don't have any ready-made players to play against, so this is our only option. We will initialise the model with random values to begin with, and will train it against itself in the first iteration. After this, we will
+
+\vs
+The first thing we need to in order to train the AI is to create an environment in order to train it. We will be using the \mintinline{py}{gym} wrapper to do this. This provides a strictly defined way of stating the game, using observation spaces, action spaces and rewards.
+
+\vs
+The observation space is the things which each agent can see. In the design section, we mentioned that each agent will have spokes which go out from the centre of the player. This will let the agents see the environment around them in a limited way.
+
+\vs
+The action space is all of the possible actions that the agent can take from any one state. The model will predict what it thinks is the optimal move to take from a given state depending on the observations that each agent can see.
+
+\vs
+The actions are then fed into the environment, and this is then used to move to the next time-step of the environment. With this, we can then return rewards, which are used to update the actor and critic networks. The reward is based on the actions of the player. For example, if the agent is able to eliminate another player, then this will result in a positive reward, but if the agent is shot, this will result in a negative reward.
+
+\vs
+The algorithm we will be implementing is known as MAPPO, which is the multi-agent variant of Proximal Policy Optimisation, which aims to optimise a surrogate objective function, but clips the maximum change that each time step can make to the actor and policy networks. This is in order to prevent large policy changes which could potentially damage the performance of the agent significantly. There are two networks used, the actor network, and the critic network.
+
+\vs
+Both networks use the same input, which is the observation for that time-step to generate an output. The actor outputs a vector which is the action which the agent will take in the following time-step. The critic network will output a single value, which is the predicted value of the state (or in other words, what it thinks the reward is going to be in that state).
+
+\vs
+From the original paper, we can see the process unfolding as follows. We firstly initialise our networks, and start a loop, and we can train for as long as we like. We then execute something known as a policy roll-out. This is effectively running our agent in the environment for a few time-steps, and recording the observations, actions, rewards and resulting states. This will allow us to gather information to train our network with. We also compute something known as advantages. Effectively, this gives us an idea of how much better off we are due to an action. We use a discount parameter and a GAE parameter.
+
+
+\subsubsection{\textcolor{red}{Utility Class}}
+
+There are a lot of maths related functions which we will need to use particularly in detecting collisions with players, objects and rays. In particular we will need the following to be implemented.
+
+\vs
+
+\tbc
+
+
+
+
+
+
+
