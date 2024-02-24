@@ -1,8 +1,4 @@
 
-*.out
-*.toc
-*.log
-*.aux
 *.pygtex
 *.pygstyle
 main.aux

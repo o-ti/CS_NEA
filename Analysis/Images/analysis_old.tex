@@ -1,0 +1,84 @@
+\subsection{Problem Definition}
+
+The problem is that many people do not have time to play games with longer rounds, but still want something to play. This can result in them having to leave the games, which is unpleasant for the people in the game, but also can result in them getting bans in the game, meaning they can no longer play. Additionally, people may not be interested in many First Person Shooter (FPS) games as they may not be as intense as they would like. 
+
+
+\vspace{11pt}
+This problem is solvable by computational methods, and is best suited to computational methods, because it is quite difficult to find people to play with in the real world, and they may not be interested, or available to play at that time. By using computers and networking, we can open a much larger variety of people who are available and are interested to play the game, which means that finding a person to play with is much easier and less time consuming, which is the main issue we want to help fix. This is also much quicker than manually connecting players together into a server to play together. 
+
+
+\vspace{11pt}
+Additionally, the game will include much more fast-paced mechanics in order to allow for more intense rounds, which will mean that players see more action in a shorter period of time. There are very very few games which are left in this niche, as many games and franchises, have made their games slower and more tactical.
+
+\subsection{Stakeholders}
+
+My stakeholders are people who do not have enough time to play long games, such as those in popular FPS games, and so want ones that are more fast paced and have shorter rounds so that they can play more games.
+
+
+\vspace{11pt}
+I will interview people who suffer from my problem, such as my friend, Amish, and my father. Both do not have time to play longer games, due to study and work, and hence are suitable to serve as stakeholders.
+
+
+\vspace{11pt}
+Amish has experience with FPS games, whereas my father does not, which makes this useful, because we can see how the learning curve of the game makes it more or less fun to play. This also applies to many people in my friend group, so it will be possible to have tests with multiple people simultaneously to experience how the game will be played in a real setting.
+
+\subsection{Problem Investigation}
+
+There are other similar games that work at a much faster pace than others. For example, \emph{Rocket League} has 5 minute rounds which satisfies one of my criteria, however it is not a FPS, and it has a steep learning curve, so not everyone likes the game, and to be "good" at the game or to get to a decent rank can take hundreds, if not thousands of hours.
+
+
+\vspace{11pt}
+%Screenshot credit: https://www.nytimes.com/2020/05/08/sports/coronavirus-chess-online-tournament.html
+Chess is another game that satisfies my criteria, but has another benefit. Online chess also lets people choose what length of game they want to play, ranging anywhere from 15 seconds to an hour. This is useful as it allows people to dedicate as much time as they want and no more than that for certain. It also has a ranking system, and is relatively easy to pick up. Again, it's not an FPS game and not everyone likes or enjoys playing it. It isn't as visually stimulating as other games and for some people that is a major issue. In recent times, throughout the pandemic, chess gained a lot of popularity and many streamers became very popular and chess websites like \emph{chess.com} were not able to keep up with the demand, reaching 2 million players per day at one point.
+\vspace{11pt}
+
+
+\includegraphics[width=15cm]{Analysis/ChessScreenshot.jpg}
+
+
+%Screenshot credit: https://www.researchgate.net/figure/Screenshot-of-Unreal-Tournament-3_fig2_233747609
+\vspace{11pt}
+\emph{Unreal Tournament} is the game most similar to the project that I am undertaking. The shortest game length is 4 minutes according to Wikipedia whereas I hope to make that 6 minutes, but in 3 separate rounds. The advantage of this is to make it so that people are able to dedicate less time to a specific round, so even if they lose, they still have a share of the time to win the round. Another issue with Unreal Tournament is that it never left pre-alpha and no servers are currently running, and so it results in people not being able to play it at all.
+
+\vspace{11pt}
+\includegraphics[width=15cm]{Analysis/UnrealTournament.png}
+
+\vspace{11pt}
+%Screenshot Credit: https://interfaceingame.com/screenshots/valorant-headshot/
+\emph{Valorant} is also a very successful game that is a FPS game, however the rounds are extremely long, lasting even over 45 minutes. This is a major problem for people who are on limited time, as they are much less likely to start a new game as they don't want to have to leave mid-way. Despite this, it has a very high skill ceiling (the maximum skill that a player can reach in the game) due to a large number of mechanics and different characters, which all specialise in different skills. This keeps the game interesting and unique. This is something that I am to replicate in my project by using movement mechanics.
+
+
+\vspace{11pt}
+\includegraphics[width=15cm]{Analysis/ValorantScreenshot.png}
+
+
+\vspace{11pt}
+Most games require a lot of time in order to "get good" at a game, or to acquire some proficiency in it, which can be demoralising and means people stop playing. Matchmaking that links players of all skills together means that there will be an even mix of old and new players so therefore, the matches will be a lot more interactive.
+
+
+\vspace{11pt}
+Within chess, the Elo algorithm is extensively used from official FIDE competitions, to online games, to rank players based on whether they win or lose matches. This is relatively straightforward because there are only two players, and so modified versions of the algorithm are used in online team-based games. The Elo algorithm proceeds as follows.
+
+Assume that there are two players, with ratings $r_1$, and $r_2$. Then, the probabilities of each player winning is 
+
+\begin{align*}
+    p_1 &= r_1 / (r_1 + r_2)\\
+    p_2 &= r_2 / (r_1 + r_2)\\
+\end{align*}
+respectively. A rating shifting factor, $k$ is used to determine how strongly each player's rating is affected by each game. For example, if player 1 has won the game, then the following equations are used to adjust each rating.
+\begin{align*}
+    r_1 &= r_1 + k(1 - p_1)\\
+    r_2 &= r_2 + k(0 - p_2)\\
+\end{align*}
+
+If a game is the first to be played by a player, $k$ will be larger, so winning will give a much larger reward, and losing will give a much larger loss. This allows for people's ratings to fluctuate and eventually settle around a mean value that represents their true skill as the value of $k$ changes.
+
+
+\vspace{11pt}
+The traditional way of doing multiplayer games is to use a client-server model, because this prevents or reduces the risk of cheating because adjustments to the player are made on the server and so any mods on the local client will not affect other players. Additionally, it means that people will all be playing on a level playing field because otherwise you would have some players with very low latency and others on very high latency. This provides a middle ground which keeps the game fair.
+
+
+
+
+
+Additionally, I will use a modified version of the ELO algorithm for a team-based game which will consider the user's rating, the rating of the players on each team, and the win rate of each player. This will allow for players to get to the rating that they deserve. This will allow them to play against players that are closer to their actual rank. Additionally, people who are winning lots of games will get matched against harder opponents in order to continue gaining lots of points, also known as a streak. This will make the player progress faster if they are stuck at a rank which is much lower than their ability.

@@ -1,0 +1,70 @@
+\ProvidesPackage{nea}
+
+\usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype}
+\renewcommand{\arraystretch}{1.6}
+\usepackage[outputdir=./]{minted}
+%\begin{minted}{py}
+%print("Hello World!")
+%\end{minted}
+\setlength{\parindent}{0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX Overlay Generator - Annotated Figures v0.0.1
+% Created with http://ff.cx/latex-overlay-generator/
+% If this generator saves you time, consider donating 5,- EUR! :-)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\annotatedFigureBoxCustom{bottom-left}{top-right}{label}{label-position}{box-color}{label-color}{border-color}{text-color}
+\newcommand*\annotatedFigureBoxCustom[8]{\draw[#5,thick,rounded corners] (#1) rectangle (#2);\node at (#4) [fill=#6,thick,shape=circle,draw=#7,inner sep=2pt,font=\sffamily,text=#8] {\textbf{#3}};}
+%\annotatedFigureBox{bottom-left}{top-right}{label}{label-position}
+\newcommand*\annotatedFigureBox[4]{\annotatedFigureBoxCustom{#1}{#2}{#3}{#4}{red}{white}{black}{black}}
+\newcommand*\annotatedFigureText[4]{\node[draw=none, anchor=south west, text=#2, inner sep=0, text width=#3\linewidth,font=\sffamily] at (#1){#4};}
+\newenvironment {annotatedFigure}[1]{\centering\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) { #1};\begin{scope}[x={(image.south east)},y={(image.north west)}]}{\end{scope}\end{tikzpicture}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%https://tex.stackexchange.com/questions/438775/how-to-insert-a-pdf-page-as-a-front-cover
+\usepackage{pdfpages}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=red,
+    pdftitle={CS NEA: Ojas Tiwari},
+}
+
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\graphicspath{ {./images/} }
+%For images level with the top of the enumerate use
+%\adjustbox{valign=t}{\includegraphics[width=10cm]{velocityGraph.jpg}}
+
+%Margins, standard is 0.8in
+\usepackage[margin=2.3cm]{geometry}
+
+%Units
+\usepackage{siunitx}
+
+%Inter font
+%\usepackage{inter}
+
+%Ordered numbers (1st, 2nd, 3rd,...) https://tex.stackexchange.com/questions/4118/whats-the-quickest-way-to-write-2nd-3rd-etc-in-latex
+\usepackage[super]{nth}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[L]{\rightmark}
+\fancyhead[C]{}
+\fancyhead[R]{\thepage}
+\fancyfoot[L]{Centre Number: 14285}
+\fancyfoot[C]{Candidate Number: 7118}
+\fancyfoot[R]{Ojas Tiwari}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{2pt}
+\setlength{\headheight}{14.5pt}
+\fancyhfinit{\sffamily}
+\colorlet{RED}{red}
+
+\newcommand{\tbc}{\vspace{11pt} {\huge \textcolor{red}{TO BE COMPLETED}}}
+\newcommand{\tbr}{\vspace{11pt} {\huge \textcolor{blue}{TO BE REVIEWED}}}
+\newcommand{\vs}{\vspace{11pt}}
