@@ -191,9 +191,8 @@ The database is normalised to reduce data redundancy and maintain data integrity
 
 \vspace{11pt}
 
-\begin{table}[ht]
-\centering\sffamily
-\begin{tabular}{|p{3cm}|p{2cm}|p{9cm}|}
+
+\begin{longtable}{|p{3cm}|p{2cm}|p{9cm}|}
     \hline
     Field & Type & Justification\\
     \hline
@@ -212,8 +211,7 @@ The database is normalised to reduce data redundancy and maintain data integrity
     \hline
     Rating & Integer & This will be tracked and form another leaderboard and will give the player a larger sense of achievement and so encourages them to play more often.\\
     \hline
-\end{tabular}
-\end{table}
+\end{longtable}
 
 \vspace{11pt}
 This gives us the following database structure.
@@ -289,11 +287,32 @@ Both networks use the same input, which is the observation for that time-step to
 From the original paper, we can see the process unfolding as follows. We firstly initialise our networks, and start a loop, and we can train for as long as we like. We then execute something known as a policy roll-out. This is effectively running our agent in the environment for a few time-steps, and recording the observations, actions, rewards and resulting states. This will allow us to gather information to train our network with. We also compute something known as advantages. Effectively, this gives us an idea of how much better off we are due to an action. We use a discount parameter and a GAE parameter.
 
 
-\subsubsection{\textcolor{red}{Utility Class}}
+\subsection{\textcolor{red}{Utility Class}}
 
 There are a lot of maths related functions which we will need to use particularly in detecting collisions with players, objects and rays. In particular we will need the following to be implemented.
 
 \vs
+We will first look at line-to-line collisions, since they underpin a large proportion of the game. Once, we can do line-to-line collisions we can also do line-to-rectangle collisions which are important for the weapon aspect of the game. We can derive a formula for how far along the ray the collision occurs. In the entirety of the game, we want to work with vectors and scales of 0 to 1 between the start and endpoints. Let us call these constrains $\vec{p_1}$ and $\vec{p_2}$ for line 1, and $\vec{p_3}$ and $\vec{p_4}$ for line 2. We first find a possible solution, then check that it works for 
+
+\vs
+
+\begin{align*}
+	\vec{d_1} &= \vec{p_2} - \vec{p_1}\\
+	\vec{d_2} &= \vec{p_4} - \vec{p_3}\\
+	\text{Line 1: } \vec{r_1} &= \vec{p_1} + \lambda \vec{d_1}\\
+	\text{Line 2: } \vec{r_2} &= \vec{p_3} + \mu \vec{d_2}\\
+	\vec{p_1} + \lambda \vec{d_1} &= \vec{p_3} + \mu \vec{d_2}\\
+	\vec{p_1} + \lambda(\vec{p_2} - \vec{p_1}) &= \vec{p_3} + \mu (\vec{p_4} - \vec{p_3})\\
+	\begin{bmatrix} \lambda x_2 + (1 - \lambda)x_1 \\ \lambda y_2 + (1 - \lambda) y_1 \end{bmatrix} &= \begin{bmatrix} \mu x_4 + (1 - \mu)x_3 \\ \mu y_4 + (1 - \mu) y_3 \end{bmatrix}\\
+	x_1 + \lambda (x_2 - x_1) &= x_3 + \mu (x_4 - x_3)\\
+	y_1 + \lambda (y_2 - y_1) &= y_3 + \mu (y_4 - y_3)\\
+	\lambda (x_2 - x_1) + \mu (x_3 - x_4) &= x_3 - x_1\\
+	\lambda (y_2 - y_1) + \mu (y_3 - y_4) &= y_3 - y_1\\
+\end{align*}
+
+\vs
+We have arrived at a series of simulataneous equations. These can be easily solved with the \mintinline{py}{np.linalg.solve()} in NumPy, which means we don't have to solve it ourselves. However, this does have one restriction that the equations must be linearly indepenent. This just means that we need to check before hand what the determinant of the matrix is.
+
 
 \tbc
 
