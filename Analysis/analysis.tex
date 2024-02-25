@@ -211,17 +211,19 @@ If a game is the first to be played by a player, $k$ will be larger, so winning 
 
 \subsubsection{Player Interaction with Games}
 
+
 \vs
+
 The traditional way of doing multiplayer games is to use a client-server model, because this prevents or reduces the risk of cheating because adjustments to the player are made on the server and so any mods on the local client will not affect other players. Additionally, it means that people will all be playing on a level playing field because otherwise you would have some players with very low latency and others on very high latency. This provides a middle ground which keeps the game fair.
-
 \vs
 
-\begin{wrapfigure}{R}{0.4\textwidth}
-    \includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_Main.jpg} 
-    \caption{Flowchart of main game structure}
-    \label{fig:main_game}
+\begin{wrapfigure}{R}{0.33\textwidth}
+	\vspace{-20pt}
+	\includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_Main.jpg} 
+	\caption{Flowchart of main game structure}
+	\label{fig:main_game}
+	\vspace{-20pt}
 \end{wrapfigure}
-
 
 \vs
 
@@ -233,39 +235,37 @@ This will then lead to the other modules, which handle each component, and their
 
 \vs
 There are many actions that a player can undertake, and all of these combined are called the game loop. This forms the basis of the game, and is what people are most interested in. The actions within most FPS games are very similar, such as movement, damage, death / re-spawn, score change, timer change, game end. 
-\vs
 
-\begin{wrapfigure}{L}{0.4\textwidth}
-    \includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_GameLoop.jpg} 
-    \caption{Flowchart of the game loop}
-    \label{fig:game_loop}
+\begin{wrapfigure}{L}{0.38\textwidth}
+	\vspace{-20pt}
+	\includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_GameLoop.jpg}
+	\caption{Flowchart of the game loop}
+	\label{fig:game_loop}
+	\vspace{-15pt}
 \end{wrapfigure}
 \vs 
+
 Each client sends a command to the server, indicating the move that has been played, and from that the server can apply those changes and replicate it to all of the other players, ensuring that everyone has a consistent version of the game state. The server is generally placed centrally amongst the players geographically, to ensure that all of them receive roughly equal latency which creates an even playing field. Additionally, once the game has finished, the player is shown an end screen, usually detailing their score, and their performance in the game, and then finally sends them back to the main menu, or gives them the option to play another game.
 
 \vs
-TODO: Figure out what to do here
-\tbc
-
-\clearpage
-%Remove bg from flowcharts
-%Long table package
-%Testing even pretty basic things   
-% Include mistakes
-%Make mistakes -> J. Savage
-% pythonstruct
-%show each stage
-
-
-Once a user clicks on the multiplayer button, the begin matchmaking procedure occurs. This will allow for a the match to be found which finds a lobby of other players which is usually based on the latency between the player and the server, and any rating system that might be in place. Once this "lobby" is formed, they join a match, and the map and mode of the game is selected randomly. Then, the map is loaded locally on each user's device, and the players are loaded into the map, and the game begins. The game loop as shown above will cycle until one of the game's end conditions are reached, such as a goal limit, or a time limit. 
-
 \begin{wrapfigure}{R}{0.3\textwidth}
-    \includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_Multiplayer.jpg} 
-    \caption{Flowchart of the Multiplayer system}
-    \label{fig:multi_flowchart}
+	\vspace{-15pt}
+	\includegraphics[width=1.0\linewidth]{Analysis/Images/Flowchart_Multiplayer.jpg} 
+	\caption{Flowchart of the Multiplayer system}
+	\label{fig:multi_flowchart}
 \end{wrapfigure}
 
-\vs Once this happens, any rating changes are applied, and users have the ability to go to the main menu, or play another game. In many cases, the matchmaking procedure can cause long delays whilst players wait for a lobby of their current skill level to form. As a game loses active users, queue times can become much longer as there are just not enough people to fill a lobby, and eventually, people completely stop playing the game. This is obviously not ideal for players who are still interested, and therefore, it is essential that some sort of competitive bots are in place that will allow a player to still get the thrill of playing against people, but not actually require multiple active users to still be online. Additionally, as it is just the player, they can adjust game settings, timings, etc, to their liking, meaning they can find new ways to make the game fun again.
+\vs
+Once a user clicks on the multiplayer button, the begin matchmaking procedure occurs. This will allow for a the match to be found which finds a lobby of other players which is usually based on the latency between the player and the server, and any rating system that might be in place. Once this "lobby" is formed, they join a match, and the map and mode of the game is selected randomly. Then, the map is loaded locally on each user's device, and the players are loaded into the map, and the game begins. The game loop as shown above will cycle until one of the game's end conditions are reached, such as a goal limit, or a time limit. 
+
+
+\vs
+
+Once this happens, any rating changes are applied, and users have the ability to go to the main menu, or play another game. In many cases, the matchmaking procedure can cause long delays whilst players wait for a lobby of their current skill level to form. As a game loses active users, queue times can become much longer as there are just not enough people to fill a lobby, and eventually, people completely stop playing the game. 
+
+
+\vs
+This is obviously not ideal for players who are still interested, and therefore, it is essential that some sort of competitive bots are in place that will allow a player to still get the thrill of playing against people, but not actually require multiple active users to still be online. Additionally, as it is just the player, they can adjust game settings, timings, etc, to their liking, meaning they can find new ways to make the game fun again.
 
 \vs
 
@@ -364,6 +364,7 @@ Vaibhav is studying robotics and AI at university, and is in a similar position 
 
 \vs
 
+
 \subsubsection{Interview 3: Frank}
 Frank is a student in my year, and is also very busy. He enjoys playing games, and so he was a viable stakeholder.
 
@@ -415,8 +416,10 @@ Moosa is currently studying engineering at university, and therefore is quite bu
 Here is a list of all of the stakeholder's requirements from my game so far, as well as some things that will improve overall user experience. These were compiled from the interviews, and are justified in the table below.
 
 
+%\begin{longtable}{|p{4cm}|p{11.5cm}|}
 \vs
-\begin{tabular}{|p{4cm}|p{11.5cm}|}
+\begin{center}
+\begin{longtable}{|p{4cm}|p{11.5cm}|}
     \hline
      Requirement & Justification\\
     \hline
@@ -428,14 +431,6 @@ Here is a list of all of the stakeholder's requirements from my game so far, as 
     Clear UI & The UI must allow the user to understand what each thing represents without too much difficulty. This makes the game more "inviting" to play, and so therefore encourages people to play more.\\
     \hline
     Login System & The project must be able to store user data, such as games played and games won, as well as their login credentials. This will allow them to track their progress and view statistics about their account.\\
-    \hline
-\end{tabular}
-
-\vs
-\begin{tabular}{|p{4cm}|p{11.5cm}|}
-    \hline
-     Requirement & Justification\\
-    \hline
     \hline
     Data Security & The project must store this data securely, and allow for logins to be efficient.\\
     \hline
@@ -451,8 +446,8 @@ Here is a list of all of the stakeholder's requirements from my game so far, as 
     \hline
     Multiplayer & This would allow people to play with friends and would make playing the game more enjoyable and immersive. This is a standard feature of most modern games and would be expected from stakeholders.\\
     \hline
-\end{tabular}
-\vs
+\end{longtable}
+\end{center}
 
 These will be taken into account when constructing the design and development of my project.
 
@@ -553,6 +548,8 @@ These were found using existing computational solutions and the research done by
     \hline
     Rating System & There will be a rating which will be visible to the user and is updated at the end of every match based on the ELO rating system as well as how they performed in the game. & This will further add to a sense of progress, and will provide us with a way to construct leaderboards and things of that nature. Furthermore, it encourages players to get better at the game.\\
     \hline
+    Weapon System & The game will contain several different weapons: Assault Rifle, Sniper, Machine Gun, and Shotgun. These will each function differently and have different behaviours. & This will add more variety to the game and allow the players to have a better experience.\\
+    \hline
     Database System & The database must hold the following information.
     \begin{enumerate}
         \item Username, Email, Password
@@ -563,8 +560,6 @@ These were found using existing computational solutions and the research done by
         \item Matchmaking Rating (MMR)
     \end{enumerate} & This will allow the user to track their progress, and this will give them a sense of achievement. This encourages the player to play the game more, or make more time to play it during the week.\\
     \hline
-    Weapon System & The game will contain several different weapons: Assault Rifle, Sniper, Machine Gun, and Shotgun. These will each function differently and have different behaviours. & This will add more variety to the game and allow the players to have a better experience.\\
-    \hline
     Leaderboard System & There will be a global leaderboard which will show users where they rank in the player-base based on their ranking, and will also show the top 100 or so players of the game. People will be able to search the ratings of other players as well, for example, friends. & This will add a sense of competition into the game and for the players in the top 100 will add an added sense of achievement and further competition to reach rank 1. Furthermore, this will add a bit more of a social element to the game as this will allow people to view what rank their friends are at, and they can compete against each other.\\
     \hline
     Bots & There will be bots which allows for players to play against them even if their friends are not online to play against. These bots must be able to play to a standard such that a human player would not be able to discern between a human and a bot. & This will solve a large part of the problem that people have with currently playing games, namely, a lack of time. Therefore, implementing this feature will allow people to play according to their schedule and convenience, which is a desirable feature as seen in the interviews.\\
@@ -573,3 +568,12 @@ These were found using existing computational solutions and the research done by
     \hline
 \end{longtable}
 \end{center}
+
+%\clearpage
+%Remove bg from flowcharts
+%Long table package
+%Testing even pretty basic things   
+% Include mistakes
+%Make mistakes -> J. Savage
+% pythonstruct
+%show each stage
