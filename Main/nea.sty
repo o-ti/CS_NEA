@@ -1,6 +1,6 @@
 \ProvidesPackage{nea}
 
-\usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype}
+\usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype, sectsty}
 \renewcommand{\arraystretch}{1.6}
 \usepackage[outputdir=./]{minted}
 %\begin{minted}{py}
@@ -8,6 +8,11 @@
 %\end{minted}
 \setlength{\parindent}{0pt}
 
+\usepackage{caption}
+\captionsetup[figure]{font=sf, labelfont=bf}
+
+\allsectionsfont{\sffamily}
+\usepackage{layouts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LaTeX Overlay Generator - Annotated Figures v0.0.1
 % Created with http://ff.cx/latex-overlay-generator/
@@ -40,7 +45,7 @@
 %\adjustbox{valign=t}{\includegraphics[width=10cm]{velocityGraph.jpg}}
 
 %Margins, standard is 0.8in
-\usepackage[margin=2.3cm]{geometry}
+\usepackage[a4paper, margin=2.3cm]{geometry}
 
 %Units
 \usepackage{siunitx}
