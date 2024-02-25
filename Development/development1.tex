@@ -701,6 +701,37 @@ Finally, despite this case never arising in an actual game, we will test the cas
 Again, the desired result! So, we can conclude that the function works as expected.
 %https://www.jeffreythompson.org/collision-detection/line-rect.php
 
+\vs
+We will now implement the line-line collision method we which described thoroughly in the design section. We will be using NumPy to do the solving of the simultaneous equations. We first need to check that the equations are linearly independent. We can do this using the determinant of the matrix. We will first be extracting all of the elements we need to make the rest of the code easier to read.
+
+\begin{minted}{py}
+	@staticmethod
+    	def lineLineCollision(line1, line2):
+	        #We have both lines in vector form
+	        #line 1 -> [x_1, y_1], [x_2, y_2]
+	        #line 2 -> [x_3, y_3], [x_4, y_4]
+	        x_1, y_1 = line1[0]
+	        x_2, y_2 = line1[1]
+	        x_3, y_3 = line2[0]
+	        x_4, y_4 = line2[1]
+\end{minted}
+
+After this we can compute the determinant and if it is not 0, we can find the solutions.
+\begin{minted}{py}
+	#Find the determinant
+	determinant = np.linalg.det(matrix)
+        if determinant == 0:
+            return [False, None]
+            
+        else:
+            result = np.linalg.solve(matrix, resultVec)
+            
+            #Check that the result is between the constraint points
+            if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+                return [True, result]
+            return [False, None]
+
+\end{minted}
 
 
 \tbc
