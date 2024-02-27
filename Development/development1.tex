@@ -720,22 +720,132 @@ After this we can compute the determinant and if it is not 0, we can find the so
 \begin{minted}{py}
 	#Find the determinant
 	determinant = np.linalg.det(matrix)
-        if determinant == 0:
-            return [False, None]
-            
-        else:
-            result = np.linalg.solve(matrix, resultVec)
-            
-            #Check that the result is between the constraint points
-            if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
-                return [True, result]
-            return [False, None]
-
+	if determinant == 0:
+		return [False, None]
+	            
+	else:
+		result = np.linalg.solve(matrix, resultVec)
+	            
+		#Check that the result is between the constraint points
+		if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+			return [True, result]
+		return [False, None]
 \end{minted}
 
 
 \vs
-We also want to implement 
+We also want to be able to test this code and make sure that is efficient, since we are casting to a NumPy array this likely to not be very efficient. We are primarily interested in how iterations we can do in one second, since this will be very helpful during the training, and we want to make sure that the environment is easy to sample with.
 
+\begin{minted}[breaklines]{py}
+start = time.time()
+for i in range(70000):
+    line1 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
+    line2 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
+    x = Utility.lineLineCollision(line1, line2)
+end = time.time()
+print(end - start)
+
+>>> 1.0048434734344482
+\end{minted}
+
+This quite significant which means that we can do a lot of timesteps in one second, which will increase our overall training speed.
+
+\vs
+
+The next thing we will be implementing is the line-rectangle collision. We can decompose each rectangle into 4 lines between adjacent corners. Therefore, we need to create a method to get the corners of a rectangle. Therefore, we will create a new method in the \mintinline{py}{Block} class to get the corners.
+
+\vs
+\begin{minted}{py}
+	def getCorners(self):
+        #TL, BL, BR, TR
+        corners = []
+
+        for i in range(-1, 2, 2):
+            for j in range(-1, 2, 2):
+                corners.append(U.vecAdd(self.centre, [i * self.length1/2, i * j * self.length2/2]))
+
+        return corners
+\end{minted}
+
+\vs
+The code is a bit dense, but we can prove that this code will work and then test it. We want to get the corners in an anti-clockwise order because this will give us the lines that we since the lines must be on the edges of the rectangle. We firstly create an array to store the co-ordinates of the corners in. Next, we create two for loops. The outer loop will take two values only, $-1$ and $+1$. This will show the direction of the horizontal movement from the centre. In the inner loop, we can either move upwards by half of the height of the rectangle, or we can move down by the same amount. This produces all 4 corners. If we just print $i$ and $ij$, we can see that the output is as follows.
+
+\begin{minted}{py}
+>>> for i in range(-1, 2, 2):
+	for j in range(-1, 2, 2):
+		print(i, i*j)
+
+-1 1
+-1 -1
+1 -1
+1 1
+\end{minted}
+\vs
+
+This can be plotted on the $x$ and $y$ axes, which is going anti-clockwise, and we are only changing one element of the co-ordinate at a time which means that we will only be putting adjacent vertices next to each other.
+
+\vs
+We can now test the code with some sample values.
+
+\begin{minted}{py}
+b = Block([1, 2], 10, 20, 'red', [1600, 900], [800, 450])
+corners = b.getCorners()
+print(corners)
+
+>>> [[-4.0, 12.0], [-4.0, -8.0], [6.0, -8.0], [6.0, 12.0]]
+\end{minted}
+
+This is what we would have expected to see. Now, that we have this, we want to find the edges of the rectangle. With this, we can generate the edges present.
+
+\vs
+\begin{minted}{py}
+	@staticmethod
+	def lineRectCollision(line, block):
+
+	#Get the corners
+	corners = block.getCorners()
+	
+	#Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
+	lines = [[corners[i], corners[i+1]] for i in range(-1, 3) ]
+\end{minted}
+
+\vs
+The second line is list comprehension which gives pairs of corners, and since we have arranged them to be adjacent to each other, the lines formed are all on the boundary of the rectangle. We only need the pairs of constraint points since that is what we are using for the line collision method.
+
+\vs
+The next thing we need, is to find the collision which is the closest to the first constraint point which is what our program returns.
+\vs
+
+\begin{minted}{py}
+        #We only care about how far along the main line the collision is
+        t_val = 3
+        for edge in lines:
+            isHit, lambda_mu = Utility.lineLineCollision(line, edge)
+            if isHit:
+                if lambda_mu[0] < t_val:
+                    t_val = lambda_mu[0]
+\end{minted}
+
+\vs
+We set \mintinline{py}{t_val} to be $3$ since the result of the collision must be between 0 and 1, and so this will be well outside of the range anyway. This also means that we can check if we ever updated the minimum collision distance.
+
+\vs
+\begin{minted}{py}
+        if t_val == 3:
+            return [False, None]
+        return [True, t_val]
+\end{minted}
+
+\vs
+We can also return whether we have detected a collision or not, and if we have, then what that distance is. We will be testing a boundary case, where the line clips one of the edges of a rectangle, but should still return a hit.
+
+\begin{minted}{py}
+b = Block([0, 0], 10, 20, 'red', [1600, 900], [800, 450])
+line = [[0, 20], [10, 0]]
+result = U.lineRectCollision(line, b)
+print(result)
+
+>>> [True, 0.5]
+\end{minted}
 
 \tbc

@@ -6,7 +6,7 @@ Now that we have all of the constituent classes required to add things to the ma
 \vs
 The first thing to do is to program the functionality of the forward vector. For the user, this will be using their mouse and we want the forward vector to point towards the mouse. To do this, we can find the direction vector in the \mintinline{py}{Player} class, but we need to find the mouse position in the game loop itself.
 
-\begin{minted}{py}
+\begin{minted}[breaklines]{py}
     mouse_pos = pygame.mouse.get_pos()
 
     #Get direction vector
@@ -53,7 +53,8 @@ This confirms that we have indeed used the GPU. We will use this in all of our s
 We also need to create something known as an environment. This will allow the agents to interact with the environment. We will be using the PettingZoo library and API to create an environment which we can use to train. We can create a skeleton environment as seen here from the documentation.
 
 \begin{minted}{py}
-
+def insertTheStuffHere(self):
+	print(''Fill this in'')
 
 \end{minted}
 
@@ -65,7 +66,7 @@ Now that we have our environment, we will define our actor and critic networks. 
 
 Let's begin by importing our libraries.
 \vs
-\begin{minted}{python}
+\begin{minted}[breaklines]{python}
 import torch
 
 from tensordict.nn import TensorDictModule
