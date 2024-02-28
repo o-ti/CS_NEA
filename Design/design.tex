@@ -5,7 +5,7 @@ I have created the following table highlighting the different sectors involved w
 \vspace{11pt}
 
 
-\begin{tabular}{|p{4cm}|p{11.5cm}|}
+\begin{longtable}{|p{4cm}|p{11.5cm}|}
     \hline
     Section & Purpose\\
     \hline
@@ -22,8 +22,8 @@ I have created the following table highlighting the different sectors involved w
     \hline
     AI & A large part of the game will be AI. This will ensure that a player can join a game immediately and not have to wait for a queue. The player will be able to select different levels of difficulty.\\
     \hline
-\end{tabular}
-\vspace{11pt}
+\end{longtable}
+\vs
 
 Here is a top-down diagram showing all of the different sections of the project. We will break down and discuss each section individually in depth, as well as justifying why these modules are necessary.
 
@@ -36,18 +36,15 @@ Here is a top-down diagram showing all of the different sections of the project.
 
 \tbr
 
-
-\subsection{\textcolor{red}{Game States}}
+\subsection{\textcolor{blue}{Game States}}
 
 We will need several classes in order to run the game effectively. The first one is the \mintinline{python}{Game} class. This will control the whole application and contains the loop from which all other functions are called. This is justified because it allows us to encapsulate the entire application into one project, and we can have modules within it. It also makes certain things easier, such as managing all of the different states.
 
-\vspace{11pt}
+\vs
 Then, we have the game state manager. This is effectively going to let us get and set which state we are in currently, and allows us to change it from within menus and other states. This makes it much easier to process and understand the game. This is justified because it gives us a centralised way to edit the current state in the game. This is useful because it means that we can move between states easily, and we can define this behaviour according to what we have done, just as clicking buttons in the menu, or pressing certain buttons.
 
-\vspace{11pt}
-\begin{table}[H]
-\centering\sffamily
-\begin{tabular}{|p{3cm}|p{5cm}|p{7cm}|}
+\vs
+\begin{longtable}{|p{3cm}|p{5cm}|p{7cm}|}
     \hline
     State & Explanation & Justification\\
     \hline
@@ -56,20 +53,19 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
     Options & This will be the options menu, containing things like TODO & This is important because it allows the users to customise the game to their standards and this makes it more enjoyable for the player, since it is to their liking.\\
     \hline
-    Login & This will let a user who already has an account to submit their login credentials and will then verify these details. If they are valid, they are redirected to the start menu. & This is important because we need to have some way to track user progress in an accurate way, and so we also need \\
+    Login & This will let a user who already has an account to submit their login credentials and will then verify these details. If they are valid, they are redirected to the start menu. & This is important because we need to have some way to track user progress in an accurate way, and so we also need to keep this in the game's state in some manner.\\
     \hline
-    Register & & \\
+    Register & If the user does not already exist, it will allow them to create a new account using an email address and password. & This will allow the user to be able to track their progress, which is quite important for some people, since it gives a sense of achievement.\\
     \hline
-    Create Game & & \\
+    Create Game & This will let the user create a game. & This is important since otherwise the main game loop would be inaccessible to the user, thus making my project redundant.\\
     \hline
-    Set Timer & & \\
+    Set Timer & This will allow the user to set how long they would like to play for in the entire session. & This was one of the things that was mentioned by the stakeholders as being very important to the project.\\
     \hline
-    Game Loop & & \\
+    Game Loop & This will be the place where the user will spend the majority of their time. This will run the main game and will be the main attraction of my project. & This is a game state because we need to be able to shift between this and the other game states and menus.\\
     \hline
-    Game Over & & \\
+    Game Over & Once the player's time is over, or the round is over, the user must either be forced to exit the game, or to start another round if they still have time.& This exists as it also shows the outcome of the game and provides a nice way of concluding the user's experience without making it too abrupt.\\
     \hline
-\end{tabular}
-\end{table}
+\end{longtable}
 
 \tbc
 
@@ -79,9 +75,8 @@ We need to create a base of the game loop and will house all of the mechanics wh
 
 \vspace{11pt}
 Firstly, we will define the processes and events which take place in the game loop.
-\begin{table}[H]
-\centering\sffamily
-\begin{tabular}{|p{3cm}|p{5cm}|p{7cm}|}
+
+\begin{longtable}{|p{3cm}|p{6cm}|p{6cm}|}
     \hline
     Event & Explanation & Justification\\
     \hline
@@ -94,11 +89,11 @@ Firstly, we will define the processes and events which take place in the game lo
     \hline
     Weapons & Will look for events to fire weapons, and will check for any intersections between rays and players. This will then be used to update the ammo of the player and the health of the player if one is hit. & This is essential to the game since we must be able to interact with other players, and eliminate them in order to move the game forward, and to allow players to gain a score.\\
     \hline
-    Rendering & The player will need to be able to see their character and HUD, but this is not relayed to each of the bots, and so therefore, this needs to be done independently of the current game. In other words, we take input from the state of the map right now, but the player's view does not interfere with the game's progress.\\
+    Rendering & The player will need to be able to see their character and HUD, but this is not relayed to each of the bots, and so therefore, this needs to be done independently of the current game. In other words, we take input from the state of the map right now, but the player's view does not interfere with the game's progress. & If the user cannot see the screen, then they will be unable to play the actual game. Therefore, is essential that the game is rendered accurately and consistently.\\
     \hline
     Collisions & We need a way of reliably tracking where players and whether they are colliding with the map or not. & This is important since otherwise, the game would be very dull and this adds more complexity to the strategies possible.\\
-\end{tabular}
-\end{table}
+    \hline
+\end{longtable}
 
 \vspace{11pt}
 We will have the player on the centre of the screen. We know the dimensions of the screen we are drawing, so for efficiency, if a player is not within those dimensions, we will not draw them, but they will still exist. We can do this, by calculating their relative positions to the player, and then translating to this to where they should be on the screen. We can do this with the formula shown below.
