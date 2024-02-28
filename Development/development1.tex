@@ -714,6 +714,23 @@ After this we can compute the determinant and if it is not 0, we can find the so
 		return [False, None]
 \end{minted}
 
+We can also edit this code to make it more readable by using a guard clause. Since we are returning if the determinant is 0, no other code after it will return if this condition is meant. Therefore, we can see that we don't need the \mintinline{py}{else} statement at all, and can instead dedent the code block there.
+
+\begin{minted}{py}
+    #det = 0 -> Can't be solved
+    if determinant == 0:
+        return [False, None]
+
+    #Solve system
+    result = np.linalg.solve(matrix, resultVec)
+
+    #Check that the result is between the constraint points
+    if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+        return [True, result]
+    
+    #Solution is not in bounds
+    return [False, None]
+\end{minted}
 
 \vs
 We also want to be able to test this code and make sure that is efficient, since we are casting to a NumPy array this likely to not be very efficient. We are primarily interested in how iterations we can do in one second, since this will be very helpful during the training, and we want to make sure that the environment is easy to sample with.
@@ -780,7 +797,7 @@ print(corners)
 This is what we would have expected to see. Now, that we have this, we want to find the edges of the rectangle. With this, we can generate the edges present.
 
 \vs
-\begin{minted}{py}
+\begin{minted}[breaklines]{py}
 	@staticmethod
 	def lineRectCollision(line, block):
 
