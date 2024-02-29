@@ -418,6 +418,7 @@ We also need to initialise a new clock and set \mintinline{python}{dt} in order 
 \vs
 
 \begin{minted}[breaklines]{python}
+class GameLoop:
         #Placeholders for the moment
         self.pos_x = self.SCREEN_DIMS[0]//2
         self.pos_y = self.SCREEN_DIMS[1]//2
@@ -428,12 +429,44 @@ We also need to initialise a new clock and set \mintinline{python}{dt} in order 
 \end{minted}
 \vs
 We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \mintinline{py}{run()} function that will be called everytime we are changing states. 
-\begin{minted}{py
+\begin{minted}{py}
     def run(self, returnValues):
         #Delta T is kept for frame-rate independent physics
         dt = 0
 
-        player1 = Player([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+        elayer1 = ([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+        
+        #List of all players
+        self.players = [player1]
+
+        running = True
+
+        while running:
+
+            self.display.fill((255, 255, 255))
+            #Check if player wants to quit
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            
+            #Get the key presses and mouse position and buttons
+            keys = pygame.key.get_pressed()
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_clicks = pygame.mouse.get_pressed()
+            
+            #Get direction vector
+            player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
+
+            #Normalise direction vector
+            dir_mag = sqrt(sum([i**2 for i in player1_direction]))
+            player1_direction = [i / dir_mag for i in player1_direction]
+
+            #Update the direction vector
+            player1.forward_vec = player1_direction
+
+            #Get the directions which are pressed
+            self.directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
 
 \end{minted}
 
