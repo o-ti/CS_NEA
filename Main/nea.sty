@@ -1,6 +1,6 @@
-\ProvidesPackage{nea}
+\ProvidesPackage{Main/nea}
 
-\usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype, sectsty, biblatex}
+\usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype, sectsty}
 \renewcommand{\arraystretch}{1.6}
 \usepackage[outputdir=./]{minted}
 %\begin{minted}{py}
@@ -14,7 +14,8 @@
 \allsectionsfont{\sffamily}
 \usepackage{layouts}
 
-\addbibresource{references.bib}
+\usepackage[sorting=none]{biblatex}
+\addbibresource{Main/main.bib}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LaTeX Overlay Generator - Annotated Figures v0.0.1
 % Created with http://ff.cx/latex-overlay-generator/
