@@ -427,6 +427,16 @@ We also need to initialise a new clock and set \mintinline{python}{dt} in order 
         self.REFRESH_RATE = self.gameStateManager.REFRESH_RATE
 \end{minted}
 \vs
+We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \mintinline{py}{run()} function that will be called everytime we are changing states. 
+\begin{minted}{py
+    def run(self, returnValues):
+        #Delta T is kept for frame-rate independent physics
+        dt = 0
+
+        player1 = Player([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+
+\end{minted}
+
 Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
 \vs
 \begin{minted}[breaklines]{python}
