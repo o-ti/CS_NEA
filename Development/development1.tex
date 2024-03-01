@@ -403,6 +403,7 @@ class GameLoop:
     def __init__(self, display, gameStateManager):
 
         #Get the display we are working on
+
         self.display = display
 
         #Get the gameStateManager, so we can process it within the class
@@ -434,7 +435,7 @@ We need to create an actual game loop. Specifically, we need to contain this gam
         #Delta T is kept for frame-rate independent physics
         dt = 0
 
-        elayer1 = ([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+        player1 = ([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
         
         #List of all players
         self.players = [player1]
@@ -468,9 +469,14 @@ We need to create an actual game loop. Specifically, we need to contain this gam
             #Get the directions which are pressed
             self.directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
 
+            #Update the display
+            pygame.display.update()
+
+            #Tick the clock
+            dt = self.clock.tick(self.REFRESH_RATE)/1000
 \end{minted}
 
-Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
+We still need to find some way to render the player which will do in the rendering section. Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
 \vs
 \begin{minted}[breaklines]{python}
 #Import Game class
@@ -488,9 +494,45 @@ g = Game(WIDTH, HEIGHT, REFRESH_RATE)
 g.run()
 \end{minted}
 
-This will import the \mintinline{python}{Game} class and will create an instance, and run the game.
+This will import the \mintinline{python}{Game} class and will create an instance, and run the game. We also need things to draw on the screen. We will now implement the render function on the \mintinline{py}{Player} class, and we will create a \mintinline{py}{Block} class, since this will allow us to more easily manipulate them relative to the screen.
+\subsection{\textcolor{red}{Block}}
 
-We also need things to draw on the screen. We will now implement the render function on the \mintinline{py}{Player} class, and we will create a \mintinline{py}{Block} class, since this will allow us to more easily manipulate them relative to the screen.
+We need to implement the \mintinline{py}{Block} class in order to add more interactivity with the game.
+
+\begin{minted}{py}
+import pygame
+from pygame.locals import *
+from utils import Utility as U
+\end{minted}
+
+We can now write the constructor for the class. We can define a rectangle with three principle parameters. We need the two side lengths of the rectangle and the centre position of the rectangle. We can write this as follows.
+
+\begin{minted}{py}
+class Block(pygame.sprite.Sprite):
+
+#Length1 is in the x direction
+#Length2 is in the y direction
+def __init__(self, centre, length1, length2, colour, SCREEN_DIMS, camera_position):
+
+    pygame.sprite.Sprite.__init__(self)
+
+    self.centre = centre
+    self.length1 = length1
+    self.length2 = length2
+    self.colour = colour
+
+    self.initial_screenPosition = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
+    self.rect = pygame.Rect(self.initial_screenPosition[0], self.initial_screenPosition[1], self.length1, self.length2)
+\end{minted}
+
+We will now examine each aspect of the code to ensure that it is valid. As mentioned before, to define the geometry of the rectangle we needed a few principle values, which we now have. We also need to define a colour, since this is what we will be using to render. We can now define the render function as follows.
+
+\begin{minted}{py}
+    def render(self):
+        self.rect.center = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
+        pygame.draw.rect(display, self.colour, self.rect)
+\end{minted}
+Here we have used methods of the \mintinline{py}{Utility} class which we have not implemented yet. However, we will detail all of the implementation of the class in the very next section.
 
 \subsection{\textcolor{red}{Utilities}}
 
@@ -889,5 +931,19 @@ print(result)
 
 >>> [True, 0.5]
 \end{minted}
+
+\vs
+We also need to define the method for converting a world position to a screen position which will let us actually render things, since the player's viewpoint moves as the player moves. We can do this as detailed in the Design section.
+
+\begin{minted}{py}
+    #Will convert the world position of the character to a camera position for the player
+    @staticmethod
+    def convertToScreen(camera_position, object_position, SCREEN_DIMS):
+        screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
+        return screenPosition
+\end{minted}
+
+\vs
+We have used list comprehension to compress our statements, since this is more efficient than using a for loop (from \cite{listcomp}), since they do not have an overhead in producing a for loop, and therefore, we have used this throughout the project. This means that we can now easily and efficiently call all of these functions and due to the stateless nature of the \mintinline{py}{Utility} class we don't need to worry about creating and deleting many instances, and this is also more efficient to do in Python, which has been a concern throughout the project, since we will be removing the render functions and will be using the game loop to do the training of the game. Therefore, every aspect of the game must be optimised to a reasonable extent in order to allow for more samples in a given period of time.
 
 \tbc
