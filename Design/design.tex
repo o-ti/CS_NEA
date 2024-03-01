@@ -1,8 +1,8 @@
 In order to be able to write the program, we need to break down the problem into smaller problems, which are much easier to address, and link them together to create the final product.
-\vspace{11pt}
+\vs
 
 I have created the following table highlighting the different sectors involved within the project.
-\vspace{11pt}
+\vs
 
 
 \begin{longtable}{|p{4cm}|p{11.5cm}|}
@@ -73,7 +73,7 @@ Then, we have the game state manager. This is effectively going to let us get an
 
 We need to create a base of the game loop and will house all of the mechanics which are relevant to the game, such as the time left in the round, the score of each player, the position of each player, etc. This is important since we need to be able to track all of these statistics as we will need to update the user's profile after the game is over.
 
-\vspace{11pt}
+\vs
 Firstly, we will define the processes and events which take place in the game loop.
 
 \begin{longtable}{|p{3cm}|p{6cm}|p{6cm}|}
@@ -95,7 +95,7 @@ Firstly, we will define the processes and events which take place in the game lo
     \hline
 \end{longtable}
 
-\vspace{11pt}
+\vs
 We will have the player on the centre of the screen. We know the dimensions of the screen we are drawing, so for efficiency, if a player is not within those dimensions, we will not draw them, but they will still exist. We can do this, by calculating their relative positions to the player, and then translating to this to where they should be on the screen. We can do this with the formula shown below.
 \begin{align*}
     x_\text{screen} &= x_\text{object} - x_\text{player} + \frac{x_\text{width}}{2}\\
@@ -105,34 +105,34 @@ A similar expression is produced for the $y$ direction. We can calculate these c
 
 \tbc
 
-\subsection{\textcolor{red}{Movement}}
+\subsection{\textcolor{blue}{Movement}}
 
 In order to create forwards and backwards movement, we just simply apply a multiple of the forward vector to the character. When the player presses W they will be moved forward, and when the player presses S they will be moved backwards. This is justified as this is the standard for most modern games, and so will be what most people are familiar with, hence making the game easier to start learning.
-
-\vspace{11pt}
+\vs
+\vs
 In order to rotate the character, a mouse will be used and the position of the cursor from the character will determine the angle which the character faces. This is justified because this will be the only way of allowing the user to accurately rotate the character where they want, since the only other common input is a keyboard, but this has binary readouts which will not allow the user as much control as they would with a mouse, which provides a much more refined output. This is then the angle at which any shooting is done, and the movement vectors will stay consistent with the direction the player is facing. The player will see a rotated player, and the world will stay in the same direction on the screen. This is justified because it allows for a much more intuitive experience. 
-
-\vspace{11pt}
+\vs
+\vs
 We can find this angle using the following formula, where we use $(x_0, y_0)$ to find the centre of the screen, and $(x_1, y_1)$ to represent the position of the cursor. Then, the angle below the horizontal line is $\theta$. If $\theta$ is negative, this just represents it points above the horizontal line. We will not run the code if the cursor is at the centre since otherwise this would return an infinite value. In that case, we can manually deal with the cases. We can see that if the cursor is below the centre of the screen then we must point downwards, and vice versa. We can justify using this formula since it is optimal for our application, as it has a constant complexity, and other ways that are not formulaic must have a larger time complexity. In a game, optimisation and efficiency are very important and so it is key that we use this formula to reduce computation time per frame, which is essential, since we are going to be using this formula very frequently.
-
-\vspace{11pt}
+\vs
+\vs
 \begin{align*}
     \tan \theta &= \frac{y_1 - y_0}{x_1 - x_0}\\
 \end{align*}
 
-\vspace{11pt}
+\vs
 The shift button will be used to dash which will move the player very quickly across the map, and will be put on a cool-down. This will be done by adding a sudden acceleration to the character in the direction they are currently moving, and then removing this acceleration, and decreasing the speed drastically. This effectively creates the illusion of dashing or jumping which is what we want to achieve. This is a justified 
-
-\vspace{11pt}
+\vs
+\vs
 Additionally, we will need a procedure to calculate position. We will set an initial position for each player. This will be where they spawn into the game initial, and where they respawn after each death. We will need to create an initial direction vector as well, in order to preserve the orientation of the player relative to the map.
-
-\vspace{11pt}
+\vs
+\vs
 There are two aspects to the development of the game. The first is the underlying framework which handles the "back-end", such as physically moving the players on the map, firing projectiles, detecting collisions, and tracking scores. Then, we have another section which handles the user's point of view of the game, such as the menus, the camera which tracks the player's character, and the UI.
-
-\vspace{11pt}
+\vs
+\vs
 Hence, in the development, we must consider the back-end of the project first, since this will allow us to train AI, who don't have a front-end to the game. The reason for this will be shown in the AI section.
-
-\tbc
+\vs
+\tbr
 
 \subsection{\textcolor{red}{Weapons}}
 
@@ -147,7 +147,7 @@ There will be one parent weapon class which will contain all of the common metho
 
 The base class will be as follows.
 
-\vspace{11pt}
+\vs
 \begin{tabular}{|p{4cm}|p{11.5cm}|}
     \hline
     Attribute & Purpose\\
@@ -165,13 +165,16 @@ The base class will be as follows.
 
 \subsubsection{Firing Procedure}
 
-We need to be able to fire a projectile in the direction of the weapon. We set the source to be the centre of the player. We will then create a sprite centred at the source and will have a constant velocity in the direction of the of the weapon (the player's forward vector). We can then 
+We need to be able to fire a projectile in the direction of the weapon. We set the source to be the centre of the player. We will then create a sprite centred at the source and will have a constant velocity in the direction of the of the weapon (the player's forward vector).
 
-\vspace{11pt}
+\vs
+We will need to create a way to detect collisions between rays and blocks and between rays and players. We will then take the closest of the two collisions to be the "dominant" collision, in other words the collision which we will need to focus on primarily. If this collision is with another player, we will need to check whether they are on the enemy team or not, and if they are then we need to deal damage and award some points to the firing player, and otherwise, we do nothing.
+
+\vs
 
 \subsubsection{Collision Detection}
 
-As mentioned before we need a way to detect collisions between a ray and an object. There are multiple types of collisions that we need to be able to detect and handle. In this case, the primary one is a collision between a line and a circle. We will be using vectors in our program, since this will let us
+As mentioned before we need a way to detect collisions between a ray and an object. There are multiple types of collisions that we need to be able to detect and handle. In this case, the primary one is a collision between a line and a circle. We will be using vectors in our program, since this will let us quickly and effectively find collisions and use vector methods and properties which are much easier to work with than Cartesian equations.
 
 
 \tbc
@@ -180,11 +183,11 @@ As mentioned before we need a way to detect collisions between a ray and an obje
 To do this, there is a class in the Unreal Engine framework that will enable me to connect the game to a database. This will be stored on a central server so that no user can access it directly, and a login page will be created. This login page will take a user's player name and password, hash the password locally, and transmit this data to the server. This ensures that no plain-text passwords are being transmitted which improves security. The server will then check whether such a player exists and whether their password hash matches what is stored. If it is correct, then the user is sent to the main menu, where they will be able to select from different options.
 
 
-\vspace{11pt}
+\vs
 The database is normalised to reduce data redundancy and maintain data integrity. It also allows for a more flexible structure and so should any new information or variables need to be stored we will be able to easily incorporate it into our database. We need to be able to hold the following fields as described by our success criteria.
 
 
-\vspace{11pt}
+\vs
 
 
 \begin{longtable}{|p{3cm}|p{2cm}|p{9cm}|}
@@ -208,7 +211,7 @@ The database is normalised to reduce data redundancy and maintain data integrity
     \hline
 \end{longtable}
 
-\vspace{11pt}
+\vs
 This gives us the following database structure.
 
 \begin{figure}[H]
@@ -218,7 +221,7 @@ This gives us the following database structure.
     \label{fig:db_structure}
 \end{figure}
 
-\vspace{11pt}
+\vs
 This database structure is justified because it is in 3NF. This means that we can query and search the database effectively and maintain referential integrity across the tables. We have chosen Player ID to be a key across the entire database because this will allow us to access all user information given the ID of the player. They will also be using this to login, and so we can quickly verify their login credentials when they are trying to login.
 
 \tbc
@@ -227,7 +230,7 @@ This database structure is justified because it is in 3NF. This means that we ca
 
 UI is essential to ensure that a user is able to quickly understand what each button does, and how to access what they need. For this reason, the only buttons present on the main menu will be "Play", "Settings", "Exit". This reduces any confusions that players may have, and allows the game to be much easier to pick up.
 
-\vspace{11pt}
+\vs
 Here are some flowcharts detailing how the UI will lead to different sections of the game.
 
 \tbc
@@ -236,7 +239,7 @@ Here are some flowcharts detailing how the UI will lead to different sections of
 
 I will be using PyTorch in order to handle the reinforcement learning aspect of the project. This is because it has extensive reinforcement learning tools, and is something which I am familiar with. Reinforcement learning works by using neural networks to create an output given a set of inputs. This is then processed and the action is taken. A reward is then assigned to this new state, and based on this, the model is adjusted through back-propagation and another step is taken. This continues millions of times, and this allows for the model to become progressively better. In order to create a game-like scenario, there will be 8 bots in two teams which will play against each other. The inputs to the bots are as follows, and all of this information will be condensed into a vector which is fed into the model.
 
-\vspace{11pt}
+\vs
 \begin{enumerate}[label=\arabic*)]
     \item Current ammo - Provided as a real value between 0 and 1, denoting the proportion of ammo left, and computed by dividing the current amount of ammo by the ammo in a full weapon
     \item Current Health - Provided as real value between 0 and 1, and is computed by dividing the current health by the total health
@@ -245,13 +248,13 @@ I will be using PyTorch in order to handle the reinforcement learning aspect of 
     \item Spokes protruding from the centre of the players will extend to a set distance $r$, and will return 0 if there is no objects obstructing the spoke, will return $d$ if there is any enemy at distance $d$ from the centre of the player along that spoke, where $d<r$, and $-d$ if there is a wall obstructing the spoke at a distance $d<r$.
 \end{enumerate}
 
-\vspace{11pt}
+\vs
 The best model for this project is multi-agent reinforcement learning, as this will allow me to generate multiple bots which can compete against each other. Something like Deep Q Networks would not function in this environment because of the continuous nature of the game and the complex nature of the game.
 
-\vspace{11pt}
+\vs
 The algorithm we will be using is Proximal Policy Optimisation, which relies on a clipped surrogate objective. This is an algorithm which can be expanded to a multi-agent version, which is what we want.
 
-\vspace{11pt}
+\vs
 In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the data buffer from the player to be transferred to the other two bots. This gives the game the feeling of playing with a team, rather than a more individual experience. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have 
 
 \vs
@@ -308,6 +311,13 @@ We will first look at line-to-line collisions, since they underpin a large propo
 \vs
 We have arrived at a series of simulataneous equations. These can be easily solved with the \mintinline{py}{np.linalg.solve()} in NumPy, which means we don't have to solve it ourselves. However, this does have one restriction that the equations must be linearly indepenent. This just means that we need to check before hand what the determinant of the matrix is.
 
+\vs
+
+We also need to implement some more methods that are really important to the game and are going to be used repeatedly. These are addition, subtraction and the dot product. These are the most frequently used in vector equations and so are important to have implemented. This also gives us a quick way of finding the square of the magnitude of a vector by taking a dot product with itself.
+
+
+\vs
+Furthermore, we need to have methods for collisions which we will be doing repeatedly throughout the game, and so this is best abstracted into the \mintinline{py}{Utility} class such that we can worry about other implementation details instead of re-coding the same methods over and over again.
 
 \tbc
 

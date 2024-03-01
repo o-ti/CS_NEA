@@ -19,6 +19,9 @@ The first thing to do is to program the functionality of the forward vector. For
 
 Testing this out we can see it works as follows INSERT SCREENSHOT HERE. However, we do see that it doesn't work if the cursor is centred at the centre of the screen as we get a dividing by zero error.
 
+\vs
+Another change that we want to make is that in order to improve efficiency of the \mintinline{py}{move()} method in the \mintinline{py}{Player} class, we want to change the inputs that we are putting in. There is a simple way to improve this. Effectively, we only really need two inputs, one for the vertical direction, and one for the horizontal direction. We only really want one input for each direction, and we also want the vertical movement to be the initial forward vector of each player. Effectively, there is just one value for the vertical movement between -1 and 1, and another value for the horizontal movement between -1 and 1 also. This is then normalised to ensure that the player is not moving at more than the maximum speed. Additionally, we need to create a right-pointining vector, since currently, both teams would actually be moving the in the same direction for the same input relative to the map, but this is not what we actually want.
+
 
 \subsection{\textcolor{red}{Database Handling}}
 

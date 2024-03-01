@@ -1,3 +1,5 @@
+\subsection{Subsections}
+
 \begin{center}
 \begin{longtable}{|p{3.5cm}|p{10cm}|}
     \hline
@@ -75,7 +77,8 @@
 \end{longtable}
 \end{center}
 
-\vs
+\clearpage
+\subsection{Actions}
 
 \begin{center}
 \begin{longtable}{|p{7cm}|p{2.5cm}|p{4cm}|}
@@ -107,6 +110,9 @@
     \hline
 \end{longtable}
 \end{center}
+
+\clearpage
+\subsection{Overall Aims}
 
 \begin{center}
 \begin{longtable}{|p{8cm}|p{2.5cm}|p{3.8cm}|}
@@ -155,134 +161,77 @@
 \end{longtable}
 \end{center}
 
+\clearpage
+\subsection{Development Checklist}
 
-Links to follow
+\begin{center}
+\begin{longtable}{|p{2.5cm}|p{3.5cm}|p{4.8cm}|p{2.7cm}|}
+    \hline
+    File & Class & Method & Documented?\\
+    \hline
+    \hline
+    \mintinline{py}{block.py} & \mintinline{py}{Block} & \mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{render()} & No\\
+    & & \mintinline{py}{getCorners()} & Yes\\
+    \hline
+    \hline
+    \mintinline{py}{database.py} & \mintinline{py}{DatabaseHandler} & \mintinline{py}{SetupConnection()} & No\\
+    & & \mintinline{py}{CloseConnection()} & No\\
+    & & \mintinline{py}{CreateAccount()} & No\\
+    & & \mintinline{py}{UpdateAccount()} & No\\
+    & & \mintinline{py}{AuthenticateAccount()} & No\\
+    \hline
+    \hline
+    \mintinline{py}{game.py} & \mintinline{py}{Game} &\mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{run()} & No\\
+    \hline
+    & \mintinline{py}{GameLoop} & \mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{checkHit()} & No\\
+    & & \mintinline{py}{run()} & No\\
+    \hline
+    \hline
+    \mintinline{py}{main.py} & - & - & No\\
+    \hline
+    \hline
+    \mintinline{py}{player.py} & \mintinline{py}{Player} & \mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{movePlayer()} & Yes\\
+    & & \mintinline{py}{dash()} & No\\
+    & & \mintinline{py}{fire()} & No\\
+    & & \mintinline{py}{updatePlayerState()} & No\\
+    & & \mintinline{py}{render()} & No\\
+    \hline
+    \hline
+    \mintinline{py}{utils.py} & \mintinline{py}{Utility} & \mintinline{py}{dot()} & Yes\\
+    & & \mintinline{py}{vecSub()} & Yes\\
+    & & \mintinline{py}{vecAdd()} & Yes\\
+    & & \mintinline{py}{mult()} & No\\
+    & & \mintinline{py}{lineLineCollision()} & Yes\\
+    & & \mintinline{py}{lineRectCollision()} & Yes\\
+    & & \mintinline{py}{lineCircleCollision()} & Yes\\
+    & & \mintinline{py}{circleRectCollision()} & No\\
+    & & \mintinline{py}{circleCircleCollision()} & No\\
+    & & \mintinline{py}{checkCircleInRange()} & No\\
+    & & \mintinline{py}{checkBlockInRange()} & No\\
+    & & \mintinline{py}{rotateVector()} & No\\
+    & & \mintinline{py}{convertToScreen()} & No\\
+    \hline
+    \hline
+    \mintinline{py}{weapon.py} & \mintinline{py}{Weapon} & \mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{fire()} & No\\
+    \hline
+    & \mintinline{py}{AssaultRifle} & \mintinline{py}{__init__(self)} & No\\
+    \hline
+    & \mintinline{py}{SniperRifle} & \mintinline{py}{__init__self()} & No\\
+    \hline
+    & \mintinline{py}{Shotgun} & \mintinline{py}{__init__self()} & No\\
+    \hline
+    \hline
+    \mintinline{py}{menu.py} & \mintinline{py}{GameStateManager} & \mintinline{py}{__init__(self)} & No\\
+    & & \mintinline{py}{getState()} & No\\
+    & & \mintinline{py}{setState()} & No\\
+    \hline
+\end{longtable}
+\end{center}
 
-\href{https://gamedevacademy.org/pygame-menu-tutorial-complete-guide/}{Pygame Tutorial}
 
-\vspace{11pt}
-\href{https://pygame-menu.readthedocs.io/en/4.2.8/index.html}{Pygame-Menu Docs}
-
-\vspace{11pt}
-\href{https://www.youtube.com/watch?v=2iyx8_elcYg}{Menu System}
-
-\vspace{11pt}
-\href{https://www.youtube.com/watch?v=0RryiSjpJn0}{Menu System}
-
-\vspace{11pt}
-\href{https://www.youtube.com/watch?v=r0ixaTQxsUI}{Game States}
-
-
-\vspace{11pt}
-\href{https://www.youtube.com/watch?v=GMBqjxcKogA}{Menu System V2}
-
-\vspace{11pt}
-\href{https://towardsdatascience.com/training-an-agent-to-master-tic-tac-toe-through-self-play-72038c3f33f7}{Self-Play example}
-
-\vspace{11pt}
-\href{https://huggingface.co/learn/deep-rl-course/unit7/self-play}{Hugging Face Self-Play}
-
-\vspace{11pt}
-\href{https://github.com/younggyoseo/pytorch-nfsp}{Imperfect Information}
-
-\vspace{11pt}
-\href{https://openai.com/research/openai-baselines-ppo}{PPO}
-
-\vspace{11pt}
-\href{https://blog.unity.com/engine-platform/training-intelligent-adversaries-using-self-play-with-ml-agents}{Self-play history}
-
-\vspace{11pt}
-\href{https://openai.com/research/competitive-self-play}{Comp self-play}
-
-\vspace{11pt}
-\href{https://medium.com/applied-data-science/how-to-build-your-own-alphazero-ai-using-python-and-keras-7f664945c188}{Self-play keras}
-
-\vspace{11pt}
-\href{https://github.com/HarrisSteven/RL-Game/blob/master/Melee_Notebook.ipynb}{Melee Keras}
-
-\vspace{11pt}
-\href{https://modelzoo.co/model/chess-reinforcement-learning}{Chess}
-
-\vspace{11pt}
-\href{https://github.com/oxwhirl/pymarl}{PyMARL}
-
-\vspace{11pt}
-\href{https://ai.stackexchange.com/questions/26806/how-do-i-get-started-with-multi-agent-reinforcement-learning}{MARL}
-
-\vspace{11pt}
-\href{https://ai.stackexchange.com/questions/31627/multi-agent-deep-reinforcement-learning-for-continuous-and-discrete-action}{Continuous MARL}
-
-\vspace{11pt}
-\href{https://applied-rl-course.netlify.app/en/module2}{RL Lib}
-
-\vspace{11pt}
-\href{https://github.com/Farama-Foundation/PettingZoo}{Petting Zoo}
-
-\vspace{11pt}
-\href{https://rlss.inria.fr/files/2019/07/RLSS_Multiagent.pdf}{MARL Terms}
-
-\vspace{11pt}
-\href{https://github.com/DLR-RM/stable-baselines3}{Stable Baselines - Pytorch}
-
-\vspace{11pt}
-\href{https://github.com/DLR-RM/rl-baselines3-zoo}{Stable Baselines envs}
-
-\vspace{11pt}
-\href{https://karpathy.github.io/2016/05/31/rl/}{RL Basics}
-
-\vspace{11pt}
-\href{https://towardsdatascience.com/ultimate-guide-for-reinforced-learning-part-1-creating-a-game-956f1f2b0a91}{AI for PyGame}
-
-\vspace{11pt}
-\href{https://web.stanford.edu/~surag/posts/alphazero.html}{Alpha Zero}
-
-\vspace{11pt}
-\href{https://github.com/lucas-emery/rocket-league-gym}{Multi agents Rocket League}
-
-\vspace{11pt}
-\href{https://stable-baselines.readthedocs.io/en/master/guide/rl_tips.html}{RL Tips}
-
-\vspace{11pt}
-\href{https://stable-baselines3.readthedocs.io/en/master/search.html?q=multi+agent&check_keywords=yes&area=default#}{Stable Baselines MARL}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/mpe/}{Particles}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/atari/foozpong/}{Foozpong}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/atari/quadrapong/}{Quadrapong}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/butterfly/pistonball/}{Pistonball}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/mpe/simple_tag/}{Tag}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/sisl/multiwalker/}{Multiwalker}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/environments/sisl/waterworld/}{Waterworld}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/tutorials/sb3/kaz/}{Stable Baselines MARL PPO}
-
-\vspace{11pt}
-\href{https://pettingzoo.farama.org/tutorials/sb3/waterworld/}{Waterworld SB3 MARL PPO}
-
-\vspace{11pt}
-\href{https://docs.ray.io/en/latest/rllib/rllib-algorithms.html}{Multi RL Algos}
-
-\vspace{11pt}
-\href{https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/PolicyGradient/PPO/tf2}{PPO TF2}
-
-\vspace{11pt}
-\href{https://github.com/philtabor/Youtube-Code-Repository/blob/master/ReinforcementLearning/PolicyGradient/PPO/torch/ppo_torch.py}{PPO Torch}
-
-\vspace{11pt}
-\href{https://pytorch.org/rl/reference/generated/torchrl.objectives.PPOLoss.html}{PPO Loss}
-
-\vspace{11pt}
-\href{https://github.com/abhisheksuran/Reinforcement_Learning/blob/master/PPO.ipynb}{TF2 PPO Code}
+The menu classes have been omitted from here, will be documented when there is more code there.
