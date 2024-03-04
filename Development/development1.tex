@@ -1052,8 +1052,6 @@ This code was partially constructed with help from \href{https://stackoverflow.c
             #Set the center of the rectangle to be the centre of the screen
             text_rect.center = (self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2)
 
-            #
-
             #Blit to screen
             self.display.blit(text_surface, text_rect)
 
@@ -1085,6 +1083,18 @@ We also need to change the initial value of the game state manager's state from 
     \caption{An image capture of the start menu screen so far}
     \label{fig:start_menu}
 \end{figure}
+We can now take inputs from the keyboard and assign actions to them. Specifically, if the user presses a certain button we want to change the state of the \mintinline{py}{GameStateManager} using the setter method and then we want to set the inner loop to stop running so that we can go back to the outer loop and join the new state.
+
+\vs
+We will assign the up arrow to be the keyboard event to change the state. This is done as follows.
+
+\begin{minted}[breaklines, tabsize=2]{py}
+      if keys[K_UP]:
+          self.gameStateManager.setState('game_loop')
+          running = False
+\end{minted}
+
+This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay.
 
 \subsection{\textcolor{blue}{Game Loop}}
 
