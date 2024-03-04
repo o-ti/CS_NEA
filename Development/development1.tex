@@ -1098,20 +1098,12 @@ This then means that we can switch to the main game loop immediately after press
 
 
 
-
-
-
-
-
-
-
 \subsection{\textcolor{red}{Button}}
 
 We will be implementing a \mintinline{py}{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \mintinline{py}{Block} class, since this already implements some important features. Additionally, the \mintinline{py}{Rect} class in \mintinline{py}{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
 
 \begin{minted}[breaklines, tabsize=2]{py}
-
-
+  
 \end{minted}
 
 \vs
