@@ -1094,7 +1094,35 @@ We will assign the up arrow to be the keyboard event to change the state. This i
           running = False
 \end{minted}
 
-This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay.
+This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later.
+
+
+
+
+
+
+
+
+
+
+\subsection{\textcolor{red}{Button}}
+
+We will be implementing a \mintinline{py}{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \mintinline{py}{Block} class, since this already implements some important features. Additionally, the \mintinline{py}{Rect} class in \mintinline{py}{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
+
+\begin{minted}[breaklines, tabsize=2]{py}
+
+
+\end{minted}
+
+\vs
+We will now write the render function as follows.
+
+\begin{minted}[breaklines, tabsize=2]{py}
+
+\end{minted}
+
+\vs
+We can use this in the code as follows.
 
 \subsection{\textcolor{blue}{Game Loop}}
 
