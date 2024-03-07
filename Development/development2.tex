@@ -3,7 +3,7 @@
 Now that we have all of the constituent classes required to add things to the map, we now need to make sure that they can interact in the way that makes sense for the game.
 
 \vs
-The first thing to do is to program the functionality of the forward vector. For the user, this will be using their mouse and we want the forward vector to point towards the mouse. To do this, we can find the direction vector in the \mintinline{py}{Player} class, but we need to find the mouse position in the game loop itself.
+The first thing to do is to program the functionality of the forward vector. For the user, this will be using their mouse and we want the forward vector to point towards the mouse. To do this, we can find the direction vector in the \m{Player} class, but we need to find the mouse position in the game loop itself.
 
 \begin{minted}[breaklines]{py}
     mouse_pos = pygame.mouse.get_pos()
@@ -20,12 +20,12 @@ The first thing to do is to program the functionality of the forward vector. For
 Testing this out we can see it works as follows INSERT SCREENSHOT HERE. However, we do see that it doesn't work if the cursor is centred at the centre of the screen as we get a dividing by zero error.
 
 \vs
-Another change that we want to make is that in order to improve efficiency of the \mintinline{py}{move()} method in the \mintinline{py}{Player} class, we want to change the inputs that we are putting in. There is a simple way to improve this. Effectively, we only really need two inputs, one for the vertical direction, and one for the horizontal direction. We only really want one input for each direction, and we also want the vertical movement to be the initial forward vector of each player. Effectively, there is just one value for the vertical movement between -1 and 1, and another value for the horizontal movement between -1 and 1 also. This is then normalised to ensure that the player is not moving at more than the maximum speed. Additionally, we need to create a right-pointining vector, since currently, both teams would actually be moving the in the same direction for the same input relative to the map, but this is not what we actually want.
+Another change that we want to make is that in order to improve efficiency of the \m{move()} method in the \m{Player} class, we want to change the inputs that we are putting in. There is a simple way to improve this. Effectively, we only really need two inputs, one for the vertical direction, and one for the horizontal direction. We only really want one input for each direction, and we also want the vertical movement to be the initial forward vector of each player. Effectively, there is just one value for the vertical movement between -1 and 1, and another value for the horizontal movement between -1 and 1 also. This is then normalised to ensure that the player is not moving at more than the maximum speed. Additionally, we need to create a right-pointining vector, since currently, both teams would actually be moving the in the same direction for the same input relative to the map, but this is not what we actually want.
 
 
 \subsection{\textcolor{red}{Database Handling}}
 
-Based on our previous discussion of using the \mintinline{py}{Utility} class through its static methods, we can also update the \mintinline{py}{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the 
+Based on our previous discussion of using the \m{Utility} class through its static methods, we can also update the \m{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the 
 
 
 \subsection{\textcolor{red}{Training and AI}}
@@ -34,7 +34,7 @@ We will be using the standard implementation of PPO in the official PyTorchRL tu
 
 \vs
 
-We will first need to import all of the relevant libraries and modules that we need to write and run the code. This is primarily \mintinline{py}{torch} and \mintinline{py}{torchrl} modules in order to write the neural networks and creating a replay buffer, which is essential to the training process. We effectively rollout the policy for a number of timesteps, and then we update the model using the recorded trajectories from the rollout. To do this, we use something that \mintinline{py}{torchrl} uses makes extensive use of which is the \mintinline{py}{TensorDict} library. This will let us use dictionaries of tensors which are the primary objects which neural networks work with.
+We will first need to import all of the relevant libraries and modules that we need to write and run the code. This is primarily \m{torch} and \m{torchrl} modules in order to write the neural networks and creating a replay buffer, which is essential to the training process. We effectively rollout the policy for a number of timesteps, and then we update the model using the recorded trajectories from the rollout. To do this, we use something that \m{torchrl} uses makes extensive use of which is the \m{TensorDict} library. This will let us use dictionaries of tensors which are the primary objects which neural networks work with.
 
 \vs
 In order to speed up the training process, we will be using the GPU. This will let us conduct many tensor operations in parallel much more effectively. We can do this as follows.

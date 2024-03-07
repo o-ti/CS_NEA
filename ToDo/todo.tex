@@ -162,7 +162,7 @@
 \end{center}
 
 \clearpage
-\subsection{Development Checklist}
+\subsection{Documentation Checklist}
 
 \begin{center}
 \begin{longtable}{|p{2.5cm}|p{3.5cm}|p{4.8cm}|p{2.7cm}|}
@@ -170,85 +170,86 @@
     File & Class & Method & Documented?\\
     \hline
     \hline
-    \mintinline{py}{block.py} & \mintinline{py}{Block} & \mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{render()} & No\\
-    & & \mintinline{py}{getCorners()} & Yes\\
+    \m{block.py} & \m{Block} & \m{__init__(self)} & Yes\\
+    & & \m{render()} & Yes\\
+    & & \m{getCorners()} & Yes\\
     \hline
     \hline
-    \mintinline{py}{database.py} & \mintinline{py}{DatabaseHandler} & \mintinline{py}{SetupConnection()} & No\\
-    & & \mintinline{py}{CloseConnection()} & No\\
-    & & \mintinline{py}{CreateAccount()} & No\\
-    & & \mintinline{py}{UpdateAccount()} & No\\
-    & & \mintinline{py}{AuthenticateAccount()} & No\\
+    \m{database.py} & \m{DatabaseHandler} & \m{SetupConnection()} & Yes\\
+    & & \m{CloseConnection()} & Yes\\
+    & & \m{CreateAccount()} & Yes\\
+    & & \m{UpdateAccount()} & Yes\\
+    & & \m{AuthenticateAccount()} & No\\
     \hline
     \hline
-    \mintinline{py}{game.py} & \mintinline{py}{Game} &\mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{run()} & No\\
+    \m{game.py} & \m{Game} &\m{__init__(self)} & Yes\\
+    & & \m{run()} & Yes\\
     \hline
-    & \mintinline{py}{GameLoop} & \mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{checkHit()} & No\\
-    & & \mintinline{py}{run()} & No\\
-    \hline
-    \hline
-    \mintinline{py}{main.py} & - & - & No\\
+    & \m{GameLoop} & \m{__init__(self)} & No\\
+    & & \m{checkHit()} & No\\
+    & & \m{run()} & No\\
     \hline
     \hline
-    \mintinline{py}{player.py} & \mintinline{py}{Player} & \mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{movePlayer()} & Yes\\
-    & & \mintinline{py}{dash()} & No\\
-    & & \mintinline{py}{fire()} & No\\
-    & & \mintinline{py}{updatePlayerState()} & No\\
-    & & \mintinline{py}{render()} & No\\
+    \m{main.py} & - & - & Yes\\
     \hline
     \hline
-    \mintinline{py}{utils.py} & \mintinline{py}{Utility} & \mintinline{py}{dot()} & Yes\\
-    & & \mintinline{py}{vecSub()} & Yes\\
-    & & \mintinline{py}{vecAdd()} & Yes\\
-    & & \mintinline{py}{mult()} & No\\
-    & & \mintinline{py}{lineLineCollision()} & Yes\\
-    & & \mintinline{py}{lineRectCollision()} & Yes\\
-    & & \mintinline{py}{lineCircleCollision()} & Yes\\
-    & & \mintinline{py}{circleRectCollision()} & No\\
-    & & \mintinline{py}{circleCircleCollision()} & No\\
-    & & \mintinline{py}{checkCircleInRange()} & No\\
-    & & \mintinline{py}{checkBlockInRange()} & No\\
-    & & \mintinline{py}{rotateVector()} & No\\
-    & & \mintinline{py}{convertToScreen()} & No\\
+    \m{player.py} & \m{Player} & \m{__init__(self)} & No\\
+    & & \m{movePlayer()} & Yes\\
+    & & \m{dash()} & No\\
+    & & \m{fire()} & No\\
+    & & \m{updatePlayerState()} & No\\
+    & & \m{render()} & No\\
     \hline
     \hline
-    \mintinline{py}{weapon.py} & \mintinline{py}{Weapon} & \mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{fire()} & No\\
+    \m{utils.py} & \m{Utility} & \m{dot()} & Yes\\
+    & & \m{vecSub()} & Yes\\
+    & & \m{vecAdd()} & Yes\\
+    & & \m{mult()} & No\\
+    & & \m{lineLineCollision()} & Yes\\
+    & & \m{lineRectCollision()} & Yes\\
+    & & \m{lineCircleCollision()} & Yes\\
+    & & \m{circleRectCollision()} & No\\
+    & & \m{circleCircleCollision()} & No\\
+    & & \m{checkCircleInRange()} & No\\
+    & & \m{checkBlockInRange()} & No\\
+    & & \m{rotateVector()} & Yes\\
+    & & \m{convertToScreen()} & Yes\\
     \hline
-    & \mintinline{py}{AssaultRifle} & \mintinline{py}{__init__(self)} & No\\
     \hline
-    & \mintinline{py}{SniperRifle} & \mintinline{py}{__init__self()} & No\\
+    \m{weapon.py} & \m{Weapon} & \m{__init__(self)} & Yes\\
+    & & \m{fire()} & Review\\
     \hline
-    & \mintinline{py}{Shotgun} & \mintinline{py}{__init__self()} & No\\
+    & \m{AssaultRifle} & \m{__init__(self)} & Yes\\
+    \hline
+    & \m{SniperRifle} & \m{__init__(self)} & Yes\\
+    \hline
+    & \m{Shotgun} & \m{__init__(self)} & No\\
     \hline
     \hline
-    \mintinline{py}{menu.py} & \mintinline{py}{GameStateManager} & \mintinline{py}{__init__(self)} & No\\
-    & & \mintinline{py}{getState()} & No\\
-    & & \mintinline{py}{setState()} & No\\
+    \m{menu.py} & \m{GameStateManager} & \m{__init__(self)} & Yes\\
+    & & \m{getState()} & Yes\\
+    & & \m{setState()} & Yes\\
     \hline
 \end{longtable}
 \end{center}
 
 \clearpage
+\subsection{Development Checklist}
 \begin{center}
 \begin{longtable}{|p{5cm}|p{5cm}|p{3cm}|}
     \hline
     Function & Time to Completion & Done?\\
     \hline
     \hline
-    \mintinline{py}{dash()} & 15 minutes & Yes\\
+    \m{dash()} & 15 minutes & Yes\\
     \hline
-    \mintinline{py}{updatePlayerState()} & 30 minutes & No\\
+    \m{updatePlayerState()} & 30 minutes & No\\
     \hline
-    \mintinline{py}{circleRectCollision()} & 15 minutes & No\\
+    \m{circleRectCollision()} & 15 minutes & No\\
     \hline
-    \mintinline{py}{collisionHandling()} & 45 minutes & No\\
+    \m{collisionHandling()} & 45 minutes & No\\
     \hline
-    \mintinline{py}{run()} & 45 minutes & Yes\\
+    \m{run()} & 45 minutes & Yes\\
     \hline
 \end{longtable}
 \end{center}

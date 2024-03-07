@@ -264,7 +264,7 @@ Additionally, during training, the rendering can be disabled, and the frame rate
 Furthermore, we will use a technique known as self-play. This is relevant since this is a competitive / co-operative game, we will put two separate versions of the model against each other. This will allow the model to play against "players" of it's own strength, and will produce better training results. Additionally, we don't have any ready-made players to play against, so this is our only option. We will initialise the model with random values to begin with, and will train it against itself in the first iteration. After this, we will
 
 \vs
-The first thing we need to in order to train the AI is to create an environment in order to train it. We will be using the \mintinline{py}{gym} wrapper to do this. This provides a strictly defined way of stating the game, using observation spaces, action spaces and rewards.
+The first thing we need to in order to train the AI is to create an environment in order to train it. We will be using the \m{gym} wrapper to do this. This provides a strictly defined way of stating the game, using observation spaces, action spaces and rewards.
 
 \vs
 The observation space is the things which each agent can see. In the design section, we mentioned that each agent will have spokes which go out from the centre of the player. This will let the agents see the environment around them in a limited way.
@@ -309,7 +309,7 @@ We will first look at line-to-line collisions, since they underpin a large propo
 \end{align*}
 
 \vs
-We have arrived at a series of simulataneous equations. These can be easily solved with the \mintinline{py}{np.linalg.solve()} in NumPy, which means we don't have to solve it ourselves. However, this does have one restriction that the equations must be linearly indepenent. This just means that we need to check before hand what the determinant of the matrix is.
+We have arrived at a series of simulataneous equations. These can be easily solved with the \m{np.linalg.solve()} in NumPy, which means we don't have to solve it ourselves. However, this does have one restriction that the equations must be linearly indepenent. This just means that we need to check before hand what the determinant of the matrix is.
 
 \vs
 
@@ -317,7 +317,7 @@ We also need to implement some more methods that are really important to the gam
 
 
 \vs
-Furthermore, we need to have methods for collisions which we will be doing repeatedly throughout the game, and so this is best abstracted into the \mintinline{py}{Utility} class such that we can worry about other implementation details instead of re-coding the same methods over and over again.
+Furthermore, we need to have methods for collisions which we will be doing repeatedly throughout the game, and so this is best abstracted into the \m{Utility} class such that we can worry about other implementation details instead of re-coding the same methods over and over again.
 
 \tbc
 
