@@ -40,7 +40,7 @@ class GameStateManager:
 
 \vs
 
-We can try and set and get states from the \mintinline{py}{GameStateManager} as follows.
+We can try and set and get states from the \m{GameStateManager} as follows.
 
 \vs
 \begin{minted}[breaklines]{python}
@@ -168,13 +168,13 @@ We will also write a rendering function, in order to remove this from the game l
   #Renders the character to the display of the player
   def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
     #Add code to not render if outside frame
-    pygame.gfxdraw.aacircle(display, self.colour, U.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.radius)
+    pygame.draw.circle(display, self.colour, self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.radius)
     for_pos = [self.position[i] + 100*self.forward_vec[i] for i in range(2)]
-    pygame.draw.aaline(display, (100, 0, 0), U.convertToScreen(camera_position, self.position, SCREEN_DIMS), U.convertToScreen(camera_position, for_pos, SCREEN_DIMS))
+    pygame.draw.aaline(display, (100, 0, 0), self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.convertToScreen(camera_position, for_pos, SCREEN_DIMS))
     self.move_player(directions, self.forward_vec, dt)
 \end{minted}
 
-The player is rendered as just a circle for now, maybe later to be replaced with something else. The \mintinline{py}{pygame.draw} methods are from the documentation, and we convert the position to 
+The player is rendered as just a circle for now, maybe later to be replaced with something else. The \m{pygame.draw} methods are from the documentation, and we convert the position to the screen position so that the player remains stationary relative to the screen and everything else moves relative to them. This will ensure a more intuitive game experience.
 
 \subsection{\textcolor{blue}{Database Handling}}
 
@@ -194,7 +194,8 @@ class DatabaseHandler:
     self.connection.close()
 \end{minted}
 \vs
-We will also define two more methods on our class, which are \mintinline{python}{CreateAccount()}, and \mintinline{python}{UpdateAccount()}, which are pretty self-explanatory. We want to be able to maintain referential integrity and atomicity, so for that reason only commit once all of the instructions that need to be commited have been passed to the cursor. This is important because it means that if there is an issue in one of the statements, then we don't break referential integrity across the database.
+We will also define two more methods on our class, which are \mintinline{python}{CreateAccount()}, and \mintinline{python}{UpdateAccount()}, which are pretty self-explanatory. We want to be able to maintain referential integrity and atomicity, so for that reason only commit once all of the instructions that need to be commited have been passed to the cursor. This is important because it means that if there is an issue in one of the statements, then we don't break referential integrity across the database. There is no way to really check that these commands work, so we will just have to use them in the next commands ensure that they work there. There are no inputs from this, so we can't really "break" these functions anyway.
+
 \vs
 \begin{minted}[breaklines, tabsize=2]{python}
   def CreateAccount(self, PlayerID, Email, Password):
@@ -226,7 +227,49 @@ We will also define two more methods on our class, which are \mintinline{python}
 
 \end{minted}
 \vs
-In the \mintinline{python}{UpdateAccount()} method, we have simply taken the change in PlayerXP and whether the Match was won or not. This is helpful because it reduces the number of calls we need to make. This is because, we know that if we are calling this method, we have just completed another game, and so the number of matches played must increase by one, and whether the match was won or not is simply just a one or a zero. This means we don't need to find this information from the database using a query before inserting it back. This also reduces the chance of some error happening during this transition, and reduces the time taken. 
+In the \mintinline{python}{UpdateAccount()} method, we have simply taken the change in PlayerXP and whether the Match was won or not. This is helpful because it reduces the number of calls we need to make. This is because, we know that if we are calling this method, we have just completed another game, and so the number of matches played must increase by one, and whether the match was won or not is simply just a one or a zero. This means we don't need to find this information from the database using a query before inserting it back. This also reduces the chance of some error happening during this transition, and reduces the time taken.
+\vs
+
+We will now test these functions to make sure that they work and that we can succesfully link to the database. To ensure that this happens, we first need to create a database. This will follow the specification laid out in the design section. We will be using SQLite3 here, since it is a lightweight framework to use instead of a more concrete SQL package which would take a significant amount of work to setup.
+
+\vs
+We can test it as follows. We will use the functions to create and update an account, and then use another function to get this data back. We will now construct the function to get the user information. This will also be useful when constructing the leaderboard. We will first use \m{fstring} in order to format the strings in a concise and quick manner. This is shown as below.
+
+\vs
+\begin{minted}[breaklines, tabsize=2]{py}
+>>> PlayerID = "Ojas"
+>>> f"SELECT * WHERE PlayerID = '{PlayerID}'"
+"SELECT * WHERE PlayerID = 'Ojas'"
+\end{minted}
+
+\vs
+This is used as follows. For now, this will just return the data from one table, but we can expand it to give back the data from all of our tables. We can return the information as a dictionary which will make the data more processable and easier to work with.
+
+\vs
+\begin{minted}[breaklines, tabsize=2]{py}
+  def fetchUserInfo(self, PlayerID):
+    self.SetupConnection()
+
+    userInfo = {'PlayerID': PlayerID}
+
+    result = self.cursor.execute(f"SELECT * FROM Player WHERE PlayerID = '{PlayerID}'")
+
+    userInfo['email'] = result[1]
+    userInfo['password'] = result[2]
+
+    return userInfo
+\end{minted}
+
+We will now insert the following data into our database using the \m{CreateAccount()} method. We will then use the method above to get more data back.
+
+\begin{minted}[tabsize=2, breaklines]{py}
+>>> dbh = DatabaseHandler()
+>>> DatabaseHandler.CreateAccount("ojas_tiwari", "tiwariojas@gmail.com", "HelloAgain")
+>>> dbh.fetchUserInfo("ojas_tiwari")
+{'PlayerID': 'ojas_tiwari', 'email': 'tiwariojas@gmail.com', 'password': 'HelloAgain'}
+\end{minted}
+
+This proves that our connection works, and that we can create accounts and fetch some user information. We will add to the \m{fetchUserInfo()} method when we need more information on the player.
 \vs
 
 
@@ -255,7 +298,7 @@ We have used a guard clause in order to decrease the amount of code written.
 
 \subsection{\textcolor{blue}{Utilities}}
 
-We need to be able to do many vector operations quickly without having to re-write the code consistently. This also allows us to more easily test all of these methods and ensure that they are working properly. We need to be certain that they are accurate and are providing reproducible results. To that extent, we will define a new class \mintinline{py}{Utility} which will handle all of these calls. A lot of these vector calculations are quite complicated so to that end they have been referenced from other resources and have been listed in this document. I have put this towards the start of the development section since, lots of other things rely on this, and it was essential to getting the rest of the code to work.
+We need to be able to do many vector operations quickly without having to re-write the code consistently. This also allows us to more easily test all of these methods and ensure that they are working properly. We need to be certain that they are accurate and are providing reproducible results. To that extent, we will define a new class \m{Utility} which will handle all of these calls. A lot of these vector calculations are quite complicated so to that end they have been referenced from other resources and have been listed in this document. I have put this towards the start of the development section since, lots of other things rely on this, and it was essential to getting the rest of the code to work.
 
 \vs
 We begin by defining our class.
@@ -275,7 +318,7 @@ The first method we have implemented is the dot product. For geometric vectors t
 \begin{align*}
   \vec{a} \cdot \vec{b} &= \sum_i a_i b_i\\
 \end{align*}
-Where $a_i$ refers to the $i$-th element of $\vec{a}$. Then, in Python, we can use the \mintinline{py}{zip()} function in order to get a list of tuples of corresponding elements, as shown below.
+Where $a_i$ refers to the $i$-th element of $\vec{a}$. Then, in Python, we can use the \m{zip()} function in order to get a list of tuples of corresponding elements, as shown below.
 \begin{minted}[tabsize=2]{py}
 for i in zip([1, 2, 3], [4, 5, 6]):
   print(i)
@@ -298,14 +341,14 @@ print(dottedVals)
 \end{minted}
 
 \vs
-Finally, we need to take the sum of all of these, which we can do using \mintinline{py}{sum()}. This finally gives us the following.
+Finally, we need to take the sum of all of these, which we can do using \m{sum()}. This finally gives us the following.
 
 \begin{minted}{py}
 sum(dottedValues)
 
 >>> 32
 \end{minted}
-However, we can condense this code slightly, by using list comprehension. We can rewrite \mintinline{py}{dottedVals} as follows, and can then just remove it all together.
+However, we can condense this code slightly, by using list comprehension. We can rewrite \m{dottedVals} as follows, and can then just remove it all together.
 
 \vs
 \begin{minted}{py}
@@ -313,7 +356,7 @@ dotProdut = sum([i * j for i, j in zip(a, b)])
 \end{minted}
 
 \vs
-We can test this out using two dummy arrays. I also don't want to create instances of the \mintinline{py}{Utility} class as this will occupy even more memory.
+We can test this out using two dummy arrays. I also don't want to create instances of the \m{Utility} class as this will occupy even more memory.
 
 \begin{minted}{py}
 >>> a, b = [1, 2, 3], [4, 5, 6]
@@ -322,17 +365,17 @@ TypeError: Utility.dot() missing 1 required positional argument: 'b'
 \end{minted}
 \vs
 
-In order to solve this, there are two approaches. Firstly, we could just create an instance of the \mintinline{py}{Utility} class, and then call the function. However, we do not want to do this because this would occupy a lot more memory.
+In order to solve this, there are two approaches. Firstly, we could just create an instance of the \m{Utility} class, and then call the function. However, we do not want to do this because this would occupy a lot more memory.
 
 \vs
-The other alternative is to use the \mintinline{py}{@staticmethod} decorator and to remove \mintinline{py}{self} parameter from the function definition. The code then works as expected.
+The other alternative is to use the \m{@staticmethod} decorator and to remove \m{self} parameter from the function definition. The code then works as expected.
 
 \begin{minted}{py}
 >>> Utility.dot([1, 2, 3], [4, 5, 6])
 
 32
 \end{minted}
-Finally, I also considered using the library \mintinline{py}{NumPy} to do the dot product as it is already implemented. To decide which one to use, I decided to test it out by looking at how long it took to dot product lots of arrays. Since all of my vectors are 2D, they will only have 2 elements, and so that is what I used here.
+Finally, I also considered using the library \m{NumPy} to do the dot product as it is already implemented. To decide which one to use, I decided to test it out by looking at how long it took to dot product lots of arrays. Since all of my vectors are 2D, they will only have 2 elements, and so that is what I used here.
 
 \vs
 \begin{minted}[tabsize=2]{py}
@@ -365,7 +408,7 @@ for i in range(10000):
 print("Raw Python:", (time.time() - time3))
 \end{minted}
 \vs
-Looking at the results, we see that the raw Python implementation is much faster than the \mintinline{py}{NumPy} implementation. This is likely due to the fact that \mintinline{py}{NumPy} needs to convert lists into \mintinline{py}{NumPy} arrays in order to be able to compute the dot product.
+Looking at the results, we see that the raw Python implementation is much faster than the \m{NumPy} implementation. This is likely due to the fact that \m{NumPy} needs to convert lists into \m{NumPy} arrays in order to be able to compute the dot product.
 
 \begin{minted}{py}
 NumPy: 0.3286013603210449
@@ -519,7 +562,7 @@ After this we can compute the determinant and if it is not 0, we can find the so
     return [False, None]
 \end{minted}
 
-We can also edit this code to make it more readable by using a guard clause. Since we are returning if the determinant is 0, no other code after it will return if this condition is meant. Therefore, we can see that we don't need the \mintinline{py}{else} statement at all, and can instead dedent the code block there.
+We can also edit this code to make it more readable by using a guard clause. Since we are returning if the determinant is 0, no other code after it will return if this condition is meant. Therefore, we can see that we don't need the \m{else} statement at all, and can instead dedent the code block there.
 
 \begin{minted}[tabsize=2]{py}
   #det = 0 -> Can't be solved
@@ -556,7 +599,7 @@ This quite significant which means that we can do a lot of timesteps in one seco
 
 \vs
 
-The next thing we will be implementing is the line-rectangle collision. We can decompose each rectangle into 4 lines between adjacent corners. Therefore, we need to create a method to get the corners of a rectangle. Therefore, we will create a new method in the \mintinline{py}{Block} class to get the corners.
+The next thing we will be implementing is the line-rectangle collision. We can decompose each rectangle into 4 lines between adjacent corners. Therefore, we need to create a method to get the corners of a rectangle. Therefore, we will create a new method in the \m{Block} class to get the corners.
 
 \vs
 \begin{minted}[breaklines, tabsize=2]{py}
@@ -631,7 +674,7 @@ The next thing we need, is to find the collision which is the closest to the fir
 \end{minted}
 
 \vs
-We set \mintinline{py}{t_val} to be $3$ since the result of the collision must be between 0 and 1, and so this will be well outside of the range anyway. This also means that we can check if we ever updated the minimum collision distance.
+We set \m{t_val} to be $3$ since the result of the collision must be between 0 and 1, and so this will be well outside of the range anyway. This also means that we can check if we ever updated the minimum collision distance.
 
 \vs
 \begin{minted}[tabsize=2]{py}
@@ -664,7 +707,7 @@ We also need to define the method for converting a world position to a screen po
 \end{minted}
 
 \vs
-We have used list comprehension to compress our statements, since this is more efficient than using a for loop (from \cite{listcomp}), since they do not have an overhead in producing a for loop, and therefore, we have used this throughout the project. This means that we can now easily and efficiently call all of these functions and due to the stateless nature of the \mintinline{py}{Utility} class we don't need to worry about creating and deleting many instances, and this is also more efficient to do in Python, which has been a concern throughout the project, since we will be removing the render functions and will be using the game loop to do the training of the game. Therefore, every aspect of the game must be optimised to a reasonable extent in order to allow for more samples in a given period of time. As a result of this we will be removing the \mintinline{py}{convertToScreen} method from the \mintinline{py}{Player} class since it is no longer needed since we have already globalised its implementation to the \mintinline{py}{Utility} class.
+We have used list comprehension to compress our statements, since this is more efficient than using a for loop (from \cite{listcomp}), since they do not have an overhead in producing a for loop, and therefore, we have used this throughout the project. This means that we can now easily and efficiently call all of these functions and due to the stateless nature of the \m{Utility} class we don't need to worry about creating and deleting many instances, and this is also more efficient to do in Python, which has been a concern throughout the project, since we will be removing the render functions and will be using the game loop to do the training of the game. Therefore, every aspect of the game must be optimised to a reasonable extent in order to allow for more samples in a given period of time. As a result of this we will be removing the \m{convertToScreen} method from the \m{Player} class since it is no longer needed since we have already globalised its implementation to the \m{Utility} class.
 
 Another method that we should implement since this is very commonly used is the scalar multiple of a vector. For this, we need two inputs, one is a vector and another is a scalar by which we need to multiply the vector by. This is done by list comprehension again.
 
@@ -706,7 +749,7 @@ This can then be converted into code as follows.
     return rotatedVec
 \end{minted}
 
-The \mintinline{py}{sin()} and \mintinline{py}{cos()} functions are from the \mintinline{py}{math} library which was imported at the start of the file. We can test this function as follows.
+The \m{sin()} and \m{cos()} functions are from the \m{math} library which was imported at the start of the file. We can test this function as follows.
 
 \begin{minted}{py}
 >>> Utility.rotateVector([1, 0], math.pi/4)
@@ -772,7 +815,7 @@ Therefore, our player will need to pass the position and direction from the \min
 We will take firing as being a Boolean, either 0 or 1. This will be whether we are currently firing the weapon or not, and will be taken from a mouse input. Furthermore, we will take the direction that the mouse is pointing in to be the direction of the player. $t$ must greater than 0, because this will allow us to trace the ray as it progress forward from the player, since it wouldn't make sense for it to move behind the player.
 \vs
 
-We also need to create attributes for the number of rays per shot as well as the angle of the rays as they spread out. For example, for a sniper, there is only ray produced and it doesn't deviate from the direction vector. To add this randomness, we can generate a random angle between 0 and the maximum limit according to a normal distribution or a uniform distribution, and then rotate the direction vector around each time. This will return an array of rays, which can then be passed on. Hence, for all fire functions, we will be returning an array which is iterated over. We also add a spread factor which is a boolean and will tell the \mintinline{py}{fire()} method whether to include a spread or not.
+We also need to create attributes for the number of rays per shot as well as the angle of the rays as they spread out. For example, for a sniper, there is only ray produced and it doesn't deviate from the direction vector. To add this randomness, we can generate a random angle between 0 and the maximum limit according to a normal distribution or a uniform distribution, and then rotate the direction vector around each time. This will return an array of rays, which can then be passed on. Hence, for all fire functions, we will be returning an array which is iterated over. We also add a spread factor which is a boolean and will tell the \m{fire()} method whether to include a spread or not.
 \vs
 
 
@@ -803,10 +846,10 @@ The rays will be randomly spread out. We can do this as follows.
 We will now explain each bit of this code. We first create an array of rays, since there will be weapons which produces multiple rays. We also have the direction vector of the player, but this is not necessarily normalised, so for that reason, we will be normalising it first using the dot product and the scalar multiple of 1 over the magnitude. This is essential, since if the direction vector is not normalised the length of the ray will be longer than the actual ray which should occur. We then create a for loop for the number of rays that we want to produce, and then append these rays into the array.
 
 \vs
-We can produce these rays by first generating the angle that we want the ray to be deflected by, and then, rotating the vector by the amount that we want. The next step is to find the final position of the ray, which we can do with \mintinline{py}{U.vecAdd()} with the player position and the rotated direction vector.
+We can produce these rays by first generating the angle that we want the ray to be deflected by, and then, rotating the vector by the amount that we want. The next step is to find the final position of the ray, which we can do with \m{U.vecAdd()} with the player position and the rotated direction vector.
 
 \vs
-We will create multiple weapons to create interactivity as mentioned before, and we can do this simply by editing the \mintinline{py}{__init__(self)} for each class as follows.
+We will create multiple weapons to create interactivity as mentioned before, and we can do this simply by editing the \m{__init__(self)} for each class as follows.
 
 \begin{minted}[tabsize=2]{py}
 #Automatic weapon, good at mid range
@@ -842,7 +885,7 @@ class Shotgun(Weapon):
 
 \subsection{\textcolor{blue}{Block}}
 
-We need to implement the \mintinline{py}{Block} class in order to add more interactivity with the game.
+We need to implement the \m{Block} class in order to add more interactivity with the game.
 
 \begin{minted}{py}
 import pygame
@@ -1005,10 +1048,41 @@ Now, we will define the main loop which will be running our game. This will cont
       dt = self.clock.tick(self.REFRESH_RATE)/1000
 \end{minted}
 \vs
-This will let us accept the new return values from the game, and input the previous ones into the new state and run it. Each state will have it's own \mintinline{python}{while} loop which will allow it to run some code. We will now demonstrate that this works, by putting some text on each menu object, and then passing commands to each of these to update the state. This works as follows.
+This will let us accept the new return values from the game, and input the previous ones into the new state and run it. Each state will have it's own \mintinline{python}{while} loop which will allow it to run some code. 
 
 \vs
-We will take the start menu and the login menu to begin with. Each one of these classes will have some text on the screen. We will create the Start Menu first, and then we can show that we can move between them, thus proving that the \mintinline{py}{Game} class works at switching between different states. The first thing we will do is import \mintinline{py}{pygame.FreeType} at the start of \mintinline{py}{menu.py}. We will also create our font object here.
+Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
+\vs
+\begin{minted}[breaklines]{python}
+import pygame
+from pygame.locals import *
+import sys
+
+#Import Game class
+from game import Game
+
+#Global settings
+REFRESH_RATE = 240
+HEIGHT = 900
+WIDTH = 1600
+
+#Game class
+g = Game(WIDTH, HEIGHT, REFRESH_RATE)
+
+#Run the game
+g.run()
+\end{minted}
+
+This will import the \m{Game} class and will create an instance, and run the game. What this means is that we can now draw things on the screen and run the code as one complete system. This simplifies iterative testing a lot. For now, we will take two menus, and just draw them as being different colours and switch between them to prove that the main game works.
+
+\vs
+We will create two classes, \m{MenuA} and \m{MenuB}. \m{MenuA} will be shaded in blue and \m{MenuB} will be in red. This will help to distinguish between the two. If we are in \m{MenuA} and we press the down key, we will move to \m{MenuB}, and if we are in \m{MenuB} and we press the up key, we want to move to \m{MenuA}. This can be done as follows.
+
+\vs
+We will now demonstrate that this works, by putting some text on each menu object, and then passing commands to each of these to update the state. This works as follows.
+
+\vs
+We will take the start menu and the login menu to begin with. Each one of these classes will have some text on the screen. We will create the Start Menu first, and then we can show that we can move between them, thus proving that the \m{Game} class works at switching between different states. The first thing we will do is import \m{pygame.FreeType} at the start of \m{menu.py}. We will also create our font object here.
 
 \begin{minted}[breaklines, tabsize=2]{py}
 import pygame.freetype
@@ -1021,62 +1095,81 @@ text_font = pygame.freetype.SysFont('iosevka', 64)
 \end{minted}
 
 \vs
-After this, we need to create our \mintinline{py}{Start} class, which is done as follows. We create our constructor as follows. We need to set our display 
+After this, we need to create our \m{Start} class, which is done as follows. We create our constructor as follows. We need to set our display 
 
 \begin{minted}[breaklines, tabsize=2]{py}
 #Directed from the login page
 class Start:
     def __init__(self, display, gameStateManager):
+        #Set the display on which we are rendering
         self.display = display
+        
+        #Set the gsm
         self.gameStateManager = gameStateManager
+
+        #Set screen dims
         self.SCREEN_DIMS = gameStateManager.SCREEN_DIMS
+
+        #Set bg color
         self.BG_COLOR = (0, 255, 255)
 \end{minted}
 
 \vs
-The next part of the code is the running of the menu itself. Here, we will be filling the display with a certain colour, and then writing some text onto it. We set the bounding rectangle to have a centre at the centre of the screen, so that we can align the text nicely. We then check to see if the user wants to quit the game and if not, we repeat the loop until they do.
-This code was partially constructed with help from \href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{this link}.
+The next part of the code is the running of the menu itself. Here, we will be filling the display with a certain colour, and then writing some text onto it. We set the bounding rectangle to have a centre at the centre of the screen, so that we can align the text nicely. We then check to see if the user wants to quit the game and if not, we repeat the loop until they do. This code was partially constructed with help from \href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{this link}.
+
+\vs
 \begin{minted}[breaklines, tabsize=2]{py}
-    def run(self, returnValues):
+  def run(self, returnValues):
 
-        #Fill the display with the BG_COLOR
-        self.display.fill(self.BG_COLOR)
+    #Fill display
+    self.display.fill(self.BG_COLOR)
 
-        #Create the for loop
-        running = True
+    #Create clock
+    self.clock = pygame.time.Clock()
+    dt = 0
 
-        while running:
+    #Initialise variables
+    inPos = False
+    running = True
+    clicked = False
 
-            #Create the text and the bouding rectangle
-            text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+    #Main loop
+    while running:
 
-            #Set the center of the rectangle to be the centre of the screen
-            text_rect.center = (self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2)
+      #Redraw display
+      self.display.fill(self.BG_COLOR)
 
-            #Blit to screen
-            self.display.blit(text_surface, text_rect)
+      #Render text
+      text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+      text_rect.center = (self.SCREEN_DIMS[0] // 2, self.SCREEN_DIMS[1] // 2)
 
-            # Get all events
-            events = pygame.event.get()
+      #Blit to surface
+      self.display.blit(text_surface, text_rect)
 
-            # Get all key presses
-            keys = pygame.key.get_pressed()
+      # Get all events
+      events = pygame.event.get()
 
-            # Check if user wants to quit
-            for event in events:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+      # Get all key presses
+      keys = pygame.key.get_pressed()
+      
+      for event in events:
 
-            #Update the display
-            pygame.display.update()
+          # Check if user wants to quit
+          if event.type == pygame.QUIT:
+              pygame.quit()
+              sys.exit()
 
-        #Give back the return values
-        return returnValues
+      #Update the display
+      pygame.display.update()
+
+      #Tick the clock
+      dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
+        
+    return returnValues
 \end{minted}
 
 \vs
-We also need to change the initial value of the game state manager's state from \mintinline{py}{'game_loop'} to \mintinline{py}{'start'}. Having done this, we get the following image (Figure \ref{start_menu}) on the screen.
+We also need to change the initial value of the game state manager's state from \m{'game_loop'} to \m{'start'}. Having done this, we get the following image (Figure \ref{start_menu}) on the screen.
 
 \begin{figure}[H]
     \centering
@@ -1084,7 +1177,7 @@ We also need to change the initial value of the game state manager's state from 
     \caption{An image capture of the start menu screen so far}
     \label{fig:start_menu}
 \end{figure}
-We can now take inputs from the keyboard and assign actions to them. Specifically, if the user presses a certain button we want to change the state of the \mintinline{py}{GameStateManager} using the setter method and then we want to set the inner loop to stop running so that we can go back to the outer loop and join the new state.
+We can now take inputs from the keyboard and assign actions to them. Specifically, if the user presses a certain button we want to change the state of the \m{GameStateManager} using the setter method and then we want to set the inner loop to stop running so that we can go back to the outer loop and join the new state.
 
 \vs
 We will assign the up arrow to be the keyboard event to change the state. This is done as follows.
@@ -1095,27 +1188,71 @@ We will assign the up arrow to be the keyboard event to change the state. This i
           running = False
 \end{minted}
 
-This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later.
+This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later. We will now show a video demonstrating this in action, although the keyboard inputs are not visible. The only input I gave to the system was an upwards arrow key input.
+
+\vs
+{\huge \textcolor{red}{INSERT VIDEO LINK HERE}}
 
 
 
 \subsection{\textcolor{red}{Button}}
 
-We will be implementing a \mintinline{py}{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \mintinline{py}{Block} class, since this already implements some important features. Additionally, the \mintinline{py}{Rect} class in \mintinline{py}{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
+We will be implementing a \m{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \m{Block} class, since this already implements some important features. Additionally, the \m{Rect} class in \m{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
 
 \begin{minted}[breaklines, tabsize=2]{py}
-  
+class Button(Block):
+
+  def __init__(self, centre, length0, length2, colour, SCREEN_DIMS, text, bg_color):
+    
+    #Middle of the screen
+    camera_position = U.mult(SCREEN_DIMS, 0.5)
+
+    #Position as an integer
+    camera_position = [int(i) for i in camera_position]
+
+    #Initiate the block class in the 
+    super(Button, self).__init__(centre, length0, length2, colour, SCREEN_DIMS, camera_position)
+
+    #Set the bg color
+    self.BG_COLOR = bg_color
+
+    #Set the text surface and rect to write on
+    self.text_surface, self.text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+
+    #Set the centre of the button on the screen
+    self.text_rect.center = self.centre
+
+    #Set screen dims for rendering
+    self.SCREEN_DIMS = SCREEN_DIMS
 \end{minted}
+
+We set the camera position to be in the middle of the screen, which means that we don't need to adjust our render functions, and we can just use this as our camera position, since we won't be moving anyway.
 
 \vs
 We will now write the render function as follows.
 
 \begin{minted}[breaklines, tabsize=2]{py}
 
+  #Modified render function of the button
+  def render(self, display, dt):
+
+    #Render the rectange
+    super().render(display, U.mult(self.SCREEN_DIMS, 0.5), [0, 0], dt, self.SCREEN_DIMS)
+
+    #Render the text on top
+    display.blit(self.text_surface, self.text_rect)
 \end{minted}
 
+\href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{This was an important link, and we need to reference it}. We will now change the \m{Start} menu class to make use of this new button. We begin by adding the following lines to the constructor.
+
 \vs
-We can use this in the code as follows.
+\begin{minted}[tabsize=2, breaklines]{py}
+    #Create button instance to use
+    self.button = Button(U.mult(self.SCREEN_DIMS, 0.5), 350, 80, self.BG_COLOR, self.SCREEN_DIMS, "hello", self.BG_COLOR)
+\end{minted}
+
+This ensures that we can now use the button object inside of the main loop. However, as of right now, it doesn't have any functionality, so we will implement a click function which will tell us when the mouse cursor is over the button. We can then find when the mouse button is clicked and if both conditions are met then the button has been clicked. In the \m{Button} class we can add a new function \m{}
+
 
 \subsection{\textcolor{blue}{Game Loop}}
 
@@ -1152,7 +1289,7 @@ We also need to initialise a new clock and set \mintinline{python}{dt} in order 
     self.REFRESH_RATE = self.gameStateManager.REFRESH_RATE
 \end{minted}
 \vs
-We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \mintinline{py}{run()} function that will be called everytime we are changing states. 
+We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \m{run()} function that will be called everytime we are changing states. 
 \begin{minted}[breaklines, tabsize=2]{py}
   def run(self, returnValues):
     #Delta T is kept for frame-rate independent physics
@@ -1199,25 +1336,7 @@ We need to create an actual game loop. Specifically, we need to contain this gam
       dt = self.clock.tick(self.REFRESH_RATE)/1000
 \end{minted}
 
-We still need to find some way to render the player which will do in the rendering section. Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
-\vs
-\begin{minted}[breaklines]{python}
-#Import Game class
-from game import Game
-
-#Global settings
-REFRESH_RATE = 200
-HEIGHT = 900
-WIDTH = 1600
-
-#Game class
-g = Game(WIDTH, HEIGHT, REFRESH_RATE)
-
-#Run the game
-g.run()
-\end{minted}
-
-This will import the \mintinline{python}{Game} class and will create an instance, and run the game. We also need things to draw on the screen. We will now implement the render function on the \mintinline{py}{Player} class, and we will create a \mintinline{py}{Block} class, since this will allow us to more easily manipulate them relative to the screen.
+We still need to find some way to render the player which will do in the rendering section. 
 
 
 
