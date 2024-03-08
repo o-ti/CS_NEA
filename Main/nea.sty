@@ -3,9 +3,9 @@
 \usepackage{amsmath, amssymb, enumitem, tikz, wrapfig, float, longtable, microtype, sectsty}
 \renewcommand{\arraystretch}{1.6}
 \usepackage[outputdir=./]{minted}
-%\begin{minted}{py}
+%\begin{mp}
 %print("Hello World!")
-%\end{minted}
+%\end{mp}
 \setlength{\parindent}{0pt}
 
 \usepackage{caption}
@@ -78,3 +78,5 @@
 \newcommand{\vs}{\vspace{11pt}}
 
 \newcommand{\m}[1]{\mintinline{py}{#1}}
+
+\newminted[mp]{py}{tabsize=2, breaklines}
