@@ -5,7 +5,7 @@ Now that we have all of the constituent classes required to add things to the ma
 \vs
 The first thing to do is to program the functionality of the forward vector. For the user, this will be using their mouse and we want the forward vector to point towards the mouse. To do this, we can find the direction vector in the \m{Player} class, but we need to find the mouse position in the game loop itself.
 
-\begin{mp}
+\begin{mpy}
     mouse_pos = pygame.mouse.get_pos()
 
     #Get direction vector
@@ -15,7 +15,7 @@ The first thing to do is to program the functionality of the forward vector. For
     dir_mag = sqrt(sum([i**2 for i in player1_direction]))
     player1_direction = [i / dir_mag for i in player1_direction]
 
-\end{mp}
+\end{mpy}
 
 Testing this out we can see it works as follows INSERT SCREENSHOT HERE. However, we do see that it doesn't work if the cursor is centred at the centre of the screen as we get a dividing by zero error.
 
@@ -39,13 +39,13 @@ We will first need to import all of the relevant libraries and modules that we n
 \vs
 In order to speed up the training process, we will be using the GPU. This will let us conduct many tensor operations in parallel much more effectively. We can do this as follows.
 
-\begin{mp}
+\begin{mpy}
 >>> print(torch.cuda.is_available())
 True
 >>> device = torch.device(0)
 >>> print(device)
 cuda:0
-\end{mp}
+\end{mpy}
 
 \vs
 This confirms that we have indeed used the GPU. We will use this in all of our scripts in order to ensure that we have efficient code execution and improve performance. It also means that if there is a problem in the model when running it initially, we will not be too far behind and can retrain relatively easily.
@@ -54,11 +54,11 @@ This confirms that we have indeed used the GPU. We will use this in all of our s
 
 We also need to create something known as an environment. This will allow the agents to interact with the environment. We will be using the PettingZoo library and API to create an environment which we can use to train. We can create a skeleton environment as seen here from the documentation.
 
-\begin{mp}
+\begin{mpy}
 def insertTheStuffHere(self):
 	print(''Fill this in'')
 
-\end{mp}
+\end{mpy}
 
 \vs
 
@@ -68,7 +68,7 @@ Now that we have our environment, we will define our actor and critic networks. 
 
 Let's begin by importing our libraries.
 \vs
-\begin{mp}
+\begin{mpy}
 import torch
 
 from tensordict.nn import TensorDictModule
@@ -93,13 +93,13 @@ from torchrl.modules import MultiAgentMLP, ProbabilisticActor, TanhNormal
 
 # Loss
 from torchrl.objectives import ClipPPOLoss, ValueEstimators
-\end{mp}
+\end{mpy}
 
 TODO: Need to reference this from the PPO tutorial.
 
 \vs
 Next, we need to instantiate our environment.
 
-\begin{mp}
+\begin{mpy}
     To do here
-\end{mp}
+\end{mpy}

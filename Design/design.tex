@@ -10,7 +10,7 @@ I have created the following table highlighting the different sectors involved w
     Section & Purpose\\
     \hline
     \hline
-    Base & This will contain the basics of the \mintinline{python}{Player} class, such as the hit-box, position, and collisions with the map.\\
+    Base & This will contain the basics of the \m{Player} class, such as the hit-box, position, and collisions with the map.\\
     \hline
     Gameplay & Controls the length and state of the game, and will be responsible for display winners, managing teams and tracking player scores. Additionally, it will also control the game mode being played.\\
     \hline
@@ -38,7 +38,7 @@ Here is a top-down diagram showing all of the different sections of the project.
 
 \subsection{\textcolor{blue}{Game States}}
 
-We will need several classes in order to run the game effectively. The first one is the \mintinline{python}{Game} class. This will control the whole application and contains the loop from which all other functions are called. This is justified because it allows us to encapsulate the entire application into one project, and we can have modules within it. It also makes certain things easier, such as managing all of the different states.
+We will need several classes in order to run the game effectively. The first one is the \m{Game} class. This will control the whole application and contains the loop from which all other functions are called. This is justified because it allows us to encapsulate the entire application into one project, and we can have modules within it. It also makes certain things easier, such as managing all of the different states.
 
 \vs
 Then, we have the game state manager. This is effectively going to let us get and set which state we are in currently, and allows us to change it from within menus and other states. This makes it much easier to process and understand the game. This is justified because it gives us a centralised way to edit the current state in the game. This is useful because it means that we can move between states easily, and we can define this behaviour according to what we have done, just as clicking buttons in the menu, or pressing certain buttons.

@@ -1,17 +1,17 @@
 \subsection{Main}
 
-To begin this iteration, we will start by implementing the base of the game. To start with, we will import PyGame, and define the display size and mode and tick rate. This is in \mintinline{python}{main.py}.
+To begin this iteration, we will start by implementing the base of the game. To start with, we will import PyGame, and define the display size and mode and tick rate. This is in \m{main.py}.
 \vs
 
-\begin{mp}
+\begin{mpy}
 #PyGame modules
 import pygame
 from pygame.locals import *
 import sys
-\end{mp}
+\end{mpy}
 
 \vs
-We will be running the game at 200 frames per second, which will be a lot higher than what most people will really be able to run the game at, but there is a good reason for this. With this high frame rate, we will get smooth gameplay regardless of the monitor's frame rate. This justifies it because it provides a similar experience for everyone playing the game, and will mean that the computer's hardware is taken full advantage of. We will be using frame-rate independent physics in order to ensure a fair game regardless of a person's device. Additionally, when we are training the AI, we will be disabling rendering, since it serves no purpose to use a rendering tool. This will allow for a substantial increase in performance and allow for very quick training.
+We will be running the game at 240 frames per second, which will be a lot higher than what most people will really be able to run the game at, but there is a good reason for this. With this high frame rate, we will get smooth gameplay regardless of the monitor's frame rate. This justifies it because it provides a similar experience for everyone playing the game, and will mean that the computer's hardware is taken full advantage of. We will be using frame-rate independent physics in order to ensure a fair game regardless of a person's device. Additionally, when we are training the AI, we will be disabling rendering, since it serves no purpose to use a rendering tool. This will allow for a substantial increase in performance and allow for very quick training.
 \vs
 \subsection{Game State Manager}
 
@@ -19,7 +19,7 @@ We will be running the game at 200 frames per second, which will be a lot higher
 Now, we will create a game state manager. This will handle which state the game is currently in, and which state it will move to next. We will also pass global information, like timers, display size, refresh rate, etc, to this game state manager so that the other states, menus and the game loop itself can access this information.
 
 \vs
-\begin{mp}
+\begin{mpy}
 class GameStateManager:
   def __init__(self, current_state, SCREEN_DIMS, REFRESH_RATE):
 
@@ -30,27 +30,27 @@ class GameStateManager:
     self.REFRESH_RATE = REFRESH_RATE
 
   #Returns the current state of the game
-  def get_state(self):
+  def getState(self):
     return self.current_state
 
   #Set the next state of the game (ie. game loop -> game over)
-  def set_state(self, state):
+  def setState(self, state):
     self.current_state = state
-\end{mp}
+\end{mpy}
 
 \vs
 
 We can try and set and get states from the \m{GameStateManager} as follows.
 
 \vs
-\begin{mp}
+\begin{mpy}
 >>> gsm = GameStateManager('start', SCREEN_DIMS, REFRESH_RATE)
 >>> gsm.get_state()
 start
 >>> gsm.set_state('next_state')
 >>> gsm.get_state()
 next_state
-\end{mp}
+\end{mpy}
 \vs
 We assign the game state manager's attributes as the inputs we have defined. There will only be one instance of the game state manager, and therefore, this is going to allow us to access the game state manager within every state. However, in order to do that, we need to pass the instance of the manager into each of the states.
 
@@ -62,7 +62,7 @@ We assign the game state manager's attributes as the inputs we have defined. The
 We need to define a player class, a menu class and a weapon class. This will form the basis of our game.
 \vs
 
-\begin{mp}
+\begin{mpy}
 class Player(pygame.sprite.Sprite):
 
   def __init__(self, spawn_point, initial_forward_vec, team, weapon):
@@ -101,12 +101,12 @@ class Player(pygame.sprite.Sprite):
 
     #Radius of the circle representing the player
     self.radius = 75
-\end{mp}
+\end{mpy}
 \vs
 The first, most obvious thing to implement is a way to move the player. This must be done using the inputs from the keyboard. We will set a maximum velocity, and use the keyboard inputs to find this value. However, we will do this in the game loop. For now, we will be implementing a move function, which will let us move the player on the map depending on the input. This is helpful, because this input could come from a human player, or an AI.
 \vs
 
-\begin{mp}
+\begin{mpy}
   def move_player(self, directions, dt):
     #velocity = [Forward, Right] components
     velocity = [0, 0]
@@ -129,12 +129,12 @@ The first, most obvious thing to implement is a way to move the player. This mus
 
     #We will finally update the position of the player
     self.position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
-\end{mp}
+\end{mpy}
 \vs
 
 We can test this code as shown below. 
 
-\begin{mp}
+\begin{mpy}
 >>> p = Player([4000, 4000], [0, -1], None, None)
 >>> p.move([0, 0, 0, 0], 1)
 >>> p.position
@@ -145,26 +145,26 @@ We can test this code as shown below.
 >>> p.move([1, 0, 1, 0], 1)
 >>> p.position
 [4353.553390593273, 4353.553390593273]
-\end{mp}
+\end{mpy}
 
 \vs
 This is what we have expected and so this function works as expected. The input to the function will be sanitised in the game loop, so there is no way for a user to enter invalid inputs.
 
 \vs
 
-As mentioned in the design section, we want to only render the area around the player, and hence, we will define a \mintinline{python}{CameraPosition}. This will let us draw only things which are on the screen relative to the player. We can calculate the relative position of the players relative to this camera position, since we will also be using bots in the game. However, if the \mintinline{python}{Player} instance is for the user, then, it will just return the centre of the screen, because we want to keep the player at the centre of the screen.
+As mentioned in the design section, we want to only render the area around the player, and hence, we will define a \m{CameraPosition}. This will let us draw only things which are on the screen relative to the player. We can calculate the relative position of the players relative to this camera position, since we will also be using bots in the game. However, if the \m{Player} instance is for the user, then, it will just return the centre of the screen, because we want to keep the player at the centre of the screen.
 \vs
-\begin{mp}
+\begin{mpy}
   #Will convert the world position of the character to a camera position for the player
   def convertToScreen(self, camera_position, object_position, SCREEN_DIMS):
     screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
     return screenPosition
 
-\end{mp}
+\end{mpy}
 \vs
 We will also write a rendering function, in order to remove this from the game loop, which is helpful because different objects will be rendered differently, but letting all of them have their own render functions, will let us loop through all of the objects on the map and render them effectively.
 \vs
-\begin{mp}
+\begin{mpy}
   #Renders the character to the display of the player
   def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
     #Add code to not render if outside frame
@@ -172,16 +172,16 @@ We will also write a rendering function, in order to remove this from the game l
     for_pos = [self.position[i] + 100*self.forward_vec[i] for i in range(2)]
     pygame.draw.aaline(display, (100, 0, 0), self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.convertToScreen(camera_position, for_pos, SCREEN_DIMS))
     self.move_player(directions, self.forward_vec, dt)
-\end{mp}
+\end{mpy}
 
 The player is rendered as just a circle for now, maybe later to be replaced with something else. The \m{pygame.draw} methods are from the documentation, and we convert the position to the screen position so that the player remains stationary relative to the screen and everything else moves relative to them. This will ensure a more intuitive game experience.
 
 \subsection{\textcolor{blue}{Database Handling}}
 
-We will be using SQLite 3, since the project is small and likely to have only a few users. We are also not editing extremely frequently, only to create users, to login / register, or to update accounts after a game. Therefore, we can create a class to handle the management of the database, which we will call \mintinline{python}{DatabaseHandler}. We will define \mintinline{python}{SetupConnection()}, which will let the class instance connect to the database, and \mintinline{python}{CloseConnection()}, which will safely close the connection. This will ensure that we don't have issues in committing our changes to the database, and will ensure data safety.
+We will be using SQLite 3, since the project is small and likely to have only a few users. We are also not editing extremely frequently, only to create users, to login / register, or to update accounts after a game. Therefore, we can create a class to handle the management of the database, which we will call \m{DatabaseHandler}. We will define \m{SetupConnection()}, which will let the class instance connect to the database, and \m{CloseConnection()}, which will safely close the connection. This will ensure that we don't have issues in committing our changes to the database, and will ensure data safety.
 
 \vs
-\begin{mp}
+\begin{mpy}
 class DatabaseHandler:
 
   #Setup a cursor and connection in order to allow for queries and updates
@@ -192,12 +192,12 @@ class DatabaseHandler:
   #Close connection to prevent database corruption or multiple write attempts
   def CloseConnection(self):
     self.connection.close()
-\end{mp}
+\end{mpy}
 \vs
-We will also define two more methods on our class, which are \mintinline{python}{CreateAccount()}, and \mintinline{python}{UpdateAccount()}, which are pretty self-explanatory. We want to be able to maintain referential integrity and atomicity, so for that reason only commit once all of the instructions that need to be commited have been passed to the cursor. This is important because it means that if there is an issue in one of the statements, then we don't break referential integrity across the database. There is no way to really check that these commands work, so we will just have to use them in the next commands ensure that they work there. There are no inputs from this, so we can't really "break" these functions anyway.
+We will also define two more methods on our class, which are \m{CreateAccount()}, and \m{UpdateAccount()}, which are pretty self-explanatory. We want to be able to maintain referential integrity and atomicity, so for that reason only commit once all of the instructions that need to be commited have been passed to the cursor. This is important because it means that if there is an issue in one of the statements, then we don't break referential integrity across the database. There is no way to really check that these commands work, so we will just have to use them in the next commands ensure that they work there. There are no inputs from this, so we can't really "break" these functions anyway.
 
 \vs
-\begin{mp}
+\begin{mpy}
   def CreateAccount(self, PlayerID, Email, Password):
     #Setup connection and cursor
     self.SetupConnection()
@@ -225,9 +225,9 @@ We will also define two more methods on our class, which are \mintinline{python}
     self.connection.commit()
     self.CloseConnection()
 
-\end{mp}
+\end{mpy}
 \vs
-In the \mintinline{python}{UpdateAccount()} method, we have simply taken the change in PlayerXP and whether the Match was won or not. This is helpful because it reduces the number of calls we need to make. This is because, we know that if we are calling this method, we have just completed another game, and so the number of matches played must increase by one, and whether the match was won or not is simply just a one or a zero. This means we don't need to find this information from the database using a query before inserting it back. This also reduces the chance of some error happening during this transition, and reduces the time taken.
+In the \m{UpdateAccount()} method, we have simply taken the change in PlayerXP and whether the Match was won or not. This is helpful because it reduces the number of calls we need to make. This is because, we know that if we are calling this method, we have just completed another game, and so the number of matches played must increase by one, and whether the match was won or not is simply just a one or a zero. This means we don't need to find this information from the database using a query before inserting it back. This also reduces the chance of some error happening during this transition, and reduces the time taken.
 \vs
 
 We will now test these functions to make sure that they work and that we can succesfully link to the database. To ensure that this happens, we first need to create a database. This will follow the specification laid out in the design section. We will be using SQLite3 here, since it is a lightweight framework to use instead of a more concrete SQL package which would take a significant amount of work to setup.
@@ -236,17 +236,17 @@ We will now test these functions to make sure that they work and that we can suc
 We can test it as follows. We will use the functions to create and update an account, and then use another function to get this data back. We will now construct the function to get the user information. This will also be useful when constructing the leaderboard. We will first use \m{fstring} in order to format the strings in a concise and quick manner. This is shown as below.
 
 \vs
-\begin{mp}
+\begin{mpy}
 >>> PlayerID = "Ojas"
 >>> f"SELECT * WHERE PlayerID = '{PlayerID}'"
 "SELECT * WHERE PlayerID = 'Ojas'"
-\end{mp}
+\end{mpy}
 
 \vs
 This is used as follows. For now, this will just return the data from one table, but we can expand it to give back the data from all of our tables. We can return the information as a dictionary which will make the data more processable and easier to work with.
 
 \vs
-\begin{mp}
+\begin{mpy}
   def fetchUserInfo(self, PlayerID):
     self.SetupConnection()
 
@@ -258,24 +258,24 @@ This is used as follows. For now, this will just return the data from one table,
     userInfo['password'] = result[2]
 
     return userInfo
-\end{mp}
+\end{mpy}
 
 We will now insert the following data into our database using the \m{CreateAccount()} method. We will then use the method above to get more data back.
 
-\begin{mp}
+\begin{mpy}
 >>> dbh = DatabaseHandler()
 >>> DatabaseHandler.CreateAccount("ojas_tiwari", "tiwariojas@gmail.com", "HelloAgain")
 >>> dbh.fetchUserInfo("ojas_tiwari")
 {'PlayerID': 'ojas_tiwari', 'email': 'tiwariojas@gmail.com', 'password': 'HelloAgain'}
-\end{mp}
+\end{mpy}
 
 This proves that our connection works, and that we can create accounts and fetch some user information. We will add to the \m{fetchUserInfo()} method when we need more information on the player.
 \vs
 
 
-Finally, we also need to define an authentication query, which will return true or false, depending on whether the user has inputted the correct credentials for their account. We will return a list, with one element if they have submitted the correct credentials, simplying containing \mintinline{python}{[True]}. Otherwise, they will get an array with two elements, the first containing \mintinline{python}{False}, and the second element will be the reason for their query being rejected either \mintinline{python}{'invalid_id'} or \mintinline{python}{'invalid_password'}. These are fairly self-explanatory, and will be used to show the user why the could not login.
+Finally, we also need to define an authentication query, which will return true or false, depending on whether the user has inputted the correct credentials for their account. We will return a list, with one element if they have submitted the correct credentials, simplying containing \m{[True]}. Otherwise, they will get an array with two elements, the first containing \m{False}, and the second element will be the reason for their query being rejected either \m{'invalid_id'} or \m{'invalid_password'}. These are fairly self-explanatory, and will be used to show the user why the could not login.
 \vs
-\begin{mp}
+\begin{mpy}
   def AuthenticateAccount(self, PlayerID, Password):
     #Setup connection and cursor
     self.SetupConnection()
@@ -292,7 +292,7 @@ Finally, we also need to define an authentication query, which will return true 
     if Password == result[0]:
       return [True]
     return [False, 'invalid_password']
-\end{mp}
+\end{mpy}
 \vs
 We have used a guard clause in order to decrease the amount of code written.
 
@@ -302,7 +302,7 @@ We need to be able to do many vector operations quickly without having to re-wri
 
 \vs
 We begin by defining our class.
-\begin{mp}
+\begin{mpy}
 class Utility:
 
   def __init__(self):
@@ -311,7 +311,7 @@ class Utility:
 
   def dot(self, a, b):
     return sum([i*j for i, j in zip(a, b)])
-\end{mp}
+\end{mpy}
 
 \vs
 The first method we have implemented is the dot product. For geometric vectors this is defined as 
@@ -319,50 +319,50 @@ The first method we have implemented is the dot product. For geometric vectors t
   \vec{a} \cdot \vec{b} &= \sum_i a_i b_i\\
 \end{align*}
 Where $a_i$ refers to the $i$-th element of $\vec{a}$. Then, in Python, we can use the \m{zip()} function in order to get a list of tuples of corresponding elements, as shown below.
-\begin{mp}
+\begin{mpy}
 for i in zip([1, 2, 3], [4, 5, 6]):
   print(i)
 
 >>> (1, 4)
   (2, 5)
   (3, 6)
-\end{mp}
+\end{mpy}
 
 \vs
 Then, we want to multiply the numbers in each pair together. We can directly access the elements using $i, j$ instead of just $i$ in the for loop, and thus we can instantly multiply them. We then create a list of these which produces this output.
 
-\begin{mp}
+\begin{mpy}
 dottedVals = []
 for i, j in zip([1, 2, 3], [4, 5, 6])
   dottedVals.append(i * j)
 print(dottedVals)
 
 >>> [4, 10, 18]
-\end{mp}
+\end{mpy}
 
 \vs
 Finally, we need to take the sum of all of these, which we can do using \m{sum()}. This finally gives us the following.
 
-\begin{mp}
+\begin{mpy}
 sum(dottedValues)
 
 >>> 32
-\end{mp}
+\end{mpy}
 However, we can condense this code slightly, by using list comprehension. We can rewrite \m{dottedVals} as follows, and can then just remove it all together.
 
 \vs
-\begin{mp}
+\begin{mpy}
 dotProdut = sum([i * j for i, j in zip(a, b)])
-\end{mp}
+\end{mpy}
 
 \vs
 We can test this out using two dummy arrays. I also don't want to create instances of the \m{Utility} class as this will occupy even more memory.
 
-\begin{mp}
+\begin{mpy}
 >>> a, b = [1, 2, 3], [4, 5, 6]
 >>> Utility.dot(a, b)
 TypeError: Utility.dot() missing 1 required positional argument: 'b'
-\end{mp}
+\end{mpy}
 \vs
 
 In order to solve this, there are two approaches. Firstly, we could just create an instance of the \m{Utility} class, and then call the function. However, we do not want to do this because this would occupy a lot more memory.
@@ -370,15 +370,15 @@ In order to solve this, there are two approaches. Firstly, we could just create 
 \vs
 The other alternative is to use the \m{@staticmethod} decorator and to remove \m{self} parameter from the function definition. The code then works as expected.
 
-\begin{mp}
+\begin{mpy}
 >>> Utility.dot([1, 2, 3], [4, 5, 6])
 
 32
-\end{mp}
+\end{mpy}
 Finally, I also considered using the library \m{NumPy} to do the dot product as it is already implemented. To decide which one to use, I decided to test it out by looking at how long it took to dot product lots of arrays. Since all of my vectors are 2D, they will only have 2 elements, and so that is what I used here.
 
 \vs
-\begin{mp}
+\begin{mpy}
 import numpy as np
 import time
 import random
@@ -406,21 +406,21 @@ for i in range(10000):
   y = Utility.dot(a, b)
   
 print("Raw Python:", (time.time() - time3))
-\end{mp}
+\end{mpy}
 \vs
 Looking at the results, we see that the raw Python implementation is much faster than the \m{NumPy} implementation. This is likely due to the fact that \m{NumPy} needs to convert lists into \m{NumPy} arrays in order to be able to compute the dot product.
 
-\begin{mp}
+\begin{mpy}
 NumPy: 0.3286013603210449
 Raw Python: 0.17571258544921875
-\end{mp}
+\end{mpy}
 \vs
 Therefore, I will use the Python implementation.
 
 \vs
 Additionally, we will construct addition and subtraction for vectors. Another possible consideration was to just use NumPy throughout the game, and I don't know why I didn't do this.... 
 
-\begin{mp}
+\begin{mpy}
   @staticmethod
   def vecSub(a, b):
     return [i-j for i, j in zip(a, b)]
@@ -428,24 +428,24 @@ Additionally, we will construct addition and subtraction for vectors. Another po
   @staticmethod
   def vecAdd(a, b):
     return [i + j for i, j in zip(a, b)]
-\end{mp}
+\end{mpy}
 \vs
 
 We can test these out as shown below.
 \vs
 
-\begin{mp}
+\begin{mpy}
 >>> Utility.vecSub([4, 5, 6], [1, 2, 3])
 [3, 3, 3]
 >>> Utility.vecAdd([1, 2, 3], [4, 5, 6])
 [5, 7, 9]
-\end{mp}
+\end{mpy}
 
 \vs
 Next, we will need to implement a collision between a ray and a circle. This is important as this will be used to detect when a weapon has fired a ray that has hit another player. We will be using the implementation from \href{https://codereview.stackexchange.com/questions/86421/line-segment-to-circle-collision-algorithm}{this StackExchange post}, which uses vectors in order to solve this problem. This is much more efficient than using Cartesian co-ordinates.
 
 \vs
-\begin{mp}
+\begin{mpy}
   @staticmethod
   def lineCircleCollision(line, circle):
   
@@ -474,7 +474,7 @@ Next, we will need to implement a collision between a ray and a circle. This is 
     
     t = min(t1, t2)
     return [True, t]
-\end{mp}
+\end{mpy}
 
 \vs
 In this implementation, we do not provide a direction vector, rather we provide two constraint points. This solution is much more optimal, since it means we do not also need to provide a range parameter. We simply want to find the closest collision to the source, and this will provide it if a collision is found. The $t$-value must be between $0$ and $1$ where $0$ would mean that the source is right next to the circle we are checking for a collision with, and $1$ means that the second constraint point lies on the circle. We can test this code out as follows.
@@ -483,58 +483,58 @@ In this implementation, we do not provide a direction vector, rather we provide 
 
 We will first check the two standard cases; one where the collision does occur and one where it doesn't.
 
-\begin{mp}
+\begin{mpy}
 >>> line = [[0, 0], [10, 5]]
 >>> circle = [[2, 3], 2]
 >>> Utility.lineCircleCollision(line, circle)
 [True, 0.2]
-\end{mp}
+\end{mpy}
 
 \vs
 We can check manually, or using plotting software that this does indeed work. We will now check when there should not be a collision.
 
 \vs
-\begin{mp}
+\begin{mpy}
 >>> line = [[2, 3], [-5, -6]]
 >>> circle = [[5, 10] , 2]
 >>> Utility.lineCircleCollision(line, circle)
 [False, None]
-\end{mp}
+\end{mpy}
 \vs
 This is as expected. Next, we will test when the second constraint is just on the circle.
 
 \vs
-\begin{mp}
+\begin{mpy}
 >>> line = [[0, 0], [5, 0]]
 >>> circle = [[6, 0], 1]
 >>> Utility.lineCircleCollision(line, circle)
 [True, 1.0]
-\end{mp}
+\end{mpy}
 Again, this is the result we expected.
 
 \vs
 We will test the case where the first constraint is inside of the object, but not the second.
-\begin{mp}
+\begin{mpy}
 >>> line = [[0, 0], [5, 10]]
 >>> circle = [[2, 0], 2]
 >>> Utility.lineCircleCollision(line, circle)
 [True, 0.0]
-\end{mp}
+\end{mpy}
 \vs
 Finally, despite this case never arising in an actual game, we will test the case where both constraints are inside of the circle.
-\begin{mp}
+\begin{mpy}
 >>> line = [[0, 0], [0, 1]]
 >>> circle = [[0, 0], 3]
 >>> Utility.lineCircleCollision(line, circle)
 [False, None]
-\end{mp}
+\end{mpy}
 Again, the desired result! So, we can conclude that the function works as expected.
 %https://www.jeffreythompson.org/collision-detection/line-rect.php
 
 \vs
 We will now implement the line-line collision method we which described thoroughly in the design section. We will be using NumPy to do the solving of the simultaneous equations. We first need to check that the equations are linearly independent. We can do this using the determinant of the matrix. We will first be extracting all of the elements we need to make the rest of the code easier to read.
 
-\begin{mp}
+\begin{mpy}
   @staticmethod
     def lineLineCollision(line1, line2):
       #We have both lines in vector form
@@ -544,46 +544,46 @@ We will now implement the line-line collision method we which described thorough
       x_2, y_2 = line1[1]
       x_3, y_3 = line2[0]
       x_4, y_4 = line2[1]
-\end{mp}
+\end{mpy}
 
 After this we can compute the determinant and if it is not 0, we can find the solutions.
-\begin{mp}
-  #Find the determinant
-  determinant = np.linalg.det(matrix)
-  if determinant == 0:
-    return [False, None]
-        
-  else:
-    result = np.linalg.solve(matrix, resultVec)
-        
-    #Check that the result is between the constraint points
-    if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
-      return [True, result]
-    return [False, None]
-\end{mp}
+\begin{mpy}
+    #Find the determinant
+    determinant = np.linalg.det(matrix)
+    if determinant == 0:
+      return [False, None]
+          
+    else:
+      result = np.linalg.solve(matrix, resultVec)
+          
+      #Check that the result is between the constraint points
+      if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+        return [True, result]
+      return [False, None]
+\end{mpy}
 
 We can also edit this code to make it more readable by using a guard clause. Since we are returning if the determinant is 0, no other code after it will return if this condition is meant. Therefore, we can see that we don't need the \m{else} statement at all, and can instead dedent the code block there.
 
-\begin{mp}
-  #det = 0 -> Can't be solved
-  if determinant == 0:
+\begin{mpy}
+    #det = 0 -> Can't be solved
+    if determinant == 0:
+      return [False, None]
+
+    #Solve system
+    result = np.linalg.solve(matrix, resultVec)
+
+    #Check that the result is between the constraint points
+    if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+      return [True, result]
+    
+    #Solution is not in bounds
     return [False, None]
-
-  #Solve system
-  result = np.linalg.solve(matrix, resultVec)
-
-  #Check that the result is between the constraint points
-  if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
-    return [True, result]
-  
-  #Solution is not in bounds
-  return [False, None]
-\end{mp}
+\end{mpy}
 
 \vs
 We also want to be able to test this code and make sure that is efficient, since we are casting to a NumPy array this likely to not be very efficient. We are primarily interested in how iterations we can do in one second, since this will be very helpful during the training, and we want to make sure that the environment is easy to sample with.
 
-\begin{mp}
+\begin{mpy}
 start = time.time()
 for i in range(70000):
   line1 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
@@ -593,7 +593,7 @@ end = time.time()
 print(end - start)
 
 >>> 1.0048434734344482
-\end{mp}
+\end{mpy}
 
 This quite significant which means that we can do a lot of timesteps in one second, which will increase our overall training speed.
 
@@ -602,7 +602,7 @@ This quite significant which means that we can do a lot of timesteps in one seco
 The next thing we will be implementing is the line-rectangle collision. We can decompose each rectangle into 4 lines between adjacent corners. Therefore, we need to create a method to get the corners of a rectangle. Therefore, we will create a new method in the \m{Block} class to get the corners.
 
 \vs
-\begin{mp}
+\begin{mpy}
   def getCorners(self):
     #TL, BL, BR, TR
     corners = []
@@ -612,12 +612,12 @@ The next thing we will be implementing is the line-rectangle collision. We can d
         corners.append(U.vecAdd(self.centre, [i * self.length1/2, i * j * self.length2/2]))
 
     return corners
-\end{mp}
+\end{mpy}
 
 \vs
 The code is a bit dense, but we can prove that this code will work and then test it. We want to get the corners in an anti-clockwise order because this will give us the lines that we since the lines must be on the edges of the rectangle. We firstly create an array to store the co-ordinates of the corners in. Next, we create two for loops. The outer loop will take two values only, $-1$ and $+1$. This will show the direction of the horizontal movement from the centre. In the inner loop, we can either move upwards by half of the height of the rectangle, or we can move down by the same amount. This produces all 4 corners. If we just print $i$ and $ij$, we can see that the output is as follows.
 
-\begin{mp}
+\begin{mpy}
 >>> for i in range(-1, 2, 2):
   for j in range(-1, 2, 2):
     print(i, i*j)
@@ -626,7 +626,7 @@ The code is a bit dense, but we can prove that this code will work and then test
 -1 -1
 1 -1
 1 1
-\end{mp}
+\end{mpy}
 \vs
 
 This can be plotted on the $x$ and $y$ axes, which is going anti-clockwise, and we are only changing one element of the co-ordinate at a time which means that we will only be putting adjacent vertices next to each other.
@@ -634,18 +634,18 @@ This can be plotted on the $x$ and $y$ axes, which is going anti-clockwise, and 
 \vs
 We can now test the code with some sample values.
 
-\begin{mp}
+\begin{mpy}
 b = Block([1, 2], 10, 20, 'red', [1600, 900], [800, 450])
 corners = b.getCorners()
 print(corners)
 
 >>> [[-4.0, 12.0], [-4.0, -8.0], [6.0, -8.0], [6.0, 12.0]]
-\end{mp}
+\end{mpy}
 
 This is what we would have expected to see. Now, that we have this, we want to find the edges of the rectangle. With this, we can generate the edges present.
 
 \vs
-\begin{mp}
+\begin{mpy}
   @staticmethod
   def lineRectCollision(line, block):
 
@@ -654,7 +654,7 @@ This is what we would have expected to see. Now, that we have this, we want to f
     
     #Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
     lines = [[corners[i], corners[i+1]] for i in range(-1, 3) ]
-\end{mp}
+\end{mpy}
 
 \vs
 The second line is list comprehension which gives pairs of corners, and since we have arranged them to be adjacent to each other, the lines formed are all on the boundary of the rectangle. We only need the pairs of constraint points since that is what we are using for the line collision method.
@@ -663,7 +663,7 @@ The second line is list comprehension which gives pairs of corners, and since we
 The next thing we need, is to find the collision which is the closest to the first constraint point which is what our program returns.
 \vs
 
-\begin{mp}
+\begin{mpy}
     #We only care about how far along the main line the collision is
     t_val = 3
     for edge in lines:
@@ -671,58 +671,58 @@ The next thing we need, is to find the collision which is the closest to the fir
       if isHit:
         if lambda_mu[0] < t_val:
           t_val = lambda_mu[0]
-\end{mp}
+\end{mpy}
 
 \vs
 We set \m{t_val} to be $3$ since the result of the collision must be between 0 and 1, and so this will be well outside of the range anyway. This also means that we can check if we ever updated the minimum collision distance.
 
 \vs
-\begin{mp}
+\begin{mpy}
     if t_val == 3:
       return [False, None]
     return [True, t_val]
-\end{mp}
+\end{mpy}
 
 \vs
 We can also return whether we have detected a collision or not, and if we have, then what that distance is. We will be testing a boundary case, where the line clips one of the edges of a rectangle, but should still return a hit.
 
-\begin{mp}
+\begin{mpy}
 b = Block([0, 0], 10, 20, 'red', [1600, 900], [800, 450])
 line = [[0, 20], [10, 0]]
 result = U.lineRectCollision(line, b)
 print(result)
 
 >>> [True, 0.5]
-\end{mp}
+\end{mpy}
 
 \vs
 We also need to define the method for converting a world position to a screen position which will let us actually render things, since the player's viewpoint moves as the player moves. We can do this as detailed in the Design section.
 
-\begin{mp}
+\begin{mpy}
   #Will convert the world position of the character to a camera position for the player
   @staticmethod
   def convertToScreen(camera_position, object_position, SCREEN_DIMS):
     screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
     return screenPosition
-\end{mp}
+\end{mpy}
 
 \vs
 We have used list comprehension to compress our statements, since this is more efficient than using a for loop (from \cite{listcomp}), since they do not have an overhead in producing a for loop, and therefore, we have used this throughout the project. This means that we can now easily and efficiently call all of these functions and due to the stateless nature of the \m{Utility} class we don't need to worry about creating and deleting many instances, and this is also more efficient to do in Python, which has been a concern throughout the project, since we will be removing the render functions and will be using the game loop to do the training of the game. Therefore, every aspect of the game must be optimised to a reasonable extent in order to allow for more samples in a given period of time. As a result of this we will be removing the \m{convertToScreen} method from the \m{Player} class since it is no longer needed since we have already globalised its implementation to the \m{Utility} class.
 
 Another method that we should implement since this is very commonly used is the scalar multiple of a vector. For this, we need two inputs, one is a vector and another is a scalar by which we need to multiply the vector by. This is done by list comprehension again.
 
-\begin{mp}
+\begin{mpy}
   @staticmethod
   def mult(vec, scalar):
     return [i * scalar for i in vec]
-\end{mp}
+\end{mpy}
 
 We simply take each element of the vector and then multiply it by the vector we took in. We can test it as follows.
 
-\begin{mp}
+\begin{mpy}
 >>> Utility.mult([1, 2], 2)
 [2, 4]
-\end{mp}
+\end{mpy}
 
 Additionally, we need to be able to rotate vectors, specifically to create spread in the weapon's fire, such as for the shotgun. We can do this as fllows. We consider the matrix ($\hat{A}$) for a 2D rotation which is written as follows.
 
@@ -738,7 +738,7 @@ We can do a simple matrix-vector product as follows.
 
 This can then be converted into code as follows.
 
-\begin{mp}
+\begin{mpy}
   @staticmethod
   def rotateVector(vec, angle):
     #https://matthew-brett.github.io/teaching/rotation_2d.html
@@ -747,31 +747,31 @@ This can then be converted into code as follows.
     rotatedVec[1] = vec[0] * sin(angle) + vec[1] * cos(angle)
 
     return rotatedVec
-\end{mp}
+\end{mpy}
 
 The \m{sin()} and \m{cos()} functions are from the \m{math} library which was imported at the start of the file. We can test this function as follows.
 
-\begin{mp}
+\begin{mpy}
 >>> Utility.rotateVector([1, 0], math.pi/4)
 [0.7071067811865476, 0.7071067811865476]
 >>> 2**-0.5
 0.7071067811865476
-\end{mp}
+\end{mpy}
 
 This means that we have rotated the vector anti-clockwise by an angle of \ang{45} or $\frac{pi}{4}$ radians. Furthermore, we can test this for other angles as well like \ang{90}.
 
-\begin{mp}
+\begin{mpy}
 >>> Utility.rotateVector([1, 0], math.pi/2)
 [6.123233995736766e-17, 1.0]
-\end{mp}
+\end{mpy}
 
 This is not exactly right, but it is close enough to what we need since we expected 1.0 in the $y$-ordinate, and the $x$-ordinate is so incredibly small that we would not be able to process such as a change anyway.
 
 
 \subsection{\textcolor{blue}{Weapon}}
-We will give each player a weapon, of a specific class, which will have specified statistics. In order to do this, we can create a parent class \mintinline{python}{Weapon} and derive other weapons from it. There are a few specific attributes that we need to have for the parent class. 
+We will give each player a weapon, of a specific class, which will have specified statistics. In order to do this, we can create a parent class \m{Weapon} and derive other weapons from it. There are a few specific attributes that we need to have for the parent class. 
 \vs
-\begin{mp}
+\begin{mpy}
 class Weapon:
   #We need a way to move the weapon alongside the Weapon
   #Some way to attach the two together
@@ -786,7 +786,7 @@ class Weapon:
     self.raysPerShot = 1
     self.cooldown = 0.25
     self.spread = 1
-\end{mp}
+\end{mpy}
 
 We will now justify each attribute. The ammo is the largest amount of ammunition that the weapon can fire before needing to reload. This is important since otherwise a player could just hold down the fire button without needing to be aiming correctly. The reload time is the amount of time taken from emptying the weapon's "cartridge" to refilling it so that they player can fire the weapon again.
 
@@ -796,7 +796,7 @@ The damage per hit is self-explanatory, but every time a ray from that weapon hi
 \vs
 The standard deviation is used for the normal distribution to find how spread out the rays will be from the direction vector. We will be firing rays from the player, and then find an angle to rotate this vector by to find the ray's direction. We can do this as follows.
 
-\begin{mp}
+\begin{mpy}
 >>> std_dev = 0.25
 >>> np.random.normal(loc = 0, scale=std_dev, size=None)
 0.3018635745361101
@@ -804,12 +804,12 @@ The standard deviation is used for the normal distribution to find how spread ou
 -0.12774112426206038
 >>> np.random.normal(loc=0, scale=0.25, size=None)
 0.043154759156613466
-\end{mp}
+\end{mpy}
 \vs
 This will let us create derived classes from this and then assign them each different values for these attributes. Alongside this, we can define a fire function, which will let us project a ray from the weapon's position and direction, and hand it over to the game loop to identify any collisions. Importantly, the ray is defined $\mathbf{r} + t \mathbf{d}$, where $\mathbf{r}$ is the position of the player, and $\mathbf{d}$ is the direction.
 \vs
 
-Therefore, our player will need to pass the position and direction from the \mintinline{python}{Player} class. This will then return a tuple of vectors which we then pass to the game loop.
+Therefore, our player will need to pass the position and direction from the \m{Player} class. This will then return a tuple of vectors which we then pass to the game loop.
 \vs
 
 We will take firing as being a Boolean, either 0 or 1. This will be whether we are currently firing the weapon or not, and will be taken from a mouse input. Furthermore, we will take the direction that the mouse is pointing in to be the direction of the player. $t$ must greater than 0, because this will allow us to trace the ray as it progress forward from the player, since it wouldn't make sense for it to move behind the player.
@@ -820,7 +820,7 @@ We also need to create attributes for the number of rays per shot as well as the
 
 
 The rays will be randomly spread out. We can do this as follows.
-\begin{mp}
+\begin{mpy}
   #We will attach the damage to this as well
   def fire(self, position, direction):
     rays = []
@@ -841,7 +841,7 @@ The rays will be randomly spread out. We can do this as follows.
       rays.append([position, final_extent, self.damage])
 
     return rays
-\end{mp}
+\end{mpy}
 \vs
 We will now explain each bit of this code. We first create an array of rays, since there will be weapons which produces multiple rays. We also have the direction vector of the player, but this is not necessarily normalised, so for that reason, we will be normalising it first using the dot product and the scalar multiple of 1 over the magnitude. This is essential, since if the direction vector is not normalised the length of the ray will be longer than the actual ray which should occur. We then create a for loop for the number of rays that we want to produce, and then append these rays into the array.
 
@@ -851,7 +851,7 @@ We can produce these rays by first generating the angle that we want the ray to 
 \vs
 We will create multiple weapons to create interactivity as mentioned before, and we can do this simply by editing the \m{__init__(self)} for each class as follows.
 
-\begin{mp}
+\begin{mpy}
 #Automatic weapon, good at mid range
 class AssaultRifle(Weapon):
   def __init__(self):
@@ -881,21 +881,21 @@ class Shotgun(Weapon):
     self.raysPerShot = 10
     self.cooldown = 0.75
     self.spread = 1
-\end{mp}
+\end{mpy}
 
 \subsection{\textcolor{blue}{Block}}
 
 We need to implement the \m{Block} class in order to add more interactivity with the game.
 
-\begin{mp}
+\begin{mpy}
 import pygame
 from pygame.locals import *
 from utils import Utility as U
-\end{mp}
+\end{mpy}
 
 We can now write the constructor for the class. We can define a rectangle with three principle parameters. We need the two side lengths of the rectangle and the centre position of the rectangle. We can write this as follows.
 
-\begin{mp}
+\begin{mpy}
 class Block(pygame.sprite.Sprite):
 
 #Length1 is in the x direction
@@ -911,23 +911,23 @@ def __init__(self, centre, length1, length2, colour, SCREEN_DIMS, camera_positio
 
   self.initial_screenPosition = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
   self.rect = pygame.Rect(self.initial_screenPosition[0], self.initial_screenPosition[1], self.length1, self.length2)
-\end{mp}
+\end{mpy}
 
 We will now examine each aspect of the code to ensure that it is valid. As mentioned before, to define the geometry of the rectangle we needed a few principle values, which we now have. We also need to define a colour, since this is what we will be using to render. We can now define the render function as follows.
 
-\begin{mp}
+\begin{mpy}
   def render(self):
     self.rect.center = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
     pygame.draw.rect(display, self.colour, self.rect)
-\end{mp}
+\end{mpy}
 
 \subsection{\textcolor{red}{Game Class}}
-Now, we will implement the game class. This will control the main running of the game, and will contain all of the global variables. We will call an instance of this class from the \mintinline{python}{main.py} file, and we will run all of our other game states from this class.
+Now, we will implement the game class. This will control the main running of the game, and will contain all of the global variables. We will call an instance of this class from the \m{main.py} file, and we will run all of our other game states from this class.
 \vs
 
-We will begin by creating \mintinline{python}{game.py}, and importing our modules into it.
+We will begin by creating \m{game.py}, and importing our modules into it.
 \vs
-\begin{mp}
+\begin{mpy}
 #PyGame modules
 import pygame
 from pygame.locals import *
@@ -937,11 +937,11 @@ import sys
 from menu import *
 from player import Player
 from weapon import Weapon
-\end{mp}
+\end{mpy}
 \vs
-Next, we will create our \mintinline{python}{Game} class.
+Next, we will create our \m{Game} class.
 \vs
-\begin{mp}
+\begin{mpy}
 class Game:
 
   #Initialise the game class
@@ -952,7 +952,7 @@ class Game:
     self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Momentum")
     pygame.display.set_icon(pygame.image.load('assets/momentum_icon.png'))
-\end{mp}
+\end{mpy}
 \vs
 This first block of code will start PyGame for us, and let us then use its functionality. Additionally, we will create the screen on top of which we are drawing, and then set it's caption, which is the name of our game, Momentum. We will also load an icon which will go in the top left of the screen and will show the game's icon.
 \vs
@@ -960,24 +960,24 @@ This first block of code will start PyGame for us, and let us then use its funct
 
 After that, we create the game clock, which is essential to running the game, and controlling the frame rate and physics.
 \vs
-\begin{mp}
+\begin{mpy}
     #Create the game clock
     self.clock = pygame.time.Clock()
     self.dt = 0
-\end{mp}
+\end{mpy}
 \vs
 We will now define some global variables which will tell us the height, width and refresh rate of the screen, which is passed onto all of the other states should they need it at any point. This is justified, because it allows for a much more reliable way of communicating this information to the states, and it will prevent us from hard coding it into the game, which would cause compatibility issues, although this is unlikely. It will let us also experiment with different values for these variables very quickly, making prototyping and testing with users easier.
 \vs
-\begin{mp}
+\begin{mpy}
     #Global settings
     self.WIDTH = WIDTH
     self.HEIGHT = HEIGHT
     self.REFRESH_RATE = REFRESH_RATE
-\end{mp}
+\end{mpy}
 \vs
-Next, we will create instances of all of our different states and the \mintinline{python}{GameStateManager} instance, and assign it to the game, so that it can handle them appropriately. The manager uses short strings to get and set the states, and so we will now define a dictionary to translate between strings and classes. This is a reasonable choice for this purpose, since arrays and linked lists would be less efficient. 
+Next, we will create instances of all of our different states and the \m{GameStateManager} instance, and assign it to the game, so that it can handle them appropriately. The manager uses short strings to get and set the states, and so we will now define a dictionary to translate between strings and classes. This is a reasonable choice for this purpose, since arrays and linked lists would be less efficient. 
 \vs
-\begin{mp}
+\begin{mpy}
     #Game State Manager and Game States
     self.gameStateManager = GameStateManager('game_loop', [self.WIDTH, self.HEIGHT], self.REFRESH_RATE)
     self.start = Start(self.screen, self.gameStateManager)
@@ -988,11 +988,11 @@ Next, we will create instances of all of our different states and the \mintinlin
     self.setTimer = SetTimer(self.screen, self.gameStateManager)
     self.gameLoop = GameLoop(self.screen, self.gameStateManager)
     self.gameOver = GameOver(self.screen, self.gameStateManager)
-\end{mp}
+\end{mpy}
 \vs
 As mentioned before, we will need to define our dictionary to translate to game states from a string.
 \vs
-\begin{mp}
+\begin{mpy}
     #Game States so that we can convert strings into instances
     self.states = {'start': self.start,
           'options': self.options,
@@ -1003,22 +1003,22 @@ As mentioned before, we will need to define our dictionary to translate to game 
           'game_loop': self.gameLoop,
           'game_over': self.gameOver
     }
-\end{mp}
+\end{mpy}
 
 \vs
 Additionally, every time a state is run, it will return some type of return value. This is because it needs to be able to communicate with other states. These types may be different, but we will initialise it, since the main game loop will in fact be passing the previous return value in to the next game state. However, since the variable wouldn't exist, it would throw an error, and so we initialise it to prevent that, even though it is not required.
 \vs
-\begin{mp}
+\begin{mpy}
     #A return value that we will pass into each new game state
     #Will contain things like, user info, score, etc
     self.returnValues = []
-\end{mp}
+\end{mpy}
 
 
-Now, we will define the main loop which will be running our game. This will contain a \mintinline{python}{while} loop, since we do not know how long the player will be playing for, and therefore, there is no other alternative. 
+Now, we will define the main loop which will be running our game. This will contain a \m{while} loop, since we do not know how long the player will be playing for, and therefore, there is no other alternative. 
 
 
-\begin{mp}
+\begin{mpy}
   #Runs the main game
   def run(self):
 
@@ -1046,14 +1046,14 @@ Now, we will define the main loop which will be running our game. This will cont
 
       #Update the clock
       dt = self.clock.tick(self.REFRESH_RATE)/1000
-\end{mp}
+\end{mpy}
 \vs
-This will let us accept the new return values from the game, and input the previous ones into the new state and run it. Each state will have it's own \mintinline{python}{while} loop which will allow it to run some code. 
+This will let us accept the new return values from the game, and input the previous ones into the new state and run it. Each state will have it's own \m{while} loop which will allow it to run some code. 
 
 \vs
-Now that we have the fundamental layout of the game completed, we will update our \mintinline{python}{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
+Now that we have the fundamental layout of the game completed, we will update our \m{main.py} file to allow it to use all of the capabilities that we have now implemented. This is as follows.
 \vs
-\begin{mp}
+\begin{mpy}
 import pygame
 from pygame.locals import *
 import sys
@@ -1063,15 +1063,15 @@ from game import Game
 
 #Global settings
 REFRESH_RATE = 240
-HEIGHT = 900
-WIDTH = 1600
+HEIGHT = 1080
+WIDTH = 1920
 
 #Game class
 g = Game(WIDTH, HEIGHT, REFRESH_RATE)
 
 #Run the game
 g.run()
-\end{mp}
+\end{mpy}
 
 This will import the \m{Game} class and will create an instance, and run the game. What this means is that we can now draw things on the screen and run the code as one complete system. This simplifies iterative testing a lot. For now, we will take two menus, and just draw them as being different colours and switch between them to prove that the main game works.
 
@@ -1081,9 +1081,12 @@ We will create two classes, \m{MenuA} and \m{MenuB}. \m{MenuA} will be shaded in
 \vs
 We will now demonstrate that this works, by putting some text on each menu object, and then passing commands to each of these to update the state. This works as follows. We will create a main \m{Menu} class, since most of the methods and functions will be similar between each menu class. This will make our job much easier and prevent us from writing the same code over and over again. This will make use of inheritance, with each menu being the child of the main menu class, and using \m{specificMethod} to create a function which will run specifically in the loop for each menu class. We can feed the inputs and events from the main loop into the specific method. This will drastically reduce the amount of code we need, and since most menus are relatively similar, this will not limit us in any way.
 
+
+
+
 \vs
 The \m{Menu} class has a constructor as follows.
-\begin{mp}
+\begin{mpy}
 class Menu:
   def __init__(self, display, gameStateManager, bgColor):
 
@@ -1098,11 +1101,11 @@ class Menu:
 
     #Set bg color
     self.BG_COLOR = bgColor
-\end{mp}
+\end{mpy}
 
 This will set the basic variables that we need to run the game. We can then write a main \m{run()} which will let us now write some code in here. This is very basic, and will make a call to \m{specificFunction()} which doesn't exist yet, however, it will simply contain the \m{pass} keyword, which will just move on from the function, since we don't want to run anything here, but we want to allow for the child classes to be able to overwrite the function and have the change show up in the main \m{run()} loop.
 
-\begin{mp}
+\begin{mpy}
   #Run the menu
   def run(self, returnValues):
 
@@ -1145,13 +1148,68 @@ This will set the basic variables that we need to run the game. We can then writ
         
     return returnValues
 
-\end{mp}
+\end{mpy}
 
+We can then create child classes from this, inhereting the properties of the \m{Menu} class. This also makes the writing of the code much easier to understand, since now, the \m{specificMethods()} will just update what we have drawn to the screen and doesn't need to do anything else.
+
+\begin{mpy}
+class MenuA(Menu):
+
+  def __init__(self, display, gameStateManager):
+
+    super().__init__(display, gameStateManager, (0, 0, 255))
+
+  def specificMethods(self, keys, events):
+
+    if keys[K_DOWN]:
+      self.gameStateManager.setState('menu_b')
+      self.running = False
+
+    return None
+
+class MenuB(Menu):
+
+  def __init__(self, display, gameStateManager):
+
+    super().__init__(display, gameStateManager, (255, 0, 0))
+
+  def specificMethods(self, keys, events):
+
+    if keys[K_UP]:
+        self.gameStateManager.setState('menu_a')
+        self.running = False
+
+    return None
+\end{mpy}
+
+\vs
+Here is the \href{https://youtu.be/aZqFwUYA0_U}{video} which demonstrates this in action, proving that the \m{GameStateManager}, \m{Game} class, and \m{main.py} all work, since this was the expected result.
+\vs
+The screen captures from the two menus are shown in Figure \ref{fig:menu_ab}.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.49\textwidth}
+    \centering
+    \includegraphics[width = \textwidth]{Development/Images/MenuA.png}
+    \caption{Menu A}
+    \label{fig:menu_a}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+    \centering
+    \includegraphics[width = \textwidth]{Development/Images/MenuB.png}
+    \caption{Menu B}
+    \label{fig:menu_b}
+  \end{subfigure}
+  \caption{Screen captures from the two menus.}
+  \label{fig:menu_ab}
+\end{figure}
 
 \vs
 We will take the start menu and the login menu to begin with. Each one of these classes will have some text on the screen. We will create the Start Menu first, and then we can show that we can move between them, thus proving that the \m{Game} class works at switching between different states. The first thing we will do is import \m{pygame.FreeType} at the start of \m{menu.py}. We will also create our font object here.
 
-\begin{mp}
+
+\begin{mpy}
 import pygame.freetype
 
 #Initalise freetype
@@ -1159,12 +1217,12 @@ pygame.freetype.init()
 
 #Create text font
 text_font = pygame.freetype.SysFont('iosevka', 64)
-\end{mp}
+\end{mpy}
 
 \vs
-After this, we need to create our \m{Start} class, which is done as follows. We create our constructor as follows. We need to set our display 
+After this, we need to create our \m{Start} class, which is done as follows. We create our constructor as follows. We need to set our display so that the menu can rende.
 
-\begin{mp}
+\begin{mpy}
 #Directed from the login page
 class Start:
     def __init__(self, display, gameStateManager):
@@ -1179,13 +1237,13 @@ class Start:
 
         #Set bg color
         self.BG_COLOR = (0, 255, 255)
-\end{mp}
+\end{mpy}
 
 \vs
 The next part of the code is the running of the menu itself. Here, we will be filling the display with a certain colour, and then writing some text onto it. We set the bounding rectangle to have a centre at the centre of the screen, so that we can align the text nicely. We then check to see if the user wants to quit the game and if not, we repeat the loop until they do. This code was partially constructed with help from \href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{this link}.
 
 \vs
-\begin{mp}
+\begin{mpy}
   def run(self, returnValues):
 
     #Fill display
@@ -1234,7 +1292,7 @@ The next part of the code is the running of the menu itself. Here, we will be fi
       dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
         
     return returnValues
-\end{mp}
+\end{mpy}
 
 \vs
 We also need to change the initial value of the game state manager's state from \m{'game_loop'} to \m{'start'}. Having done this, we get the following image (Figure \ref{start_menu}) on the screen.
@@ -1248,26 +1306,21 @@ We also need to change the initial value of the game state manager's state from 
 We can now take inputs from the keyboard and assign actions to them. Specifically, if the user presses a certain button we want to change the state of the \m{GameStateManager} using the setter method and then we want to set the inner loop to stop running so that we can go back to the outer loop and join the new state.
 
 \vs
-We will assign the up arrow to be the keyboard event to change the state. This is done as follows.
+We can assign the up arrow to be the keyboard event to change the state. This is done as follows.
 
-\begin{mp}
+\begin{mpy}
       if keys[K_UP]:
           self.gameStateManager.setState('game_loop')
           running = False
-\end{mp}
+\end{mpy}
 
-This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later. We will now show a video demonstrating this in action, although the keyboard inputs are not visible. The only input I gave to the system was an upwards arrow key input.
-
-\vs
-{\huge \textcolor{red}{INSERT VIDEO LINK HERE}}
-
-
+This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later. We will now show a video demonstrating this in action, although the keyboard inputs are not visible. The only input I gave to the system was the up and down arrow keys. However, since we don't have a game loop yet, this is a bit pointless. This is something we will rectify once we have a game loop.
 
 \subsection{\textcolor{red}{Button}}
 
 We will be implementing a \m{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \m{Block} class, since this already implements some important features. Additionally, the \m{Rect} class in \m{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
 
-\begin{mp}
+\begin{mpy}
 class Button(Block):
 
   def __init__(self, centre, length0, length2, colour, SCREEN_DIMS, text, bg_color):
@@ -1292,14 +1345,14 @@ class Button(Block):
 
     #Set screen dims for rendering
     self.SCREEN_DIMS = SCREEN_DIMS
-\end{mp}
+\end{mpy}
 
 We set the camera position to be in the middle of the screen, which means that we don't need to adjust our render functions, and we can just use this as our camera position, since we won't be moving anyway.
 
 \vs
 We will now write the render function as follows.
 
-\begin{mp}
+\begin{mpy}
 
   #Modified render function of the button
   def render(self, display, dt):
@@ -1309,24 +1362,26 @@ We will now write the render function as follows.
 
     #Render the text on top
     display.blit(self.text_surface, self.text_rect)
-\end{mp}
+\end{mpy}
 
 \href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{This was an important link, and we need to reference it}. We will now change the \m{Start} menu class to make use of this new button. We begin by adding the following lines to the constructor.
 
 \vs
-\begin{mp}
+\begin{mpy}
     #Create button instance to use
     self.button = Button(U.mult(self.SCREEN_DIMS, 0.5), 350, 80, self.BG_COLOR, self.SCREEN_DIMS, "hello", self.BG_COLOR)
-\end{mp}
+\end{mpy}
 
-This ensures that we can now use the button object inside of the main loop. However, as of right now, it doesn't have any functionality, so we will implement a click function which will tell us when the mouse cursor is over the button. We can then find when the mouse button is clicked and if both conditions are met then the button has been clicked. In the \m{Button} class we can add a new function \m{}
+This ensures that we can now use the button object inside of the main loop. However, as of right now, it doesn't have any functionality, so we will implement a click function which will tell us when the mouse cursor is over the button. We can then find when the mouse button is clicked and if both conditions are met then the button has been clicked. In the \m{Button} class we can add a new function.
+
+\tbc
 
 
 \subsection{\textcolor{blue}{Game Loop}}
 
-We will be creating a new class \mintinline{python}{GameLoop}, which will be running the game loop. To do this, we will be taking the \mintinline{python}{display} which we need to work on, the \mintinline{python}{GameStateManager}, and then we can assign all of the characteristics from this to the class in order to make them even easier to access.
+We will be creating a new class \m{GameLoop}, which will be running the game loop. To do this, we will be taking the \m{display} which we need to work on, the \m{GameStateManager}, and then we can assign all of the characteristics from this to the class in order to make them even easier to access.
 \vs
-\begin{mp}
+\begin{mpy}
 class GameLoop:
 
   def __init__(self, display, gameStateManager):
@@ -1339,14 +1394,14 @@ class GameLoop:
 
     #Get the screen dimensions conveniently
     self.SCREEN_DIMS = self.gameStateManager.SCREEN_DIMS
-\end{mp}
+\end{mpy}
 
 \vs
-We also need to initialise a new clock and set \mintinline{python}{dt} in order to be able to use frame-rate independent physics. We have currently set a place holder on the initial position of the player until we set up spawn points, teams, etc.
+We also need to initialise a new clock and set \m{dt} in order to be able to use frame-rate independent physics. We have currently set a place holder on the initial position of the player until we set up spawn points, teams, etc.
 
 \vs
 
-\begin{mp}
+\begin{mpy}
     #Placeholders for the moment
     self.pos_x = self.SCREEN_DIMS[0]//2
     self.pos_y = self.SCREEN_DIMS[1]//2
@@ -1354,16 +1409,16 @@ We also need to initialise a new clock and set \mintinline{python}{dt} in order 
     #Initialise the clock, and set the refresh rate
     self.clock = pygame.time.Clock()
     self.REFRESH_RATE = self.gameStateManager.REFRESH_RATE
-\end{mp}
+\end{mpy}
 \vs
 We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \m{run()} function that will be called everytime we are changing states. 
-\begin{mp}
+\begin{mpy}
   def run(self, returnValues):
-    #Delta T is kept for frame-rate independent physics
+
     dt = 0
 
-    player1 = ([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
-    
+    player1 = Player([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+
     #List of all players
     self.players = [player1]
 
@@ -1372,17 +1427,20 @@ We need to create an actual game loop. Specifically, we need to contain this gam
     while running:
 
       self.display.fill((255, 255, 255))
+
       #Check if player wants to quit
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           pygame.quit()
           sys.exit()
-      
+
       #Get the key presses and mouse position and buttons
       keys = pygame.key.get_pressed()
+
       mouse_pos = pygame.mouse.get_pos()
+
       mouse_clicks = pygame.mouse.get_pressed()
-      
+
       #Get direction vector
       player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
 
@@ -1394,21 +1452,91 @@ We need to create an actual game loop. Specifically, we need to contain this gam
       player1.forward_vec = player1_direction
 
       #Get the directions which are pressed
-      self.directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
+      directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
+
+      for player in self.players:
+          player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
 
       #Update the display
       pygame.display.update()
 
       #Tick the clock
       dt = self.clock.tick(self.REFRESH_RATE)/1000
-\end{mp}
 
-We still need to find some way to render the player which will do in the rendering section. 
+    return None
+\end{mpy}
+
+We will now re-write the \m{render()} function in the \m{Player} class, since there is a lot of ineffecienies in the way it was written, and now that the \m{Utility} class is available we can make the code a lot more efficient, readable, and maintainable. Additionally, there were a lot of values that were being calculated twice, and now we can get rid of that. This produces the following code.
+\vs
+
+\begin{mpy}
+  #Renders the character to the display of the player
+  def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
+
+    #Find relative posistion
+    rel_pos = U.convertToScreen(camera_position, self.position, SCREEN_DIMS)
+
+    #Draw the circle
+    pygame.draw.circle(display, self.colour, rel_pos, self.radius)
+
+    #Final extent of the forward vector
+    for_pos = U.vecAdd(U.mult(self.forward_vec, 100), rel_pos)
+
+    #Draw anti-aliased line for forward vector
+    pygame.draw.aaline(display, (0, 0, 0), rel_pos, for_pos)
+
+    #Move the player
+    self.movePlayer(directions, dt)
+\end{mpy}
 
 
 
+Setting the start state to be \m{"game_loop"}, we can only see a blank screen. This is because we aren't drawing anything to the screen. Therefore, we need to add the \m{render()} function to the main loop. Whilst we are doing that, we can also add a block, since the player will just be stationary in the middle of the screen. We start by adding the block to the section before the \m{while} loop in the \m{run()} function.
 
+\begin{mpy}
+    block1 = Block([self.pos_x, self.pos_y + 200], 100, 200, (100, 0, 0), self.SCREEN_DIMS, player1.position)
 
+    #List of all blocks
+    blocks = [block1]
+\end{mpy}
+
+Then, we add the following lines of code in the \m{while} loop, as shown below. The first and last lines are already present, but were added for clarity. This will now render both the player and the block.
+
+\begin{mpy}
+      #Get the directions which are pressed
+      directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
+
+      for player in players:
+        player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
+
+      for block in blocks:
+        block.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
+
+      #Update the display
+      pygame.display.update()
+\end{mpy}
+
+This results in the output shown below.
+
+\begin{figure}[H]
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_1.png}}
+    }
+    \caption{An image capture of the game loop}
+    \label{fig:game_loop_1}
+\end{figure}
+
+Here is a \href{https://youtu.be/ICvIX3ar_eY}{video} demonstrating what this looks like. Both keyboard and mouse inputs were given here.
+
+\vs
+We can now add more players and more blocks into the map in order to make the game loop more alike to a real game setting. This is done simply by adding more player instances at different positions. For now, we will set the players to be in the top left corner of the map, and at regularly space intervals.
+
+\begin{mpy}
+TODO
+\end{mpy}
 
 
 \tbc
