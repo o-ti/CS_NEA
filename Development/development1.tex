@@ -129,6 +129,8 @@ The first, most obvious thing to implement is a way to move the player. This mus
 
     #We will finally update the position of the player
     self.position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
+
+
 \end{mpy}
 \vs
 
@@ -148,7 +150,26 @@ We can test this code as shown below.
 \end{mpy}
 
 \vs
-This is what we have expected and so this function works as expected. The input to the function will be sanitised in the game loop, so there is no way for a user to enter invalid inputs.
+This is what we have expected and so this function works as expected. The input to the function will be sanitised in the game loop, so there is no way for a user to enter invalid inputs. However, there is one thing we need to do. Primarily, we need to find a way to limit the player's movement between 0 and 8000. This can be done as follows.
+
+\begin{mpy}
+    #Update position of player
+    updated_position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
+
+    #Check that the values are within (0, 0) and (8000, 8000)
+    #(0, 0) is the top left of the map
+    #(8000, 8000) is the bottom right
+
+    for i in range(2):
+        
+      if updated_position[i] - self.radius <= 0:
+        updated_position[i] = self.radius
+
+      elif updated_position[i] + self.radius >= 8000:
+        updated_position[i] = 8000 - self.radius
+
+    self.position = updated_position
+\end{mpy}
 
 \vs
 
@@ -1532,11 +1553,303 @@ This results in the output shown below.
 Here is a \href{https://youtu.be/ICvIX3ar_eY}{video} demonstrating what this looks like. Both keyboard and mouse inputs were given here.
 
 \vs
-We can now add more players and more blocks into the map in order to make the game loop more alike to a real game setting. This is done simply by adding more player instances at different positions. For now, we will set the players to be in the top left corner of the map, and at regularly space intervals.
+We can now add more players and more blocks into the map in order to make the game loop more alike to a real game setting. This is done simply by adding more player instances at different positions. For now, we will set the players to be in the top left corner of the map, and at regularly space intervals. We also want to be able to differentiate between the two teams, so we add this bit of code into the constructor for \m{Player}. This will allow us to choose colours based on which team the player is in.
 
 \begin{mpy}
-TODO
+    self.colours = {0: (0, 100, 100),
+                    1: (100, 20, 0)
+                    }
+
+    self.colour = self.colours[team]
 \end{mpy}
 
+Now that we have this, we can add the players as follows.
 
-\tbc
+\begin{mpy}
+    # Team 1
+    player1 = Player([self.pos_x - 500, self.pos_y + 400], [0, -1], 0, Shotgun())
+    player2 = Player([self.pos_x, self.pos_y + 400], [0, -1], 0, AssaultRifle()
+    )
+    player3 = Player([self.pos_x + 500, self.pos_y + 400], [0, -1], 0, SniperRifle()
+    )
+
+    # Team 2
+    player4 = Player([self.pos_x - 500, self.pos_y], [0, 1], 1, Shotgun())
+    player5 = Player([self.pos_x, self.pos_y], [0, 1], 1, AssaultRifle())
+    player6 = Player([self.pos_x + 500, self.pos_y], [0, 1], 1, SniperRifle())
+
+    # Contains all of the players in the game
+    self.players = [player1, player2, player3, player4, player5, player6]
+\end{mpy}
+
+We will temporarily remove the block from the scene, and add it back later. We still need to make one more change however. Since the other players will be controlled with AI, we need to find some way of getting inputs to the other players. To do this, we will be using a list containing all of the inputs to the other players. We will set one of these inputs to be the human input, which will then control \m{player1}. To do this efficiently, we will use the \m{enumerate} keyword in \m{Python}. This is written as follows.
+
+\begin{mpy}
+      #Output from the model will go here
+      model_predictions = [
+        directions,
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]
+
+      #Render and move players as needed
+      for i, player in enumerate(players, 0):
+        player.render(self.display, player1.position, model_predictions[i], dt, self.SCREEN_DIMS)
+\end{mpy}
+
+This appears as shown in Figure \ref{fig:game_loop_2}. \href{https://youtu.be/KU45hIX5U_0}{Here is a video} showing this in action.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.49\textwidth}
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2.png}}}
+    \caption{Screen Capture 1}
+    \label{fig:game_loop_2_1}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2_b.png}}}
+    \caption{Screen Capture 2}
+    \label{fig:game_loop_2_2}
+  \end{subfigure}
+  \caption{Screen captures of two different states in the game loop.}
+  \label{fig:game_loop_2}
+\end{figure}
+
+\vs
+Then next thing we need to do is seperate the render function and the player update. This is important because we need to be able to manage the player states instead of moving it directly. Additionally, it is not the responsibility of the render function to do this. Therefore, we will create a new \m{updatePlayerState} which will take in the directions, and will update the player states.
+
+\begin{mpy}
+  def updatePlayerState(self, action, dt):
+    #Move the player
+    self.movePlayer(action, dt)
+\end{mpy}
+
+We will now remove the \m{directions} and \m{dt} inputs from the \m{render()} function since they are no longer needed. This gives the same outputs as shown above. Furthermore, we want to now change the way we are taking inputs. This is because they are based on convention and will make the output from the models harder to work with. Additionally, when we start working with the AI, it is difficult to get an output for the forward and backwards directions and similarly for horizontal inputs, since it is much easier to work with just a single value between -1 and 1. Therefore, we will update the move player function as follows.
+
+\begin{mpy}
+  def movePlayer(self, directions, dt):
+    #directions = [horizontal input, vertical input]
+
+    #Used to normalise directions
+    magnitude = sqrt(U.dot(directions, directions))
+
+    #If no movement, break
+    if magnitude == 0:
+        return None
+
+    #Calculate movement in the frame
+    frameMovement = U.mult(directions, (dt * self.max_speed)/magnitude)
+
+    #Update position
+    updatedPosition = U.vecAdd(self.position, frameMovement)
+
+    #Position must be inside of the field
+    for i in range(2):
+        
+      if updatedPosition[i] - self.radius <= 0:
+        updatedPosition[i] = self.radius
+
+      elif updatedPosition[i] + self.radius >= 8000:
+        updatedPosition[i] = 8000 - self.radius
+
+    #Set new position
+    self.position = updatedPosition
+\end{mpy}
+
+However, there is still a problem with this code. This is because, if we put our input into the red team, we see that the inputs are still moving the same way they would for the blue team. This is shown in this \href{https://youtu.be/XTUu_KktHLQ}{video}.
+
+However, this is not what we expect to see. The way to resolve this is to use the initial forward vector of the player. This is done as follows. We need to start by creating a right pointing vector in the constructor.
+
+\begin{mpy}
+    if self.initial_forward_vec == [0, -1]:
+      self.initial_right_vec = [1, 0]
+    else:
+      self.inital_right_vec = [-1, 0]
+\end{mpy}
+
+However, there is still a more efficient way of doing this. The inputs are completely flipped for the opposite team, so we just need to multiply the input direction by -1 for the red team, and for 1 on the blue team. We can remove the right vector, since it is no longer required. We can add the following lines in the constructor.
+
+\begin{mpy}
+    if self.initial_forward_vec == [0, -1]:
+      self.movement_multiplier = 1
+    else:
+      self.movement_multiplier = -1
+\end{mpy}
+
+Then, the movement is updated as follows.
+
+\begin{mpy}
+    #Calculate movement in the frame
+    frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
+\end{mpy}
+
+This then produces the output we expect, as shown \href{https://youtu.be/ZixPY08tVlE}{in this video}.
+\vs
+
+The model will output a dictionary of the inputs that it wants the player to take. Therefore, we will modify our code as follows. In the \m{run()} function, we want to edit the \m{model_predictions} to be as follows.
+
+\begin{mpy}
+      #Output from the model will go here
+      model_predictions = [
+        {"forward": directions[1], "right": directions[0], "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+      ]
+\end{mpy}
+
+In the \m{updatePlayerState()}, we do the following.
+
+\begin{mpy}
+  #Update the player state
+  def updatePlayerState(self, action, dt):
+
+    #Get the directions from the dictionary
+    directions = [action["right"], action["forward"]]
+
+    #Move the player
+    self.movePlayer(directions, dt)
+\end{mpy}
+
+In the \m{run()} we also need to update the player state as follows. We will do this in a seperate loop, because we will also need to do state updates between the player movement update and the rendering.
+
+\begin{mpy}
+      #Update player states
+      for i, player in enumerate(players, 0):
+        player.updatePlayerState(model_predictions[i], dt)
+\end{mpy}
+
+We also need to rotate the direction vector. This is done as follows using the \m{U.rotateVec()} method we defined before. This is inserted into \m{updatePlayerState()}.
+
+\begin{mpy}
+    #If dt != 0 we want to turn
+    if dt != 0:
+      angleTurned = action["rot_rate"] * dt
+      self.forward_vec = U.rotateVector(self.forward_vec, angleTurned)
+\end{mpy}
+
+We will also change the rotation rate for some of the characters. This will allow us to this in action.
+
+\begin{mpy}
+      #Output from the model will go here
+      model_predictions = [
+        {"forward": directions[1], "right": directions[0], "rot_rate": 0},
+        {"forward": 0, "right": 0, "rot_rate": 1.5},
+        {"forward": 0, "right": 0, "rot_rate": -1},
+        {"forward": 0, "right": 0, "rot_rate": 1},
+        {"forward": 0, "right": 0, "rot_rate": -1},
+        {"forward": 0, "right": 0, "rot_rate": 0},
+      ]
+\end{mpy}
+
+This produces the output as shown in Figure \ref{fig:game_loop_3_rot}, and also in \href{https://youtu.be/GxHD5rflfGw}{this video}.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.49\textwidth}
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_a.png}}}
+    \caption{Screen Capture 1}
+    \label{fig:game_loop_3_1}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_b.png}}}
+    \caption{Screen Capture 2}
+    \label{fig:game_loop_3_2}
+  \end{subfigure}
+  \caption{Screen captures of two different states in the game loop whilst the players are rotating.}
+  \label{fig:game_loop_3_rot}
+\end{figure}
+
+The next thing we want to do is to implement the firing system. This is the primary mechanic in the game, so it is important to implement it. To do this, we will need to setup a few things. Firstly, we need to take inputs for whether the player is firing or not. We can do this using another key in the inputs dictionary. We can also add an extra line in the \m{updatePlayerState()} to account for this. This is done as follows.
+\begin{mpy}
+    #Array of [Position, Final Extent, Damage]
+    if action["firing"]:
+      weaponRay = self.fire()
+    else:
+      weaponRay = []
+
+    return weaponRay
+\end{mpy}
+
+We have not accounted for the cooldown of the weapon yet, but this is something we will implement in the next iteration of the weapon system. For now, we will need to update the main \m{run()} function. This is done as follows.
+
+\begin{mpy}
+      rays = {}
+      #Update player states
+      for i, player in enumerate(players, 0):
+        rays[player] = player.updatePlayerState(model_predictions[i], dt)
+\end{mpy}
+
+We will also create a new function \m{handlesRayCollisions()} to deal with all of the rays that are being fired.
+
+\begin{mpy}
+
+\end{mpy}
+
+In order to make the damage on the players more clear, we can display the health of the player on them. This will make the code easier to debug, and will show the player the health of the enemy. We add the following code to the start of the \m{player.py} file.
+
+\begin{mpy}
+import pygame.freetype
+
+pygame.freetype.init()
+text_font = pygame.freetype.SysFont('iosevka', 48)
+\end{mpy}
+
+In the render function, we add the following lines at the end.
+
+\begin{mpy}
+        #Create text surface of the health
+        self.text_surface, self.text_rect = text_font.render(str(self.health), fgcolor=(255,255,255), bgcolor=self.colour)
+
+        #Set text position
+        self.text_rect.center = rel_pos
+
+        #Blit the text
+        display.blit(self.text_surface, self.text_rect)
+\end{mpy}
+
+This will create the text surface, and will draw it onto the screen. The screen capture of the game is shown in \ref{fig:game_loop_4}.
+
+\begin{figure}[H]
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_4.png}}
+    }
+    \caption{A screen capture of the game loop with the health drawn on the players.}
+    \label{fig:game_loop_4}
+\end{figure}
+
+We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source.
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+\href{https://www.youtube.com/watch?v=VpSWuywFlC8}{Refer to this video since we will be doing collisions using rectangles not circle}
+
+\href{https://gamedev.stackexchange.com/questions/199861/collision-detection-between-moving-objects-in-pygame}{This one might help too just take a look.}
