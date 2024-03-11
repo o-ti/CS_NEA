@@ -255,3 +255,49 @@
 \end{center}
 
 The menu classes have been omitted from here, will be documented when there is more code there.
+
+
+
+\begin{mpy}
+class Dictionary(dict):
+    
+    def __init__(self):
+        
+        super().__init__()
+        
+    def __add__(self, other):
+        
+        returnDict = Dictionary()
+        
+        key1 = self.keys()
+        key2 = other.keys()
+        combined = set(list(key1)+list(key2))
+        
+        for key in combined:
+            try:
+                value1 = self[key]
+            except KeyError:
+                value1 = 0
+            
+            try:
+                value2 = other[key]
+            except KeyError:
+                value2 = 0
+            
+            returnDict[key] = value1 + value2
+        
+        return returnDict
+d = Dictionary()
+
+d["hello"] = 3
+d["bye bye"] = 1
+
+c = Dictionary()
+
+
+c["hello"] = 5
+c["bye"] = 2
+
+
+print(c+d)
+\end{mpy}

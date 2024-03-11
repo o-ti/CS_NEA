@@ -1842,68 +1842,159 @@ This will create the text surface, and will draw it onto the screen. The screen 
     \label{fig:game_loop_4}
 \end{figure}
 
-We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source. We being by creating a dictionary crediting 
+We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source. We being by creating a dictionary crediting the players for damage in any given frame and whether the player eliminated other players. Additionally, we will set a \m{deathCredit} dictionary to account for whether a player has died. We can use this to find the total amount of damage dealt, eliminations and deaths per player for a whole game. We need to pass \m{player1} into the function, since we need to be able to render the rays, and so we need \m{player1}'s position.
 
 \begin{mpy}
-  def handleRayCollisions(self, rays):
+  def handleRayCollisions(self, rays, player1):
     
     #Dicts for credit
     damageCredit = {p: 0 for p in self.players}
     eliminationCredit = {p: 0 for p in self.players}
-
-
+    deathCredit = {p: 0 for p in self.players}
 \end{mpy}
 
-\href{https://www.youtube.com/watch?v=VpSWuywFlC8}{Refer to this video since we will be doing collisions using rectangles not circle}
-
-\href{https://gamedev.stackexchange.com/questions/199861/collision-detection-between-moving-objects-in-pygame}{This one might help too just take a look.}
-
-We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is what we expected. This is a very peculiar bug, and we can examine why this occurs. This is demonstrated in this video and in INSERT FIGURE REFERENCE HERE.
-
-
-\vs
-This is very unexpected and must be resolved since this would ruin the gameplay experience.
+We now want to iterate through all of the players and see what rays they have fired. We will then credit them appropriately. We then decompose the fired ray into it's line and damage. This will then be used to do a line-circle collision test with all of the other players that are not on the same team. This will ensure that all of the rays are only fired against the enemy team, and that the ray has in fact hit a player.
 
 \begin{mpy}
-class Dictionary(dict):
-    
-    def __init__(self):
-        
-        super().__init__()
-        
-    def __add__(self, other):
-        
-        returnDict = Dictionary()
-        
-        key1 = self.keys()
-        key2 = other.keys()
-        combined = set(list(key1)+list(key2))
-        
-        for key in combined:
-            try:
-                value1 = self[key]
-            except KeyError:
-                value1 = 0
-            
-            try:
-                value2 = other[key]
-            except KeyError:
-                value2 = 0
-            
-            returnDict[key] = value1 + value2
-        
-        return returnDict
-d = Dictionary()
+    #Iterate through all players
+    for player_i in self.players:
+      firedRays = rays[player_i]
 
-d["hello"] = 3
-d["bye bye"] = 1
+      for ray in firedRays:
 
-c = Dictionary()
+        #Larger than possible hit range
+        t = 2
+        bestHit = None
 
-
-c["hello"] = 5
-c["bye"] = 2
-
-
-print(c+d)
+        #Line we want to test with
+        line = ray[0:2]
 \end{mpy}
+
+In order to render the line, we need the start and end points of the line to be converted into co-ordinates relative to the player. This will make them render properly. This, can be done as follows.
+
+\begin{mpy}
+        relPos = U.convertToScreen(player1.position, line[0], self.SCREEN_DIMS)
+
+        finalRelPos = U.convertToScreen(player1.position, line[1], self.SCREEN_DIMS)
+
+        pygame.draw.aaline(self.display, (226,135,67), relPos, finalRelPos)
+\end{mpy}
+
+Then next thing we need to do is to iterate through all of the players and check whether there is a hit. Particularly, we want to find the closest hit and only that one is registered. We also don't want to register a hit if the player is part of our own team, so we can avoid testing for it altogether. This code then assigns the credit to whichever player was responsible for causing the damage and also shows which players died in each frame.
+
+\begin{mpy}
+        #Iterate through test players
+        for testPlayer in self.players:
+
+          #Don't check if test is the player
+          if testPlayer != player_i and testPlayer.team != player_i.team:
+
+            #Player circle
+            circle = [testPlayer.position, testPlayer.radius]
+
+            #Check if hit has occurred
+            hitResult = U.lineCircleCollision(line, circle)
+
+            #Is there a hit, and was it closer
+            if hitResult[0] and t > hitResult[1]:
+
+              #If so, update bestHit and min t
+              t = hitResult[1]
+              bestHit = testPlayer
+
+            #If hit registered
+            if bestHit:
+
+              #Reduce health of player which was killed
+              bestHit.health -= ray[2]
+              
+              #If player died
+              if bestHit.health <= 0:
+
+                #Reset the player
+                bestHit.reset()
+
+                #Add elim credit to player_i
+                eliminationCredit[player_i] += 1
+
+                #Add death credit to player which died
+                deathCredit[bestHit] += 1
+
+              #Add damage credit to player_i for the hit
+              damageCredit[player_i] += ray[2]
+
+    return damageCredit, eliminationCredit, deathCredit
+\end{mpy}
+
+One other thing we need to be able to do is to reset the player's character. To do this, we will modify the \m{Player} class once more to add \m{Player.reset()}. This will reset the player to it's original position once more.
+
+\begin{mpy}
+  def reset(self):
+    self.position = self.spawn_point
+    self.forward_vec = self.initial_forward_vec
+    self.rotation_rate = 0
+    self.health = self.max_health
+\end{mpy}
+
+This will let us set the position back to the spawn point, will set the forward vector to be in it's original position, and will set the rotation rate to be 0 once more. It will also reset the health of the player.
+\vs
+
+We now need to add \m{self.handleRayCollisions(ray, player1)} into the game loop, but before rendering. Running this code we can see the screen capture shown in Figure \ref{fig:game_loop_5_rendering}. \href{https://youtu.be/Nc3b_djroOY}{Here is a video demonstrating this in action.}
+
+\vs
+\begin{figure}[H]
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_rendering.png}}
+    }
+    \caption{A screen capture of the game loop with the weapon firing.}
+    \label{fig:game_loop_5_rendering}
+\end{figure}
+
+
+We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is not what we expected. This is a very peculiar bug, and we can examine why this occurs. This is demonstrated in the previous video and in Figure \ref{fig:game_loop_5_firing_bug}. When the player's forward vector snaps back to the original position, they have just respawned.
+
+\begin{figure}[H]
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_firing_bug.png}}
+    }
+    \caption{A screen capture of the game loop with the weapon firing one shot at each enemy.}
+    \label{fig:game_loop_5_firing_bug}
+\end{figure}
+
+\vs
+This is very unexpected and must be resolved since this would ruin the gameplay experience, and would be open to exploitation by the AI. Therefore, we need to resolve this. We will begin by examining the cause of this. We will start by adding print statements to the console when damage is dealt.
+
+\vs
+
+Re-reading the code, we can see that there is a problem with indentation. Because of an extra tab, the code reponsible for dealing damage to the player is called more often than it should be. Undoing this accidental change, we can see the following in \href{https://youtu.be/sTve4Egito0}{this video}. In this video, we will also allow the player to move to demonstrate that they are in fact respawning. This works as intended. However, there is now two other issues that we can see.
+
+\vs
+Firstly, any button on the mouse can trigger a firing of the weapon which is not what we want. Additionally, when the enemy player is meant to be moving forward, they are actually moving backwards, which is not intended. We will tackle the second problem first.
+\vs
+
+The reason for this problem is because of how we defined the \m{directions} input to the player. When the player is attempting to move forward, the input in the vertical direction is negative. This is counterintuitive, since we want the inputs to be the same regardless of which team the player is on. Therefore, we will map forward for us to be a positive value in the vertical direction, but thsi will correspond to a negative change in position. However, this will also flip the direction of the horizontal movement. What we really need to do is consider how inputs for each team will act. For team 1, we see that for rightwards movement, we need to create a positive change in the $x$ direction, and for a forwards movement, we need to create a negative change in the $y$ direction.
+\vs
+
+We can make this adjustment to the code in the \m{movePlayer()} function.
+
+\begin{mpy}
+    #Calculate movement in the frame
+    frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
+
+    #Orient the player movement properly
+    frameMovement[0] *= -1
+\end{mpy}
+
+We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} confirming that it is indeed working as expected.
+
+INSERT FIGURE HERE
+
+\href{https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame}{Refer to this to figure out how to seperate different mouse button events}
+
+
