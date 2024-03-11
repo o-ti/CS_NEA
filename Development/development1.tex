@@ -1842,10 +1842,14 @@ This will create the text surface, and will draw it onto the screen. The screen 
     \label{fig:game_loop_4}
 \end{figure}
 
-We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source.
+We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source. We being by creating a dictionary crediting 
 
 \begin{mpy}
-
+  def handleRayCollisions(self, rays):
+    
+    #Dicts for credit
+    damageCredit = {p: 0 for p in self.players}
+    eliminationCredit = {p: 0 for p in self.players}
 
 
 \end{mpy}
@@ -1854,4 +1858,53 @@ We will now create \m{handleRayCollisions()} which takes in the \m{rays} diction
 
 \href{https://gamedev.stackexchange.com/questions/199861/collision-detection-between-moving-objects-in-pygame}{This one might help too just take a look.}
 
-We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is what we expected. This is a very peculiar bug, and we can examine why this occurs.
+We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is what we expected. This is a very peculiar bug, and we can examine why this occurs. This is demonstrated in this video and in INSERT FIGURE REFERENCE HERE.
+
+
+\vs
+This is very unexpected and must be resolved since this would ruin the gameplay experience.
+
+
+
+
+class Dictionary(dict):
+    
+    def __init__(self):
+        
+        super().__init__()
+        
+    def __add__(self, other):
+        
+        returnDict = Dictionary()
+        
+        key1 = self.keys()
+        key2 = other.keys()
+        combined = set(list(key1)+list(key2))
+        
+        for key in combined:
+            try:
+                value1 = self[key]
+            except KeyError:
+                value1 = 0
+            
+            try:
+                value2 = other[key]
+            except KeyError:
+                value2 = 0
+            
+            returnDict[key] = value1 + value2
+        
+        return returnDict
+d = Dictionary()
+
+d["hello"] = 3
+d["bye bye"] = 1
+
+c = Dictionary()
+
+
+c["hello"] = 5
+c["bye"] = 2
+
+
+print(c+d)
