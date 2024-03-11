@@ -1853,3 +1853,5 @@ We will now create \m{handleRayCollisions()} which takes in the \m{rays} diction
 \href{https://www.youtube.com/watch?v=VpSWuywFlC8}{Refer to this video since we will be doing collisions using rectangles not circle}
 
 \href{https://gamedev.stackexchange.com/questions/199861/collision-detection-between-moving-objects-in-pygame}{This one might help too just take a look.}
+
+We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is what we expected. This is a very peculiar bug, and we can examine why this occurs.
