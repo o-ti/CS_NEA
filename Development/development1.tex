@@ -1998,3 +1998,87 @@ INSERT FIGURE HERE
 \href{https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame}{Refer to this to figure out how to seperate different mouse button events}
 
 
+The next thing we need to implement is the firing cooldown. Effectively, we want to find a way of determining whether the weapon should be able to fire again yet. This could be done with a dictionary of timers, which can be queried for each player. This query will return \m{True} if the player can fire again, or \m{False} if they can't. Then, we will use the $\land$ operator to find whether the player should fire that frame or not. This will also do action masking for us, which ensures that when we backpropagate through the network we observe that no action was taken if the weapon could not be fired. When we are actually doing the AI training we will not be using clocks, and therefore, we will need to convert times into frames which are much more easily observable for the training.
+
+\vs
+\m{PyGame} implements clocks already, so we can use these to find the time between the last shot and the present moment. We can write the query function as follows.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+
+The next thing we need to do is to implement collisions with the blocks on the map. There are a few primary things we need to consider. The first one is to ensure that the blocks stop rays from passing through them. Since, we have implemeneted a function to do line-rectangle collisions, we just need to add a few extra lines to check for block collisions before we check for player collisions. We need to ensure that the closest collision is a player collision if there is to be damage dealt in that frame. This is done as follows.
+
+\begin{mpy}
+
+
+
+\end{mpy}
+\vs
+
+Adding a block to the scene we get the following.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+This appears as following INSERT FIGURE AND VIDEO HERE. FOR FUTURE REFERENCE USE \verb|\href{}{}| around the image insert in order to link the image to a website.
+
+\vs
+The next thing we need to implement is circle-block collision. However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
+
+\vs
+In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter.
+
+INSERT MESSAGES HERE
+
+
+\vs
+The overall response was neutral, but this would make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions. We begin by TODO.
+
+
+
+\vs
+Now that we have a way to handle collisions with blocks, we can design the final map. This can be done by changing the positions of the objects on the map. This is done as follows.
+
+\vs
+We have a few more changes to make before we can use the game to do training with. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map.
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+
+We can write the time left and the team scores on the screen. We will set the round time to be short so that we can observe the game ending due to running out of time.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+INSERT FIGURE AND VIDEO HERE
+
+
+\vs
+Another thing we need to fix is what happens if the player wants to "zoom" out so that they can see where they are aiming on the screen. To do this, we need to use a \m{smoothscale()} on the surface we are rendering on, and then reverse this change when we want to return to our original value. This will make the game much more engaging and will make the game easier to play.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+Combining all of this together, we get the following demonstration.
+
+This marks the end of the first iteration of the game.
