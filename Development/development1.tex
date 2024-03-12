@@ -1991,38 +1991,101 @@ We can make this adjustment to the code in the \m{movePlayer()} function.
     frameMovement[0] *= -1
 \end{mpy}
 
-We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} confirming that it is indeed working as expected.
+We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} and in \ref{fig:game_loop_6_movement_bug} confirming that it is indeed working as expected.
 
-INSERT FIGURE HERE
+\begin{figure}[H]
+    \centering
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_6_movement_bug.png}}
+    }
+    \caption{A screen capture of the enemy player with inputs moving forward and to the left}
+    \label{fig:game_loop_6_movement_bug}
+\end{figure}
 
-\href{https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame}{Refer to this to figure out how to seperate different mouse button events}
+\vs
+One of the other things we need to add is the collision of the rays being fired with the blocks on the map. This is fairly simple to do. Effectively, we need to find the closest hit along the ray that hits a block. Then, we need to see if there are any player hits which are closer still. In our code, we have an initial value for $t$, which is 2, therefore, we can simply use this bit of code to reassign $t$ depending on the closest block hit.
 
+\begin{mpy}
+        #Iterate through all blocks
+        for block in self.blocks:
 
+          #Determine whether a result is met
+          hitResult = U.lineRectCollision(line, block)
+
+          #If a hit has occurred
+          if hitResult[0]:
+
+            #If the result is closer
+            if hitResult[1] < t:
+
+              #Reassign the hit result
+              t = hitResult[1]
+\end{mpy}
+
+The next thing to fix is the problem with the other mouse click registers. We can do this by considering this StackExchange post \cite{pygame_mouse_clicks}. In the post it mentions that we can consider \m{event.button} which can take 5 values depending on which value was chosen. We want to only consider \m{event.button == 1} for this case. This will work as follows.
+
+\begin{mpy}
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_clicked = True
+\end{mpy}
+
+This will ensure that the left mouse button is the only button that is clicked.
+\vs
+
+We can see that this works in the following video. This is also a change that we need to replicat to other areas of the code since this is something that other bits of the code have also used.
+
+\vs
 The next thing we need to implement is the firing cooldown. Effectively, we want to find a way of determining whether the weapon should be able to fire again yet. This could be done with a dictionary of timers, which can be queried for each player. This query will return \m{True} if the player can fire again, or \m{False} if they can't. Then, we will use the $\land$ operator to find whether the player should fire that frame or not. This will also do action masking for us, which ensures that when we backpropagate through the network we observe that no action was taken if the weapon could not be fired. When we are actually doing the AI training we will not be using clocks, and therefore, we will need to convert times into frames which are much more easily observable for the training.
 
 \vs
-\m{PyGame} implements clocks already, so we can use these to find the time between the last shot and the present moment. We can write the query function as follows.
+The first thing to implement is a dictionary of clocks marking the time since the last firing of a weapon. We can find if a player has fired a weapon by returning a flag in the \m{updatePlayerState()} function, since this is quicker than searching the dictionary. This is done by adjusting the following lines to the \m{playerUpdateState()}.
 
 \begin{mpy}
+    #Array of [Position, Final Extent, Damage]
+    if action["firing"]:
+      weaponRay = self.fire()
+      fired = True
+    else:
+      weaponRay = []
+      fired = False
 
-
+    return weaponRay, fired
 \end{mpy}
 
-
-The next thing we need to do is to implement collisions with the blocks on the map. There are a few primary things we need to consider. The first one is to ensure that the blocks stop rays from passing through them. Since, we have implemeneted a function to do line-rectangle collisions, we just need to add a few extra lines to check for block collisions before we check for player collisions. We need to ensure that the closest collision is a player collision if there is to be damage dealt in that frame. This is done as follows.
+\vs
+The next thing to do is to receive this \m{fired} flag, which is done as follows.
 
 \begin{mpy}
-
-
-
+      #Update player states
+      for i, player in enumerate(self.players, 0):
+        rays[player], fired = player.updatePlayerState(model_predictions[i], dt)
 \end{mpy}
+
+\vs
+\m{PyGame} implements clocks already, so we can use these to find the time between the last shot and the present moment. We can write a dictionary containing clocks for each player as follows. However, there is an ever more efficient way to do this using frames. Simply consider that we could count the number of frames that have elapsed between two times, and we could convert our cooldown into a specific number of frames when we initialise the object. This would make it significantly easier to implement, since we just subtract one from the counter every loop.
 \vs
 
-Adding a block to the scene we get the following.
+We make the following change in the \m{Weapon} class's initialiser.
 
 \begin{mpy}
+  self.frameCooldown = self.cooldown * REFRESH_RATE
+\end{mpy}
 
+Another change we need to make here is to convert this into \m{int} values otherwise, we run the risk of getting floating point errors, which could slow the game down. Because of this change, we also need to \m{REFRESH_RATE} to all of the weapon instances that we created, and also to the initialisers of all of the weapon subclasses.
 
+\vs
+Overall, this will mean that we have a specific number of frames that we can use as a cooldown. We can now set up the following in the \m{run()} function of the \m{GameLoop} class. This is done as shown below.
+
+\begin{mpy}
+      #Update player states
+      for i, player in enumerate(self.players, 0):
+        rays[player], fired = player.updatePlayerState(model_predictions[i], countdowns[player], dt)
+        if fired:
+          countdowns[player] = player.weapon.maxFrameCooldown
+        else:
+          countdowns[player] -= 1
 \end{mpy}
 
 This appears as following INSERT FIGURE AND VIDEO HERE. FOR FUTURE REFERENCE USE \verb|\href{}{}| around the image insert in order to link the image to a website.
@@ -2031,15 +2094,14 @@ This appears as following INSERT FIGURE AND VIDEO HERE. FOR FUTURE REFERENCE USE
 The next thing we need to implement is circle-block collision. However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
 
 \vs
-In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter.
-
-INSERT MESSAGES HERE
-
+In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter. The overall response was positive, with Frank saying that it was "a completely logical decision", and that he would not notice the difference much, if at all. 
 
 \vs
-The overall response was neutral, but this would make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions. We begin by TODO.
+This change would, however, make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions. The first thing to do is
 
+\tbc
 
+INSERT FIGURE AND VIDEO HERE
 
 \vs
 Now that we have a way to handle collisions with blocks, we can design the final map. This can be done by changing the positions of the objects on the map. This is done as follows.
@@ -2060,8 +2122,7 @@ We also need to set an objective for the game and whether the game has ended or 
 
 \end{mpy}
 
-
-We can write the time left and the team scores on the screen. We will set the round time to be short so that we can observe the game ending due to running out of time.
+We can write the time left and the team scores on the screen. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
 
 \begin{mpy}
 
@@ -2072,13 +2133,25 @@ INSERT FIGURE AND VIDEO HERE
 
 
 \vs
-Another thing we need to fix is what happens if the player wants to "zoom" out so that they can see where they are aiming on the screen. To do this, we need to use a \m{smoothscale()} on the surface we are rendering on, and then reverse this change when we want to return to our original value. This will make the game much more engaging and will make the game easier to play.
+Another thing we need to fix is what happens if the player wants to "zoom" out so that they can see where they are aiming on the screen. To do this, we need to update all of the render functions appropriately. Firstly, we need to define the behaviour of such a scaling. Firstly, it must preserve the main character being in the middle of the screen, and it must maintain the relative spacing between objects and lines. Effectively, we just need to add a zoom factor to everything that we are doing. Zooming out will have a factor less than 1, since we are reducing the distances between everything, and zooming in will have the opposite effect.
+\vs
+
+The first change to make is to the \m{convertToScreen()} function, which will now take in a zoom factor. This zoom factor will be decided on by the state in which we are in. For example, if we are using the sniper, and we are "aiming down sights", then we want to see more of the map, therefore the zoom factor will be less than 1.
 
 \begin{mpy}
-
-
+  #Will convert the world position of the character to a camera position for the player
+  @staticmethod
+  def convertToScreen(camera_position, object_position, SCREEN_DIMS, zoom):
+    screenPosition = [zoom*(object_position[i] - camera_position[i]) + SCREEN_DIMS[i]//2 for i in (0, 1)]
+    return screenPosition
 \end{mpy}
+
+The next adjustment to make is to the sizes of everything that we are rendering. We will start with the \m{Player} class.
+
 
 Combining all of this together, we get the following demonstration.
 
 This marks the end of the first iteration of the game. In order to get a better idea of how the stakeholders felt about the game, I decided to let them play it, and see what they felt about the project.
+
+
+INSERT OTHER PEOPLE PLAYING HERE AND THEIR OPINIONS
