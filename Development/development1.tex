@@ -789,6 +789,71 @@ This means that we have rotated the vector anti-clockwise by an angle of \ang{45
 This is not exactly right, but it is close enough to what we need since we expected 1.0 in the $y$-ordinate, and the $x$-ordinate is so incredibly small that we would not be able to process such as a change anyway.
 
 
+\vs
+One of the most important things in the collision system is player-player collision, and so for that reason we need to have a way to accurately determine whether two circles are overlapping, by how much and in which direction. The specifics of how this works are shown in the Design section, so we will not redo that here. We begin by finding the vector pointing from \m{circle1} to \m{circle2}. If this has a magnitude of less than $2r$, then we can confidently say that the circles are overlapping. However, there is one issue with this in that taking square roots are slow, so we will just use square values since this provides the same results, but slightly more efficiently.
+
+\begin{mpy}
+  #We will return [False, None] if no collision
+  #If there is a collision, we will return the direction of the collision
+  @staticmethod
+  def circleCircleCollision(circle1, circle2):
+
+    #Difference between the centres
+    centreDiff = Utility.vecSub(circle2[0], circle1[0])
+
+    #Magnitude squared of the difference
+    magnitude = Utility.dot(centreDiff, centreDiff)
+
+    #If outside of the range no collision
+    if magnitude > 4*circle1[1]**2:
+      return [False, None]
+\end{mpy}
+
+We wish to return \m{[False, None]} instead of just \m{False} because our code is designed in such a way that it will only progress further if the value is \m{True} which then requires the second index in the array to actually have a value, but doing it this way is much faster than checking for the type of the return values in the code where this is used.
+
+\vs
+The next thing to do is to find the point on the edge of \m{circle1} which lies on the line between the centres. This will then let us find by how much we need to move the player back by. This works as follows.
+
+\begin{mpy}
+    #The point on the circle where an intersection happens
+    intersect_dir = Utility.mult(centreDiff, circle1[1]/sqrt(magnitude))
+
+    #Midpoint of the collision
+    centre_mid_point = Utility.mult(centreDiff, 0.5)
+
+    #The half-distance in the collision
+    mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
+
+    #The vector to push the player back by
+    delta_position = Utility.mult(mid_circum_vec, -1)
+
+    return [True, delta_position]
+\end{mpy}
+
+We have also included a clause for if the magnitude is 0, which would only happen if the players were on top of each other, but just to be safe we will return no collision, since any move from either of the players would result in a non-zero collision that we can then handle appropriately.
+
+\vs
+We can see that this works as follows. We will create two circles, both of radius 2, and lying on the $x$-axis, and position them at $(1, 0)$, and $(-1, 0)$.
+
+\begin{mpy}
+>>> circle1 = [[1, 0], 2]
+>>> circle2 = [[-1, 0], 2]
+>>> Utility.circleCircleCollision(circle1, circle2)
+[True, [1.0, -0.0]]
+\end{mpy}
+
+The result is as expected. We will also try a boundary case, where the two circles are just touching each other.
+
+\begin{mpy}
+>>> circle1 = [[1, 0], 1]
+>>> circle2 = [[-1, 0], 1]
+>>> Utility.circleCircleCollision(circle1, circle2)
+[True, [-0.0, -0.0]]
+\end{mpy}
+
+This is not quite as expected, however, we can see that no movement was output, and therefore, even though it says \m{True} it won't affect the gameplay in any manner.
+
+
 \subsection{\textcolor{blue}{Weapon}}
 We will give each player a weapon, of a specific class, which will have specified statistics. In order to do this, we can create a parent class \m{Weapon} and derive other weapons from it. There are a few specific attributes that we need to have for the parent class. 
 \vs
@@ -803,7 +868,6 @@ class Weapon:
     self.damagePerHit = 5
     self.range = 1000
     self.std_dev = 0.25
-    self.cooldown = 0.2
     self.raysPerShot = 1
     self.cooldown = 0.25
     self.spread = 1
@@ -1096,13 +1160,13 @@ g.run()
 
 This will import the \m{Game} class and will create an instance, and run the game. What this means is that we can now draw things on the screen and run the code as one complete system. This simplifies iterative testing a lot. For now, we will take two menus, and just draw them as being different colours and switch between them to prove that the main game works.
 
+\subsection{\textcolor{red}{Menus}}
+
 \vs
 We will create two classes, \m{MenuA} and \m{MenuB}. \m{MenuA} will be shaded in blue and \m{MenuB} will be in red. This will help to distinguish between the two. If we are in \m{MenuA} and we press the down key, we will move to \m{MenuB}, and if we are in \m{MenuB} and we press the up key, we want to move to \m{MenuA}. This can be done as follows.
 
 \vs
 We will now demonstrate that this works, by putting some text on each menu object, and then passing commands to each of these to update the state. This works as follows. We will create a main \m{Menu} class, since most of the methods and functions will be similar between each menu class. This will make our job much easier and prevent us from writing the same code over and over again. This will make use of inheritance, with each menu being the child of the main menu class, and using \m{specificMethod} to create a function which will run specifically in the loop for each menu class. We can feed the inputs and events from the main loop into the specific method. This will drastically reduce the amount of code we need, and since most menus are relatively similar, this will not limit us in any way.
-
-
 
 
 \vs
@@ -1316,7 +1380,7 @@ The next part of the code is the running of the menu itself. Here, we will be fi
 \end{mpy}
 
 \vs
-We also need to change the initial value of the game state manager's state from \m{'game_loop'} to \m{'start'}. Having done this, we get the following image (Figure \ref{start_menu}) on the screen.
+We also need to change the initial value of the game state manager's state from \m{'game_loop'} to \m{'start'}. Having done this, we get the following image (Figure \ref{fig:start_menu}) on the screen.
 
 \begin{figure}[H]
     \centering
@@ -1335,7 +1399,7 @@ We can assign the up arrow to be the keyboard event to change the state. This is
           running = False
 \end{mpy}
 
-This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later. We will now show a video demonstrating this in action, although the keyboard inputs are not visible. The only input I gave to the system was the up and down arrow keys. However, since we don't have a game loop yet, this is a bit pointless. This is something we will rectify once we have a game loop.
+This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later.
 
 \subsection{\textcolor{red}{Button}}
 
@@ -1991,7 +2055,7 @@ We can make this adjustment to the code in the \m{movePlayer()} function.
     frameMovement[0] *= -1
 \end{mpy}
 
-We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} and in \ref{fig:game_loop_6_movement_bug} confirming that it is indeed working as expected.
+We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} and in Figure \ref{fig:game_loop_6_movement_bug} confirming that it is indeed working as expected.
 
 \begin{figure}[H]
     \centering
@@ -2004,37 +2068,14 @@ We can see that this works, if we set \m{player4} to have input of \m{{"forward"
     \label{fig:game_loop_6_movement_bug}
 \end{figure}
 
-\vs
-One of the other things we need to add is the collision of the rays being fired with the blocks on the map. This is fairly simple to do. Effectively, we need to find the closest hit along the ray that hits a block. Then, we need to see if there are any player hits which are closer still. In our code, we have an initial value for $t$, which is 2, therefore, we can simply use this bit of code to reassign $t$ depending on the closest block hit.
-
-\begin{mpy}
-        #Iterate through all blocks
-        for block in self.blocks:
-
-          #Determine whether a result is met
-          hitResult = U.lineRectCollision(line, block)
-
-          #If a hit has occurred
-          if hitResult[0]:
-
-            #If the result is closer
-            if hitResult[1] < t:
-
-              #Reassign the hit result
-              t = hitResult[1]
-\end{mpy}
-
 The next thing to fix is the problem with the other mouse click registers. We can do this by considering this StackExchange post \cite{pygame_mouse_clicks}. In the post it mentions that we can consider \m{event.button} which can take 5 values depending on which value was chosen. We want to only consider \m{event.button == 1} for this case. This will work as follows.
 
 \begin{mpy}
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            mouse_clicked = True
+          mouse_clicked = True
 \end{mpy}
 
-This will ensure that the left mouse button is the only button that is clicked.
-\vs
-
-We can see that this works in the following video. This is also a change that we need to replicat to other areas of the code since this is something that other bits of the code have also used.
+This will ensure that the left mouse button is the only button that is clicked. \href{https://youtu.be/FmqvJE9Qpc8}{We can see that this works in the following video}. This is also a change that we need to replicate to other areas of the code since this is something that other bits of the code have also used.
 
 \vs
 The next thing we need to implement is the firing cooldown. Effectively, we want to find a way of determining whether the weapon should be able to fire again yet. This could be done with a dictionary of timers, which can be queried for each player. This query will return \m{True} if the player can fire again, or \m{False} if they can't. Then, we will use the $\land$ operator to find whether the player should fire that frame or not. This will also do action masking for us, which ensures that when we backpropagate through the network we observe that no action was taken if the weapon could not be fired. When we are actually doing the AI training we will not be using clocks, and therefore, we will need to convert times into frames which are much more easily observable for the training.
@@ -2088,7 +2129,81 @@ Overall, this will mean that we have a specific number of frames that we can use
           countdowns[player] -= 1
 \end{mpy}
 
-This appears as following INSERT FIGURE AND VIDEO HERE. FOR FUTURE REFERENCE USE \verb|\href{}{}| around the image insert in order to link the image to a website.
+\href{https://youtu.be/Bd2_x8gDJYE}{This works as expected as we can see in this video}. 
+
+\vs
+One of the other things we need to add is the collision of the rays being fired with the blocks on the map. This is fairly simple to do. Effectively, we need to find the closest hit along the ray that hits a block. Then, we need to see if there are any player hits which are closer still. In our code, we have an initial value for $t$, which is 2, therefore, we can simply use this bit of code to reassign $t$ depending on the closest block hit.
+
+\begin{mpy}
+        #Iterate through all blocks
+        for block in self.blocks:
+
+          #Determine whether a result is met
+          hitResult = U.lineRectCollision(line, block)
+
+          #If a hit has occurred
+          if hitResult[0]:
+
+            #If the result is closer
+            if hitResult[1] < t:
+
+              #Reassign the hit result
+              t = hitResult[1]
+\end{mpy}
+
+To check that this code works we can add a block to the map and then fire at enemies through it and then see if the enemy takes damage. As we can see in \href{https://youtu.be/6PZf1pQkwMM}{this video} and in Figure (\textcolor{red}{INSERT FIGURE HERE}), the collisions are handled appropriately, and therefore can move on.
+
+GAME LOOP 8
+
+\vs
+One of the other things we want to implement in our game is player-player collision. This is effectively just a circle-circle collision, and we have covered how this function works in the \m{Utility} class. Therefore, we can just write the following function to handle collisions. The first step after creating the outer for loop is to find the player's circle, since this is used to detect collisions and this is more efficient than recalculating it each iteration of the inner loop.
+
+\begin{mpy}
+  # Checks for hits between rays and objects in the map
+  def handleCollisions(self):
+    for player in self.players:
+      playerCircle = [player.position, player.radius]
+\end{mpy}
+
+We can then iterate through all pairs of players and ensure that no players are overlapping. If a player is overlapping we can simply push them by the distance required.
+
+\begin{mpy}
+      for collision_player in self.players:
+        if collision_player != player:
+          hitResult = U.circleCircleCollision(
+              playerCircle, [collision_player.position, collision_player.radius]
+          )
+          if hitResult[0] == True:
+            player.position = U.vecAdd(player.position, hitResult[1])
+\end{mpy}
+
+GAME LOOP 9
+This can be seen in this \href{https://youtu.be/BrL2xX1aqjc}{this video}. However, there is a problem with this in that, \m{player1} cannot push any other players, but \m{player2} can push \m{player1} which is obviously not fair. This also means that the entirety of the red team can push the blue team but not the other way around. In order to observe why this is occurring, we need to look at how the function works.
+
+\vs
+When the function goes through the array of players the first time, the player which is earlier on in the array is the one to be pushed away, since they are considered to be the \m{collision_player}. However, when the outer \m{for} loop eventually reaches the original player, they are no longer overlapping with anyone, and therefore is not affected.
+
+\vs
+In order to fix this, we need to move both players an equal amount. This means that all players can push each other by an equal amount and the game will remain more fair.
+\vs
+To do this we need to make the following change to the code in the \m{Utility} class.
+
+\begin{mpy}
+    mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
+
+    #The vector to push the player back by
+    delta_position = Utility.mult(mid_circum_vec, -1)
+\end{mpy}
+
+Furthermore, we need to apply the \m{delta} vector to both players equally and this changes is reflected in the code as follows.
+
+\begin{mpy}
+          if hitResult[0] == True:
+            player.position = U.vecAdd(player.position, hitResult[1])
+            collision_player = U.vecSub(collision_player.position, hitResult[1])
+\end{mpy}
+
+Combined, the result of this change can be seen in \href{https://youtu.be/Tt9WJCQ5C9Y}{this video, demonstrating that collisions between players are now properly handled}. This change was justified since the game should be fair for all players, especially since we will be using AI, which are notorious for finding bugs in environments and exploiting them to their advantage, as shown in this OpenAI paper \cite{openai_emergent_tool}!
 
 \vs
 The next thing we need to implement is circle-block collision. However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
@@ -2097,14 +2212,69 @@ The next thing we need to implement is circle-block collision. However, this is 
 In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter. The overall response was positive, with Frank saying that it was "a completely logical decision", and that he would not notice the difference much, if at all. 
 
 \vs
-This change would, however, make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions. The first thing to do is
+This change would, however, make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions.
 
-\tbc
+\vs
+We need to find a way to handle collisions with the blocks. In order to do that, we can split the rectangle into 4 lines. To do this, we can split both the rectangle and the player into 4 bounding lines. Once this is done, we can then go ahead and check for a collision. Once we have identified by how much the player is colliding with the block in each direction we can move the player back by that amount, similar to how we will likely handle the player-player collision.
+\vs
 
-INSERT FIGURE AND VIDEO HERE
+We will firstly find the corners and edges of the player circle. We add this to the \m{Player} class.
+
+\begin{mpy}
+  def getCorners(self):
+    #TL, BL, BR, TR
+    corners = []
+
+    for i in range(-1, 2, 2):
+        for j in range(-1, 2, 2):
+            corners.append(U.vecAdd(self.position, [i * self.radius, i * j * self.radius]))
+
+      return corners
+
+  def getEdges(self):
+    #Get the corners
+    corners = self.getCorners()
+
+    #Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
+    #Top, Right, Bottom, Left
+    lines = [[corners[i], corners[i+1]] for i in range(-1, 3)]
+
+    return lines
+\end{mpy}
+
+This code is partially taken from the \m{lineRectCollision} function and the \m{Block} class, so we have already tested that this works.
+
+\vs
+Now, we can use the tests as shown in \cite{rectangle_collisions} to determine whether a collision has occurred or not. If a collision has happened we want to find out in which direction and of what magnitude.
+\vs
+
+The first check we will do is to see if there is an overlap in the $x$-axis. Effectively, we want to see if the rightmost edge of the player is to the right of the leftmost edge of the block, and vice versa. We also want to check this for the other side of the player/block and for the $y$-axis. This code looks as follows.
+
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+With this code in place, we can now find the displacement required to fix the collision if a collision has occurred.
+
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+
+
+
+
+
 
 \vs
 Now that we have a way to handle collisions with blocks, we can design the final map. This can be done by changing the positions of the objects on the map. This is done as follows.
+
 
 \vs
 We have a few more changes to make before we can use the game to do training with. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map.
@@ -2146,8 +2316,11 @@ The first change to make is to the \m{convertToScreen()} function, which will no
     return screenPosition
 \end{mpy}
 
-The next adjustment to make is to the sizes of everything that we are rendering. We will start with the \m{Player} class.
+This can be seen in Figure %\ref{fig:game_loop_x_}
 
+
+
+The next adjustment to make is to the sizes of everything that we are rendering. We will start with the \m{Player} class.
 
 Combining all of this together, we get the following demonstration.
 
@@ -2155,3 +2328,5 @@ This marks the end of the first iteration of the game. In order to get a better 
 
 
 INSERT OTHER PEOPLE PLAYING HERE AND THEIR OPINIONS
+
+FOR FUTURE REFERENCE USE \verb|\href{}{}| around the image insert in order to link the image to a website.
