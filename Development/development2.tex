@@ -29,7 +29,14 @@ Based on our previous discussion of using the \m{Utility} class through its stat
 The first thing we need to do before starting doing any AI is to create the environment. This involves converting our game loop into something that can be run by a program which is then used to train the AI.
 
 \vs
-The first step in doing this is to remove all of the rendering functions. This is because we aren't rendering the game anymore and so we can just remove it. However, for the moment we will just create a copy of the game and comment out all of the rendering references in the main game loops. We only need the \m{GameLoop.run()} function primarily.
+The first step in doing this is to remove all of the rendering functions. This is because we aren't rendering the game anymore and so we can just remove it. However, for the moment we will just create a copy of the game and comment out all of the rendering references in the main game loops. We only need the \m{GameLoop.run()} function primarily. 
+
+
+\vs
+
+Insert code 
+\vs
+The other thing we need to implement is the spoke detection for the player.
 
 \subsection{\textcolor{red}{Training and AI}}
 
