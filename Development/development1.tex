@@ -21,21 +21,21 @@ Now, we will create a game state manager. This will handle which state the game 
 \vs
 \begin{mpy}
 class GameStateManager:
-  def __init__(self, current_state, SCREEN_DIMS, REFRESH_RATE):
+    def __init__(self, current_state, SCREEN_DIMS, REFRESH_RATE):
 
-    #Get the global game variables in a convenient way
-    #Allows all states to easily access these values
-    self.current_state = current_state
-    self.SCREEN_DIMS = SCREEN_DIMS
-    self.REFRESH_RATE = REFRESH_RATE
+        #Get the global game variables in a convenient way
+        #Allows all states to easily access these values
+        self.current_state = current_state
+        self.SCREEN_DIMS = SCREEN_DIMS
+        self.REFRESH_RATE = REFRESH_RATE
 
-  #Returns the current state of the game
-  def getState(self):
-    return self.current_state
+    #Returns the current state of the game
+    def getState(self):
+        return self.current_state
 
-  #Set the next state of the game (ie. game loop -> game over)
-  def setState(self, state):
-    self.current_state = state
+    #Set the next state of the game (ie. game loop -> game over)
+    def setState(self, state):
+        self.current_state = state
 \end{mpy}
 
 \vs
@@ -65,70 +65,70 @@ We need to define a player class, a menu class and a weapon class. This will for
 \begin{mpy}
 class Player(pygame.sprite.Sprite):
 
-  def __init__(self, spawn_point, initial_forward_vec, team, weapon):
+    def __init__(self, spawn_point, initial_forward_vec, team, weapon):
 
-    #Initialise the PyGame sprite
-    pygame.sprite.Sprite.__init__(self)
+        #Initialise the PyGame sprite
+        pygame.sprite.Sprite.__init__(self)
 
-    #Where the player will spawn every time they are killed
-    self.spawn_point = spawn_point
+        #Where the player will spawn every time they are killed
+        self.spawn_point = spawn_point
 
-    #The direction the player will face when they are respawned
-    self.initial_forward_vec = initial_forward_vec
+        #The direction the player will face when they are respawned
+        self.initial_forward_vec = initial_forward_vec
 
-    #The maximum health that the player can have at any time
-    self.max_health = 100
+        #The maximum health that the player can have at any time
+        self.max_health = 100
 
-    #The current health of the player
-    self.health = 100
+        #The current health of the player
+        self.health = 100
 
-    #The maximum magnitude of the velocity
-    self.max_speed = 300
+        #The maximum magnitude of the velocity
+        self.max_speed = 300
 
-    #Which team the player is on, it will be an integer (0 or 1)
-    #To check for a hit between two enemies
-    #XOR the teams of the two players involved (0 means no hit, 1 means hit)
-    self.team = team
+        #Which team the player is on, it will be an integer (0 or 1)
+        #To check for a hit between two enemies
+        #XOR the teams of the two players involved (0 means no hit, 1 means hit)
+        self.team = team
 
-    #The player's Weapon
-    self.weapon = weapon
+        #The player's Weapon
+        self.weapon = weapon
 
-    #Current position of the players
-    self.position = self.spawn_point
+        #Current position of the players
+        self.position = self.spawn_point
 
-    #Current direction of the player
-    self.forward_vec = self.initial_forward_vec
+        #Current direction of the player
+        self.forward_vec = self.initial_forward_vec
 
-    #Radius of the circle representing the player
-    self.radius = 75
+        #Radius of the circle representing the player
+        self.radius = 75
 \end{mpy}
 \vs
 The first, most obvious thing to implement is a way to move the player. This must be done using the inputs from the keyboard. We will set a maximum velocity, and use the keyboard inputs to find this value. However, we will do this in the game loop. For now, we will be implementing a move function, which will let us move the player on the map depending on the input. This is helpful, because this input could come from a human player, or an AI.
 \vs
 
 \begin{mpy}
-  def move_player(self, directions, dt):
-    #velocity = [Forward, Right] components
-    velocity = [0, 0]
+    def move_player(self, directions, dt):
+        #velocity = [Forward, Right] components
+        velocity = [0, 0]
 
-    #For loop avoids repeated code
-    for i in (0, 2):
-      if directions[i] == directions[i+1]:
-        velocity[i//2] = 0
-      else:
-        velocity[i//2] = directions[i] - directions[i+1]
+        #For loop avoids repeated code
+        for i in (0, 2):
+            if directions[i] == directions[i+1]:
+                velocity[i//2] = 0
+            else:
+                velocity[i//2] = directions[i] - directions[i+1]
 
-    #Velocity will have -1, 0, or 1 in each spot
-    #If it is moving diagonally, x^2 + y^2 = 2
-    #So we must divide the components by sqrt(2)
-    if (velocity[0]**2 + velocity[1]**2 == 2):
-      velocity = [i / 2**(1/2) for i in velocity]
+        #Velocity will have -1, 0, or 1 in each spot
+        #If it is moving diagonally, x^2 + y^2 = 2
+        #So we must divide the components by sqrt(2)
+        if (velocity[0]**2 + velocity[1]**2 == 2):
+            velocity = [i / 2**(1/2) for i in velocity]
 
-    #We need to multiply by the max speed in order to get our final velocity
-    velocity = [self.max_speed * i for i in velocity]
+        #We need to multiply by the max speed in order to get our final velocity
+        velocity = [self.max_speed * i for i in velocity]
 
-    #We will finally update the position of the player
-    self.position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
+        #We will finally update the position of the player
+        self.position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
 
 
 \end{mpy}
@@ -153,22 +153,22 @@ We can test this code as shown below.
 This is what we have expected and so this function works as expected. The input to the function will be sanitised in the game loop, so there is no way for a user to enter invalid inputs. However, there is one thing we need to do. Primarily, we need to find a way to limit the player's movement between 0 and 8000. This can be done as follows.
 
 \begin{mpy}
-    #Update position of player
-    updated_position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
+        #Update position of player
+        updated_position = [self.position[i] + velocity[i]*dt for i in (0, 1)]
 
-    #Check that the values are within (0, 0) and (8000, 8000)
-    #(0, 0) is the top left of the map
-    #(8000, 8000) is the bottom right
+        #Check that the values are within (0, 0) and (8000, 8000)
+        #(0, 0) is the top left of the map
+        #(8000, 8000) is the bottom right
 
-    for i in range(2):
-        
-      if updated_position[i] - self.radius <= 0:
-        updated_position[i] = self.radius
+        for i in range(2):
+                
+            if updated_position[i] - self.radius <= 0:
+                updated_position[i] = self.radius
 
-      elif updated_position[i] + self.radius >= 8000:
-        updated_position[i] = 8000 - self.radius
+            elif updated_position[i] + self.radius >= 8000:
+                updated_position[i] = 8000 - self.radius
 
-    self.position = updated_position
+        self.position = updated_position
 \end{mpy}
 
 \vs
@@ -176,23 +176,23 @@ This is what we have expected and so this function works as expected. The input 
 As mentioned in the design section, we want to only render the area around the player, and hence, we will define a \m{CameraPosition}. This will let us draw only things which are on the screen relative to the player. We can calculate the relative position of the players relative to this camera position, since we will also be using bots in the game. However, if the \m{Player} instance is for the user, then, it will just return the centre of the screen, because we want to keep the player at the centre of the screen.
 \vs
 \begin{mpy}
-  #Will convert the world position of the character to a camera position for the player
-  def convertToScreen(self, camera_position, object_position, SCREEN_DIMS):
-    screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
-    return screenPosition
+    #Will convert the world position of the character to a camera position for the player
+    def convertToScreen(self, camera_position, object_position, SCREEN_DIMS):
+        screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
+        return screenPosition
 
 \end{mpy}
 \vs
 We will also write a rendering function, in order to remove this from the game loop, which is helpful because different objects will be rendered differently, but letting all of them have their own render functions, will let us loop through all of the objects on the map and render them effectively.
 \vs
 \begin{mpy}
-  #Renders the character to the display of the player
-  def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
-    #Add code to not render if outside frame
-    pygame.draw.circle(display, self.colour, self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.radius)
-    for_pos = [self.position[i] + 100*self.forward_vec[i] for i in range(2)]
-    pygame.draw.aaline(display, (100, 0, 0), self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.convertToScreen(camera_position, for_pos, SCREEN_DIMS))
-    self.move_player(directions, self.forward_vec, dt)
+    #Renders the character to the display of the player
+    def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
+        #Add code to not render if outside frame
+        pygame.draw.circle(display, self.colour, self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.radius)
+        for_pos = [self.position[i] + 100*self.forward_vec[i] for i in range(2)]
+        pygame.draw.aaline(display, (100, 0, 0), self.convertToScreen(camera_position, self.position, SCREEN_DIMS), self.convertToScreen(camera_position, for_pos, SCREEN_DIMS))
+        self.move_player(directions, self.forward_vec, dt)
 \end{mpy}
 
 The player is rendered as just a circle for now, maybe later to be replaced with something else. The \m{pygame.draw} methods are from the documentation, and we convert the position to the screen position so that the player remains stationary relative to the screen and everything else moves relative to them. This will ensure a more intuitive game experience.
@@ -205,46 +205,46 @@ We will be using SQLite 3, since the project is small and likely to have only a 
 \begin{mpy}
 class DatabaseHandler:
 
-  #Setup a cursor and connection in order to allow for queries and updates
-  def SetupConnection(self):
-    self.connection = sqlite3.connect("momentum_users.db")
-    self.cursor = self.connection.cursor()
+    #Setup a cursor and connection in order to allow for queries and updates
+    def SetupConnection(self):
+        self.connection = sqlite3.connect("momentum_users.db")
+        self.cursor = self.connection.cursor()
 
-  #Close connection to prevent database corruption or multiple write attempts
-  def CloseConnection(self):
-    self.connection.close()
+    #Close connection to prevent database corruption or multiple write attempts
+    def CloseConnection(self):
+        self.connection.close()
 \end{mpy}
 \vs
 We will also define two more methods on our class, which are \m{CreateAccount()}, and \m{UpdateAccount()}, which are pretty self-explanatory. We want to be able to maintain referential integrity and atomicity, so for that reason only commit once all of the instructions that need to be commited have been passed to the cursor. This is important because it means that if there is an issue in one of the statements, then we don't break referential integrity across the database. There is no way to really check that these commands work, so we will just have to use them in the next commands ensure that they work there. There are no inputs from this, so we can't really "break" these functions anyway.
 
 \vs
 \begin{mpy}
-  def CreateAccount(self, PlayerID, Email, Password):
-    #Setup connection and cursor
-    self.SetupConnection()
+    def CreateAccount(self, PlayerID, Email, Password):
+        #Setup connection and cursor
+        self.SetupConnection()
 
-    #Insert data into each of the tables individually
-    self.cursor.execute(f"INSERT INTO Player VALUES('{PlayerID}', '{Email}', '{Password}')")
-    self.cursor.execute(f"INSERT INTO PlayerXP VALUES('{PlayerID}', 0)")
-    self.cursor.execute(f"INSERT INTO MMR VALUES('{PlayerID}', 1000)")
-    self.cursor.execute(f"INSERT INTO Matches VALUES('{PlayerID}', 0, 0)")
+        #Insert data into each of the tables individually
+        self.cursor.execute(f"INSERT INTO Player VALUES('{PlayerID}', '{Email}', '{Password}')")
+        self.cursor.execute(f"INSERT INTO PlayerXP VALUES('{PlayerID}', 0)")
+        self.cursor.execute(f"INSERT INTO MMR VALUES('{PlayerID}', 1000)")
+        self.cursor.execute(f"INSERT INTO Matches VALUES('{PlayerID}', 0, 0)")
 
-    #Commit and close connection
-    self.connection.commit()
-    self.CloseConnection()
+        #Commit and close connection
+        self.connection.commit()
+        self.CloseConnection()
 
-  def UpdateAccount(self, PlayerID, PlayerXP, MMR, MatchWon):
-    #Setup connection and cursor
-    self.SetupConnection()
+    def UpdateAccount(self, PlayerID, PlayerXP, MMR, MatchWon):
+        #Setup connection and cursor
+        self.SetupConnection()
 
-    #Update each statistic
-    self.cursor.execute(f"UPDATE PlayerXP SET PlayerXP = PlayerXP + {PlayerXP} WHERE PlayerID = '{PlayerID}'")
-    self.cursor.execute(f"UPDATE MMR SET MMR = {MMR} WHERE PlayerID = '{PlayerID}'")
-    self.cursor.execute(f"UPDATE Matches SET MatchesPlayed = MatchesPlayed + 1, MatchesWon = MatchesWon + {MatchWon} WHERE PlayerID = '{PlayerID}'")
+        #Update each statistic
+        self.cursor.execute(f"UPDATE PlayerXP SET PlayerXP = PlayerXP + {PlayerXP} WHERE PlayerID = '{PlayerID}'")
+        self.cursor.execute(f"UPDATE MMR SET MMR = {MMR} WHERE PlayerID = '{PlayerID}'")
+        self.cursor.execute(f"UPDATE Matches SET MatchesPlayed = MatchesPlayed + 1, MatchesWon = MatchesWon + {MatchWon} WHERE PlayerID = '{PlayerID}'")
 
-    #Commit and close connection
-    self.connection.commit()
-    self.CloseConnection()
+        #Commit and close connection
+        self.connection.commit()
+        self.CloseConnection()
 
 \end{mpy}
 \vs
@@ -268,17 +268,17 @@ This is used as follows. For now, this will just return the data from one table,
 
 \vs
 \begin{mpy}
-  def fetchUserInfo(self, PlayerID):
-    self.SetupConnection()
+    def fetchUserInfo(self, PlayerID):
+        self.SetupConnection()
 
-    userInfo = {'PlayerID': PlayerID}
+        userInfo = {'PlayerID': PlayerID}
 
-    result = self.cursor.execute(f"SELECT * FROM Player WHERE PlayerID = '{PlayerID}'")
+        result = self.cursor.execute(f"SELECT * FROM Player WHERE PlayerID = '{PlayerID}'")
 
-    userInfo['email'] = result[1]
-    userInfo['password'] = result[2]
+        userInfo['email'] = result[1]
+        userInfo['password'] = result[2]
 
-    return userInfo
+        return userInfo
 \end{mpy}
 
 We will now insert the following data into our database using the \m{CreateAccount()} method. We will then use the method above to get more data back.
@@ -297,22 +297,22 @@ This proves that our connection works, and that we can create accounts and fetch
 Finally, we also need to define an authentication query, which will return true or false, depending on whether the user has inputted the correct credentials for their account. We will return a list, with one element if they have submitted the correct credentials, simplying containing \m{[True]}. Otherwise, they will get an array with two elements, the first containing \m{False}, and the second element will be the reason for their query being rejected either \m{'invalid_id'} or \m{'invalid_password'}. These are fairly self-explanatory, and will be used to show the user why the could not login.
 \vs
 \begin{mpy}
-  def AuthenticateAccount(self, PlayerID, Password):
-    #Setup connection and cursor
-    self.SetupConnection()
+    def AuthenticateAccount(self, PlayerID, Password):
+        #Setup connection and cursor
+        self.SetupConnection()
 
-    #Query player database
-    result = self.cursor.execute(f"SELECT Password FROM Player WHERE PlayerID = '{PlayerID}'").fetchone()
+        #Query player database
+        result = self.cursor.execute(f"SELECT Password FROM Player WHERE PlayerID = '{PlayerID}'").fetchone()
 
-    #Nothing to commit here, just close
-    self.CloseConnection()
+        #Nothing to commit here, just close
+        self.CloseConnection()
 
-    #Use of a guard clause instead of a double conditional
-    if result == None:
-      return [False, 'invalid_id']
-    if Password == result[0]:
-      return [True]
-    return [False, 'invalid_password']
+        #Use of a guard clause instead of a double conditional
+        if result == None:
+            return [False, 'invalid_id']
+        if Password == result[0]:
+            return [True]
+        return [False, 'invalid_password']
 \end{mpy}
 \vs
 We have used a guard clause in order to decrease the amount of code written.
@@ -326,27 +326,27 @@ We begin by defining our class.
 \begin{mpy}
 class Utility:
 
-  def __init__(self):
-    #Nothing to do here so far
-    pass
+    def __init__(self):
+        #Nothing to do here so far
+        pass
 
-  def dot(self, a, b):
-    return sum([i*j for i, j in zip(a, b)])
+    def dot(self, a, b):
+        return sum([i*j for i, j in zip(a, b)])
 \end{mpy}
 
 \vs
 The first method we have implemented is the dot product. For geometric vectors this is defined as 
 \begin{align*}
-  \vec{a} \cdot \vec{b} &= \sum_i a_i b_i\\
+    \vec{a} \cdot \vec{b} &= \sum_i a_i b_i\\
 \end{align*}
 Where $a_i$ refers to the $i$-th element of $\vec{a}$. Then, in Python, we can use the \m{zip()} function in order to get a list of tuples of corresponding elements, as shown below.
 \begin{mpy}
 for i in zip([1, 2, 3], [4, 5, 6]):
-  print(i)
+    print(i)
 
 >>> (1, 4)
-  (2, 5)
-  (3, 6)
+    (2, 5)
+    (3, 6)
 \end{mpy}
 
 \vs
@@ -355,7 +355,7 @@ Then, we want to multiply the numbers in each pair together. We can directly acc
 \begin{mpy}
 dottedVals = []
 for i, j in zip([1, 2, 3], [4, 5, 6])
-  dottedVals.append(i * j)
+    dottedVals.append(i * j)
 print(dottedVals)
 
 >>> [4, 10, 18]
@@ -407,25 +407,25 @@ import random
 time1 = time.time()
 
 for i in range(10000):
-  a = [random.random() for i in range(2)]
-  b = [random.random() for i in range(2)]
-  x = int(np.dot(a, b))
-  
+    a = [random.random() for i in range(2)]
+    b = [random.random() for i in range(2)]
+    x = int(np.dot(a, b))
+    
 print("NumPy:", time.time()-time1)
 
 
 class Utility:
-  @staticmethod
-  def dot(a, b):
-    return sum([i*j for i, j in zip(a, b)])
-    
+    @staticmethod
+    def dot(a, b):
+        return sum([i*j for i, j in zip(a, b)])
+        
 time3 = time.time()
 
 for i in range(10000):
-  a = [random.random() for i in range(2)]
-  b = [random.random() for i in range(2)]
-  y = Utility.dot(a, b)
-  
+    a = [random.random() for i in range(2)]
+    b = [random.random() for i in range(2)]
+    y = Utility.dot(a, b)
+    
 print("Raw Python:", (time.time() - time3))
 \end{mpy}
 \vs
@@ -442,13 +442,13 @@ Therefore, I will use the Python implementation.
 Additionally, we will construct addition and subtraction for vectors. Another possible consideration was to just use NumPy throughout the game, and I don't know why I didn't do this.... 
 
 \begin{mpy}
-  @staticmethod
-  def vecSub(a, b):
-    return [i-j for i, j in zip(a, b)]
+    @staticmethod
+    def vecSub(a, b):
+        return [i-j for i, j in zip(a, b)]
 
-  @staticmethod
-  def vecAdd(a, b):
-    return [i + j for i, j in zip(a, b)]
+    @staticmethod
+    def vecAdd(a, b):
+        return [i + j for i, j in zip(a, b)]
 \end{mpy}
 \vs
 
@@ -467,34 +467,34 @@ Next, we will need to implement a collision between a ray and a circle. This is 
 
 \vs
 \begin{mpy}
-  @staticmethod
-  def lineCircleCollision(line, circle):
-  
-    #Notation from the StackExchange post
-    q = circle[0]
-    r = circle[1]
-    p1 = line[0]
-    v = Utility.vecSub(line[1], p1)
-
-    a = Utility.dot(v, v)
-    b = 2 * Utility.dot(v, Utility.vecSub(p1, q))
-    c = Utility.dot(p1, p1) + Utility.dot(q, q) - 2 * Utility.dot(p1, q) - r**2
-
-    discriminant = b**2 - 4 * a * c
-
-    if discriminant < 0:
-      return [False, None]
-
-    sqrt_disc = sqrt(discriminant)
+    @staticmethod
+    def lineCircleCollision(line, circle):
     
-    t1 = (-b + sqrt_disc) / (2 * a)
-    t2 = (-b - sqrt_disc) / (2 * a)
+        #Notation from the StackExchange post
+        q = circle[0]
+        r = circle[1]
+        p1 = line[0]
+        v = Utility.vecSub(line[1], p1)
 
-    if not (0 <= t1 <= 1 or 0 <= t2 <= 1):
-      return [False, None]
-    
-    t = min(t1, t2)
-    return [True, t]
+        a = Utility.dot(v, v)
+        b = 2 * Utility.dot(v, Utility.vecSub(p1, q))
+        c = Utility.dot(p1, p1) + Utility.dot(q, q) - 2 * Utility.dot(p1, q) - r**2
+
+        discriminant = b**2 - 4 * a * c
+
+        if discriminant < 0:
+            return [False, None]
+
+        sqrt_disc = sqrt(discriminant)
+        
+        t1 = (-b + sqrt_disc) / (2 * a)
+        t2 = (-b - sqrt_disc) / (2 * a)
+
+        if not (0 <= t1 <= 1 or 0 <= t2 <= 1):
+            return [False, None]
+        
+        t = min(t1, t2)
+        return [True, t]
 \end{mpy}
 
 \vs
@@ -556,49 +556,49 @@ Again, the desired result! So, we can conclude that the function works as expect
 We will now implement the line-line collision method we which described thoroughly in the design section. We will be using NumPy to do the solving of the simultaneous equations. We first need to check that the equations are linearly independent. We can do this using the determinant of the matrix. We will first be extracting all of the elements we need to make the rest of the code easier to read.
 
 \begin{mpy}
-  @staticmethod
-    def lineLineCollision(line1, line2):
-      #We have both lines in vector form
-      #line 1 -> [x_1, y_1], [x_2, y_2]
-      #line 2 -> [x_3, y_3], [x_4, y_4]
-      x_1, y_1 = line1[0]
-      x_2, y_2 = line1[1]
-      x_3, y_3 = line2[0]
-      x_4, y_4 = line2[1]
+    @staticmethod
+        def lineLineCollision(line1, line2):
+            #We have both lines in vector form
+            #line 1 -> [x_1, y_1], [x_2, y_2]
+            #line 2 -> [x_3, y_3], [x_4, y_4]
+            x_1, y_1 = line1[0]
+            x_2, y_2 = line1[1]
+            x_3, y_3 = line2[0]
+            x_4, y_4 = line2[1]
 \end{mpy}
 
 After this we can compute the determinant and if it is not 0, we can find the solutions.
 \begin{mpy}
-    #Find the determinant
-    determinant = np.linalg.det(matrix)
-    if determinant == 0:
-      return [False, None]
-          
-    else:
-      result = np.linalg.solve(matrix, resultVec)
-          
-      #Check that the result is between the constraint points
-      if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
-        return [True, result]
-      return [False, None]
+        #Find the determinant
+        determinant = np.linalg.det(matrix)
+        if determinant == 0:
+            return [False, None]
+                    
+        else:
+            result = np.linalg.solve(matrix, resultVec)
+                    
+            #Check that the result is between the constraint points
+            if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+                return [True, result]
+            return [False, None]
 \end{mpy}
 
 We can also edit this code to make it more readable by using a guard clause. Since we are returning if the determinant is 0, no other code after it will return if this condition is meant. Therefore, we can see that we don't need the \m{else} statement at all, and can instead dedent the code block there.
 
 \begin{mpy}
-    #det = 0 -> Can't be solved
-    if determinant == 0:
-      return [False, None]
+        #det = 0 -> Can't be solved
+        if determinant == 0:
+            return [False, None]
 
-    #Solve system
-    result = np.linalg.solve(matrix, resultVec)
+        #Solve system
+        result = np.linalg.solve(matrix, resultVec)
 
-    #Check that the result is between the constraint points
-    if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
-      return [True, result]
-    
-    #Solution is not in bounds
-    return [False, None]
+        #Check that the result is between the constraint points
+        if 0 <= result[0] <= 1 and 0 <= result[1] <= 1:
+            return [True, result]
+        
+        #Solution is not in bounds
+        return [False, None]
 \end{mpy}
 
 \vs
@@ -607,9 +607,9 @@ We also want to be able to test this code and make sure that is efficient, since
 \begin{mpy}
 start = time.time()
 for i in range(70000):
-  line1 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
-  line2 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
-  x = Utility.lineLineCollision(line1, line2)
+    line1 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
+    line2 = [[random.uniform(0, 8000), random.uniform(0, 8000)], [random.uniform(0, 8000), random.uniform(0, 8000)]]
+    x = Utility.lineLineCollision(line1, line2)
 end = time.time()
 print(end - start)
 
@@ -624,15 +624,15 @@ The next thing we will be implementing is the line-rectangle collision. We can d
 
 \vs
 \begin{mpy}
-  def getCorners(self):
-    #TL, BL, BR, TR
-    corners = []
+    def getCorners(self):
+        #TL, BL, BR, TR
+        corners = []
 
-    for i in range(-1, 2, 2):
-      for j in range(-1, 2, 2):
-        corners.append(U.vecAdd(self.centre, [i * self.length1/2, i * j * self.length2/2]))
+        for i in range(-1, 2, 2):
+            for j in range(-1, 2, 2):
+                corners.append(U.vecAdd(self.centre, [i * self.length1/2, i * j * self.length2/2]))
 
-    return corners
+        return corners
 \end{mpy}
 
 \vs
@@ -640,8 +640,8 @@ The code is a bit dense, but we can prove that this code will work and then test
 
 \begin{mpy}
 >>> for i in range(-1, 2, 2):
-  for j in range(-1, 2, 2):
-    print(i, i*j)
+    for j in range(-1, 2, 2):
+        print(i, i*j)
 
 -1 1
 -1 -1
@@ -667,14 +667,14 @@ This is what we would have expected to see. Now, that we have this, we want to f
 
 \vs
 \begin{mpy}
-  @staticmethod
-  def lineRectCollision(line, block):
+    @staticmethod
+    def lineRectCollision(line, block):
 
-    #Get the corners
-    corners = block.getCorners()
-    
-    #Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
-    lines = [[corners[i], corners[i+1]] for i in range(-1, 3) ]
+        #Get the corners
+        corners = block.getCorners()
+        
+        #Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
+        lines = [[corners[i], corners[i+1]] for i in range(-1, 3) ]
 \end{mpy}
 
 \vs
@@ -685,13 +685,13 @@ The next thing we need, is to find the collision which is the closest to the fir
 \vs
 
 \begin{mpy}
-    #We only care about how far along the main line the collision is
-    t_val = 3
-    for edge in lines:
-      isHit, lambda_mu = Utility.lineLineCollision(line, edge)
-      if isHit:
-        if lambda_mu[0] < t_val:
-          t_val = lambda_mu[0]
+        #We only care about how far along the main line the collision is
+        t_val = 3
+        for edge in lines:
+            isHit, lambda_mu = Utility.lineLineCollision(line, edge)
+            if isHit:
+                if lambda_mu[0] < t_val:
+                    t_val = lambda_mu[0]
 \end{mpy}
 
 \vs
@@ -699,9 +699,9 @@ We set \m{t_val} to be $3$ since the result of the collision must be between 0 a
 
 \vs
 \begin{mpy}
-    if t_val == 3:
-      return [False, None]
-    return [True, t_val]
+        if t_val == 3:
+            return [False, None]
+        return [True, t_val]
 \end{mpy}
 
 \vs
@@ -720,11 +720,11 @@ print(result)
 We also need to define the method for converting a world position to a screen position which will let us actually render things, since the player's viewpoint moves as the player moves. We can do this as detailed in the Design section.
 
 \begin{mpy}
-  #Will convert the world position of the character to a camera position for the player
-  @staticmethod
-  def convertToScreen(camera_position, object_position, SCREEN_DIMS):
-    screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
-    return screenPosition
+    #Will convert the world position of the character to a camera position for the player
+    @staticmethod
+    def convertToScreen(camera_position, object_position, SCREEN_DIMS):
+        screenPosition = [object_position[i] - camera_position[i] + SCREEN_DIMS[i]//2 for i in (0, 1)]
+        return screenPosition
 \end{mpy}
 
 \vs
@@ -733,9 +733,9 @@ We have used list comprehension to compress our statements, since this is more e
 Another method that we should implement since this is very commonly used is the scalar multiple of a vector. For this, we need two inputs, one is a vector and another is a scalar by which we need to multiply the vector by. This is done by list comprehension again.
 
 \begin{mpy}
-  @staticmethod
-  def mult(vec, scalar):
-    return [i * scalar for i in vec]
+    @staticmethod
+    def mult(vec, scalar):
+        return [i * scalar for i in vec]
 \end{mpy}
 
 We simply take each element of the vector and then multiply it by the vector we took in. We can test it as follows.
@@ -748,26 +748,26 @@ We simply take each element of the vector and then multiply it by the vector we 
 Additionally, we need to be able to rotate vectors, specifically to create spread in the weapon's fire, such as for the shotgun. We can do this as fllows. We consider the matrix ($\hat{A}$) for a 2D rotation which is written as follows.
 
 \begin{align*}
-  \hat{A}(\theta) &= \begin{bmatrix} \cos \theta & - \sin \theta \\ \sin \theta & \cos \theta \end{bmatrix}\\
+    \hat{A}(\theta) &= \begin{bmatrix} \cos \theta & - \sin \theta \\ \sin \theta & \cos \theta \end{bmatrix}\\
 \end{align*}
 
 We can do a simple matrix-vector product as follows.
 \begin{align*}
-  \vec{r} &= \begin{bmatrix} x \\ y \end{bmatrix}\\
-  \vec{r}' = \hat{A}\vec{r} &= \begin{bmatrix} x \cos \theta - y \sin \theta \\ x \sin \theta + y \cos \theta \end{bmatrix}\\
+    \vec{r} &= \begin{bmatrix} x \\ y \end{bmatrix}\\
+    \vec{r}' = \hat{A}\vec{r} &= \begin{bmatrix} x \cos \theta - y \sin \theta \\ x \sin \theta + y \cos \theta \end{bmatrix}\\
 \end{align*}
 
 This can then be converted into code as follows.
 
 \begin{mpy}
-  @staticmethod
-  def rotateVector(vec, angle):
-    #https://matthew-brett.github.io/teaching/rotation_2d.html
-    rotatedVec = [0, 0]
-    rotatedVec[0] = vec[0] * cos(angle) - vec[1] * sin(angle)
-    rotatedVec[1] = vec[0] * sin(angle) + vec[1] * cos(angle)
+    @staticmethod
+    def rotateVector(vec, angle):
+        #https://matthew-brett.github.io/teaching/rotation_2d.html
+        rotatedVec = [0, 0]
+        rotatedVec[0] = vec[0] * cos(angle) - vec[1] * sin(angle)
+        rotatedVec[1] = vec[0] * sin(angle) + vec[1] * cos(angle)
 
-    return rotatedVec
+        return rotatedVec
 \end{mpy}
 
 The \m{sin()} and \m{cos()} functions are from the \m{math} library which was imported at the start of the file. We can test this function as follows.
@@ -793,20 +793,20 @@ This is not exactly right, but it is close enough to what we need since we expec
 One of the most important things in the collision system is player-player collision, and so for that reason we need to have a way to accurately determine whether two circles are overlapping, by how much and in which direction. The specifics of how this works are shown in the Design section, so we will not redo that here. We begin by finding the vector pointing from \m{circle1} to \m{circle2}. If this has a magnitude of less than $2r$, then we can confidently say that the circles are overlapping. However, there is one issue with this in that taking square roots are slow, so we will just use square values since this provides the same results, but slightly more efficiently.
 
 \begin{mpy}
-  #We will return [False, None] if no collision
-  #If there is a collision, we will return the direction of the collision
-  @staticmethod
-  def circleCircleCollision(circle1, circle2):
+    #We will return [False, None] if no collision
+    #If there is a collision, we will return the direction of the collision
+    @staticmethod
+    def circleCircleCollision(circle1, circle2):
 
-    #Difference between the centres
-    centreDiff = Utility.vecSub(circle2[0], circle1[0])
+        #Difference between the centres
+        centreDiff = Utility.vecSub(circle2[0], circle1[0])
 
-    #Magnitude squared of the difference
-    magnitude = Utility.dot(centreDiff, centreDiff)
+        #Magnitude squared of the difference
+        magnitude = Utility.dot(centreDiff, centreDiff)
 
-    #If outside of the range no collision
-    if magnitude > 4*circle1[1]**2:
-      return [False, None]
+        #If outside of the range no collision
+        if magnitude > 4*circle1[1]**2:
+            return [False, None]
 \end{mpy}
 
 We wish to return \m{[False, None]} instead of just \m{False} because our code is designed in such a way that it will only progress further if the value is \m{True} which then requires the second index in the array to actually have a value, but doing it this way is much faster than checking for the type of the return values in the code where this is used.
@@ -815,19 +815,19 @@ We wish to return \m{[False, None]} instead of just \m{False} because our code i
 The next thing to do is to find the point on the edge of \m{circle1} which lies on the line between the centres. This will then let us find by how much we need to move the player back by. This works as follows.
 
 \begin{mpy}
-    #The point on the circle where an intersection happens
-    intersect_dir = Utility.mult(centreDiff, circle1[1]/sqrt(magnitude))
+        #The point on the circle where an intersection happens
+        intersect_dir = Utility.mult(centreDiff, circle1[1]/sqrt(magnitude))
 
-    #Midpoint of the collision
-    centre_mid_point = Utility.mult(centreDiff, 0.5)
+        #Midpoint of the collision
+        centre_mid_point = Utility.mult(centreDiff, 0.5)
 
-    #The half-distance in the collision
-    mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
+        #The half-distance in the collision
+        mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
 
-    #The vector to push the player back by
-    delta_position = Utility.mult(mid_circum_vec, -1)
+        #The vector to push the player back by
+        delta_position = Utility.mult(mid_circum_vec, -1)
 
-    return [True, delta_position]
+        return [True, delta_position]
 \end{mpy}
 
 We have also included a clause for if the magnitude is 0, which would only happen if the players were on top of each other, but just to be safe we will return no collision, since any move from either of the players would result in a non-zero collision that we can then handle appropriately.
@@ -859,18 +859,18 @@ We will give each player a weapon, of a specific class, which will have specifie
 \vs
 \begin{mpy}
 class Weapon:
-  #We need a way to move the weapon alongside the Weapon
-  #Some way to attach the two together
-  #TODO
-  def __init__(self):
-    self.ammo = 30
-    self.reloadTime = 2.0
-    self.damagePerHit = 5
-    self.range = 1000
-    self.std_dev = 0.25
-    self.raysPerShot = 1
-    self.cooldown = 0.25
-    self.spread = 1
+    #We need a way to move the weapon alongside the Weapon
+    #Some way to attach the two together
+    #TODO
+    def __init__(self):
+        self.ammo = 30
+        self.reloadTime = 2.0
+        self.damagePerHit = 5
+        self.range = 1000
+        self.std_dev = 0.25
+        self.raysPerShot = 1
+        self.cooldown = 0.25
+        self.spread = 1
 \end{mpy}
 
 We will now justify each attribute. The ammo is the largest amount of ammunition that the weapon can fire before needing to reload. This is important since otherwise a player could just hold down the fire button without needing to be aiming correctly. The reload time is the amount of time taken from emptying the weapon's "cartridge" to refilling it so that they player can fire the weapon again.
@@ -906,26 +906,26 @@ We also need to create attributes for the number of rays per shot as well as the
 
 The rays will be randomly spread out. We can do this as follows.
 \begin{mpy}
-  #We will attach the damage to this as well
-  def fire(self, position, direction):
-    rays = []
-    magnitude_squared = U.dot(direction, direction)
-    unit_dir = U.mult(direction, 1 / sqrt(magnitude_squared))
+    #We will attach the damage to this as well
+    def fire(self, position, direction):
+        rays = []
+        magnitude_squared = U.dot(direction, direction)
+        unit_dir = U.mult(direction, 1 / sqrt(magnitude_squared))
 
-    for i in range(self.raysPerShot):
+        for i in range(self.raysPerShot):
 
-      #Sample deviation using the normal distribution
-      if self.spread == 1:
-        angleDeviation = random.normal(loc = 0, scale=self.std_dev, size=None)
-        rotated_dir = U.rotateVector(unit_dir, angleDeviation)
-      else: 
-        rotated_dir = unit_dir
+            #Sample deviation using the normal distribution
+            if self.spread == 1:
+                angleDeviation = random.normal(loc = 0, scale=self.std_dev, size=None)
+                rotated_dir = U.rotateVector(unit_dir, angleDeviation)
+            else: 
+                rotated_dir = unit_dir
 
-      #Add unit_dir rotation here using matrices
-      final_extent = U.vecAdd(position, U.mult(rotated_dir, self.range))
-      rays.append([position, final_extent, self.damage])
+            #Add unit_dir rotation here using matrices
+            final_extent = U.vecAdd(position, U.mult(rotated_dir, self.range))
+            rays.append([position, final_extent, self.damage])
 
-    return rays
+        return rays
 \end{mpy}
 \vs
 We will now explain each bit of this code. We first create an array of rays, since there will be weapons which produces multiple rays. We also have the direction vector of the player, but this is not necessarily normalised, so for that reason, we will be normalising it first using the dot product and the scalar multiple of 1 over the magnitude. This is essential, since if the direction vector is not normalised the length of the ray will be longer than the actual ray which should occur. We then create a for loop for the number of rays that we want to produce, and then append these rays into the array.
@@ -939,33 +939,33 @@ We will create multiple weapons to create interactivity as mentioned before, and
 \begin{mpy}
 #Automatic weapon, good at mid range
 class AssaultRifle(Weapon):
-  def __init__(self):
-    pass
+    def __init__(self):
+        pass
 
 #Long range, with a very high damage per hit, but slow reloads
 class SniperRifle(Weapon):
-  def __init__(self):
-    self.ammo = 5
-    self.reloadTime = 5.0
-    self.damagePerHit = 100
-    self.range = 4000
-    self.std_dev = 1e-2
-    self.cooldown = 2.0
-    self.raysPerShot = 1
-    self.cooldown = 2.0
-    self.spread = 0
+    def __init__(self):
+        self.ammo = 5
+        self.reloadTime = 5.0
+        self.damagePerHit = 100
+        self.range = 4000
+        self.std_dev = 1e-2
+        self.cooldown = 2.0
+        self.raysPerShot = 1
+        self.cooldown = 2.0
+        self.spread = 0
 
 #A very short range weapon
 class Shotgun(Weapon):
-  def __init__(self):
-    self.ammo = 6
-    self.reloadTime = 3.0
-    self.damagerPerHit = 35
-    self.range = 500
-    self.std_dev = pi/6
-    self.raysPerShot = 10
-    self.cooldown = 0.75
-    self.spread = 1
+    def __init__(self):
+        self.ammo = 6
+        self.reloadTime = 3.0
+        self.damagerPerHit = 35
+        self.range = 500
+        self.std_dev = pi/6
+        self.raysPerShot = 10
+        self.cooldown = 0.75
+        self.spread = 1
 \end{mpy}
 
 \subsection{\textcolor{blue}{Block}}
@@ -987,23 +987,23 @@ class Block(pygame.sprite.Sprite):
 #Length2 is in the y direction
 def __init__(self, centre, length1, length2, colour, SCREEN_DIMS, camera_position):
 
-  pygame.sprite.Sprite.__init__(self)
+    pygame.sprite.Sprite.__init__(self)
 
-  self.centre = centre
-  self.length1 = length1
-  self.length2 = length2
-  self.colour = colour
+    self.centre = centre
+    self.length1 = length1
+    self.length2 = length2
+    self.colour = colour
 
-  self.initial_screenPosition = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
-  self.rect = pygame.Rect(self.initial_screenPosition[0], self.initial_screenPosition[1], self.length1, self.length2)
+    self.initial_screenPosition = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
+    self.rect = pygame.Rect(self.initial_screenPosition[0], self.initial_screenPosition[1], self.length1, self.length2)
 \end{mpy}
 
 We will now examine each aspect of the code to ensure that it is valid. As mentioned before, to define the geometry of the rectangle we needed a few principle values, which we now have. We also need to define a colour, since this is what we will be using to render. We can now define the render function as follows.
 
 \begin{mpy}
-  def render(self):
-    self.rect.center = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
-    pygame.draw.rect(display, self.colour, self.rect)
+    def render(self):
+        self.rect.center = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS)
+        pygame.draw.rect(display, self.colour, self.rect)
 \end{mpy}
 
 \subsection{\textcolor{red}{Game Class}}
@@ -1029,14 +1029,14 @@ Next, we will create our \m{Game} class.
 \begin{mpy}
 class Game:
 
-  #Initialise the game class
-  def __init__(self, WIDTH, HEIGHT, REFRESH_RATE):
+    #Initialise the game class
+    def __init__(self, WIDTH, HEIGHT, REFRESH_RATE):
 
-    #Initialise PyGame and the screen
-    pygame.init()
-    self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Momentum")
-    pygame.display.set_icon(pygame.image.load('assets/momentum_icon.png'))
+        #Initialise PyGame and the screen
+        pygame.init()
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Momentum")
+        pygame.display.set_icon(pygame.image.load('assets/momentum_icon.png'))
 \end{mpy}
 \vs
 This first block of code will start PyGame for us, and let us then use its functionality. Additionally, we will create the screen on top of which we are drawing, and then set it's caption, which is the name of our game, Momentum. We will also load an icon which will go in the top left of the screen and will show the game's icon.
@@ -1046,57 +1046,57 @@ This first block of code will start PyGame for us, and let us then use its funct
 After that, we create the game clock, which is essential to running the game, and controlling the frame rate and physics.
 \vs
 \begin{mpy}
-    #Create the game clock
-    self.clock = pygame.time.Clock()
-    self.dt = 0
+        #Create the game clock
+        self.clock = pygame.time.Clock()
+        self.dt = 0
 \end{mpy}
 \vs
 We will now define some global variables which will tell us the height, width and refresh rate of the screen, which is passed onto all of the other states should they need it at any point. This is justified, because it allows for a much more reliable way of communicating this information to the states, and it will prevent us from hard coding it into the game, which would cause compatibility issues, although this is unlikely. It will let us also experiment with different values for these variables very quickly, making prototyping and testing with users easier.
 \vs
 \begin{mpy}
-    #Global settings
-    self.WIDTH = WIDTH
-    self.HEIGHT = HEIGHT
-    self.REFRESH_RATE = REFRESH_RATE
+        #Global settings
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+        self.REFRESH_RATE = REFRESH_RATE
 \end{mpy}
 \vs
 Next, we will create instances of all of our different states and the \m{GameStateManager} instance, and assign it to the game, so that it can handle them appropriately. The manager uses short strings to get and set the states, and so we will now define a dictionary to translate between strings and classes. This is a reasonable choice for this purpose, since arrays and linked lists would be less efficient. 
 \vs
 \begin{mpy}
-    #Game State Manager and Game States
-    self.gameStateManager = GameStateManager('game_loop', [self.WIDTH, self.HEIGHT], self.REFRESH_RATE)
-    self.start = Start(self.screen, self.gameStateManager)
-    self.options = Options(self.screen, self.gameStateManager)
-    self.login = Login(self.screen, self.gameStateManager)
-    self.register = Register(self.screen, self.gameStateManager)
-    self.createGame = CreateGame(self.screen, self.gameStateManager)
-    self.setTimer = SetTimer(self.screen, self.gameStateManager)
-    self.gameLoop = GameLoop(self.screen, self.gameStateManager)
-    self.gameOver = GameOver(self.screen, self.gameStateManager)
+        #Game State Manager and Game States
+        self.gameStateManager = GameStateManager('game_loop', [self.WIDTH, self.HEIGHT], self.REFRESH_RATE)
+        self.start = Start(self.screen, self.gameStateManager)
+        self.options = Options(self.screen, self.gameStateManager)
+        self.login = Login(self.screen, self.gameStateManager)
+        self.register = Register(self.screen, self.gameStateManager)
+        self.createGame = CreateGame(self.screen, self.gameStateManager)
+        self.setTimer = SetTimer(self.screen, self.gameStateManager)
+        self.gameLoop = GameLoop(self.screen, self.gameStateManager)
+        self.gameOver = GameOver(self.screen, self.gameStateManager)
 \end{mpy}
 \vs
 As mentioned before, we will need to define our dictionary to translate to game states from a string.
 \vs
 \begin{mpy}
-    #Game States so that we can convert strings into instances
-    self.states = {'start': self.start,
-          'options': self.options,
-          'login': self.login,
-          'register': self.register,
-          'create_game': self.createGame,
-          'set_timer': self.setTimer,
-          'game_loop': self.gameLoop,
-          'game_over': self.gameOver
-    }
+        #Game States so that we can convert strings into instances
+        self.states = {'start': self.start,
+                    'options': self.options,
+                    'login': self.login,
+                    'register': self.register,
+                    'create_game': self.createGame,
+                    'set_timer': self.setTimer,
+                    'game_loop': self.gameLoop,
+                    'game_over': self.gameOver
+        }
 \end{mpy}
 
 \vs
 Additionally, every time a state is run, it will return some type of return value. This is because it needs to be able to communicate with other states. These types may be different, but we will initialise it, since the main game loop will in fact be passing the previous return value in to the next game state. However, since the variable wouldn't exist, it would throw an error, and so we initialise it to prevent that, even though it is not required.
 \vs
 \begin{mpy}
-    #A return value that we will pass into each new game state
-    #Will contain things like, user info, score, etc
-    self.returnValues = []
+        #A return value that we will pass into each new game state
+        #Will contain things like, user info, score, etc
+        self.returnValues = []
 \end{mpy}
 
 
@@ -1104,33 +1104,33 @@ Now, we will define the main loop which will be running our game. This will cont
 
 
 \begin{mpy}
-  #Runs the main game
-  def run(self):
+    #Runs the main game
+    def run(self):
 
-    #Main Application Loop
-    while True:
+        #Main Application Loop
+        while True:
 
-      #Get all events
-      events = pygame.event.get()
+            #Get all events
+            events = pygame.event.get()
 
-      #Get all key presses
-      keys = pygame.key.get_pressed()
+            #Get all key presses
+            keys = pygame.key.get_pressed()
 
-      #Check if user wants to quit
-      for event in events:
-        if event.type == pygame.QUIT:
-          pygame.quit()
-          sys.exit()
+            #Check if user wants to quit
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-      #Use flags to identify the return values, ie: returnValues[0] = 'score'
-      #Maybe consider input Values into the run function?
-      self.returnValues = self.states[self.gameStateManager.get_state()].run(self.returnValues)
+            #Use flags to identify the return values, ie: returnValues[0] = 'score'
+            #Maybe consider input Values into the run function?
+            self.returnValues = self.states[self.gameStateManager.get_state()].run(self.returnValues)
 
-      #Update the display
-      pygame.display.update()
+            #Update the display
+            pygame.display.update()
 
-      #Update the clock
-      dt = self.clock.tick(self.REFRESH_RATE)/1000
+            #Update the clock
+            dt = self.clock.tick(self.REFRESH_RATE)/1000
 \end{mpy}
 \vs
 This will let us accept the new return values from the game, and input the previous ones into the new state and run it. Each state will have it's own \m{while} loop which will allow it to run some code. 
@@ -1173,65 +1173,65 @@ We will now demonstrate that this works, by putting some text on each menu objec
 The \m{Menu} class has a constructor as follows.
 \begin{mpy}
 class Menu:
-  def __init__(self, display, gameStateManager, bgColor):
+    def __init__(self, display, gameStateManager, bgColor):
 
-    #Set the display on which we are rendering
-    self.display = display
-    
-    #Set the gsm
-    self.gameStateManager = gameStateManager
+        #Set the display on which we are rendering
+        self.display = display
+        
+        #Set the gsm
+        self.gameStateManager = gameStateManager
 
-    #Set screen dims
-    self.SCREEN_DIMS = gameStateManager.SCREEN_DIMS
+        #Set screen dims
+        self.SCREEN_DIMS = gameStateManager.SCREEN_DIMS
 
-    #Set bg color
-    self.BG_COLOR = bgColor
+        #Set bg color
+        self.BG_COLOR = bgColor
 \end{mpy}
 
 This will set the basic variables that we need to run the game. We can then write a main \m{run()} which will let us now write some code in here. This is very basic, and will make a call to \m{specificFunction()} which doesn't exist yet, however, it will simply contain the \m{pass} keyword, which will just move on from the function, since we don't want to run anything here, but we want to allow for the child classes to be able to overwrite the function and have the change show up in the main \m{run()} loop.
 
 \begin{mpy}
-  #Run the menu
-  def run(self, returnValues):
+    #Run the menu
+    def run(self, returnValues):
 
-    #Fill display
-    self.display.fill(self.BG_COLOR)
+        #Fill display
+        self.display.fill(self.BG_COLOR)
 
-    #Create clock
-    self.clock = pygame.time.Clock()
-    dt = 0
+        #Create clock
+        self.clock = pygame.time.Clock()
+        dt = 0
 
-    self.running = True
+        self.running = True
 
-    #Main loop
-    while self.running:
-      #Redraw display
-      self.display.fill(self.BG_COLOR)
+        #Main loop
+        while self.running:
+            #Redraw display
+            self.display.fill(self.BG_COLOR)
 
-      # Get all events
-      events = pygame.event.get()
+            # Get all events
+            events = pygame.event.get()
 
-      # Get all key presses
-      keys = pygame.key.get_pressed()
+            # Get all key presses
+            keys = pygame.key.get_pressed()
 
-      for event in events:
+            for event in events:
 
-        # Check if user wants to quit
-        if event.type == pygame.QUIT:
-          pygame.quit()
-          sys.exit()
-
-
-      self.specificMethods(keys, events)
+                # Check if user wants to quit
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
 
-      #Update the display
-      pygame.display.update()
+            self.specificMethods(keys, events)
 
-      #Tick the clock
-      dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
-        
-    return returnValues
+
+            #Update the display
+            pygame.display.update()
+
+            #Tick the clock
+            dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
+                
+        return returnValues
 
 \end{mpy}
 
@@ -1240,31 +1240,31 @@ We can then create child classes from this, inhereting the properties of the \m{
 \begin{mpy}
 class MenuA(Menu):
 
-  def __init__(self, display, gameStateManager):
+    def __init__(self, display, gameStateManager):
 
-    super().__init__(display, gameStateManager, (0, 0, 255))
+        super().__init__(display, gameStateManager, (0, 0, 255))
 
-  def specificMethods(self, keys, events):
+    def specificMethods(self, keys, events):
 
-    if keys[K_DOWN]:
-      self.gameStateManager.setState('menu_b')
-      self.running = False
+        if keys[K_DOWN]:
+            self.gameStateManager.setState('menu_b')
+            self.running = False
 
-    return None
+        return None
 
 class MenuB(Menu):
 
-  def __init__(self, display, gameStateManager):
+    def __init__(self, display, gameStateManager):
 
-    super().__init__(display, gameStateManager, (255, 0, 0))
+        super().__init__(display, gameStateManager, (255, 0, 0))
 
-  def specificMethods(self, keys, events):
+    def specificMethods(self, keys, events):
 
-    if keys[K_UP]:
-        self.gameStateManager.setState('menu_a')
-        self.running = False
+        if keys[K_UP]:
+                self.gameStateManager.setState('menu_a')
+                self.running = False
 
-    return None
+        return None
 \end{mpy}
 
 \vs
@@ -1273,21 +1273,21 @@ Here is the \href{https://youtu.be/aZqFwUYA0_U}{video} which demonstrates this i
 The screen captures from the two menus are shown in Figure \ref{fig:menu_ab}.
 
 \begin{figure}
-  \centering
-  \begin{subfigure}{0.49\textwidth}
     \centering
-    \includegraphics[width = \textwidth]{Development/Images/MenuA.png}
-    \caption{Menu A}
-    \label{fig:menu_a}
-    \end{subfigure}
     \begin{subfigure}{0.49\textwidth}
-    \centering
-    \includegraphics[width = \textwidth]{Development/Images/MenuB.png}
-    \caption{Menu B}
-    \label{fig:menu_b}
-  \end{subfigure}
-  \caption{Screen captures from the two menus.}
-  \label{fig:menu_ab}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/MenuA.png}
+        \caption{Menu A}
+        \label{fig:menu_a}
+        \end{subfigure}
+        \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/MenuB.png}
+        \caption{Menu B}
+        \label{fig:menu_b}
+    \end{subfigure}
+    \caption{Screen captures from the two menus.}
+    \label{fig:menu_ab}
 \end{figure}
 
 \vs
@@ -1310,18 +1310,18 @@ After this, we need to create our \m{Start} class, which is done as follows. We 
 \begin{mpy}
 #Directed from the login page
 class Start:
-    def __init__(self, display, gameStateManager):
-        #Set the display on which we are rendering
-        self.display = display
-        
-        #Set the gsm
-        self.gameStateManager = gameStateManager
+        def __init__(self, display, gameStateManager):
+                #Set the display on which we are rendering
+                self.display = display
+                
+                #Set the gsm
+                self.gameStateManager = gameStateManager
 
-        #Set screen dims
-        self.SCREEN_DIMS = gameStateManager.SCREEN_DIMS
+                #Set screen dims
+                self.SCREEN_DIMS = gameStateManager.SCREEN_DIMS
 
-        #Set bg color
-        self.BG_COLOR = (0, 255, 255)
+                #Set bg color
+                self.BG_COLOR = (0, 255, 255)
 \end{mpy}
 
 \vs
@@ -1329,64 +1329,64 @@ The next part of the code is the running of the menu itself. Here, we will be fi
 
 \vs
 \begin{mpy}
-  def run(self, returnValues):
+    def run(self, returnValues):
 
-    #Fill display
-    self.display.fill(self.BG_COLOR)
+        #Fill display
+        self.display.fill(self.BG_COLOR)
 
-    #Create clock
-    self.clock = pygame.time.Clock()
-    dt = 0
+        #Create clock
+        self.clock = pygame.time.Clock()
+        dt = 0
 
-    #Initialise variables
-    #TODO: SHOULD BE MOVED INSIDE THIS IS A BUG PLEASE DOCUMENT IT
-    inPos = False
-    running = True
-    clicked = False
+        #Initialise variables
+        #TODO: SHOULD BE MOVED INSIDE THIS IS A BUG PLEASE DOCUMENT IT
+        inPos = False
+        running = True
+        clicked = False
 
-    #Main loop
-    while running:
+        #Main loop
+        while running:
 
-      #Redraw display
-      self.display.fill(self.BG_COLOR)
+            #Redraw display
+            self.display.fill(self.BG_COLOR)
 
-      #Render text
-      text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
-      text_rect.center = (self.SCREEN_DIMS[0] // 2, self.SCREEN_DIMS[1] // 2)
+            #Render text
+            text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+            text_rect.center = (self.SCREEN_DIMS[0] // 2, self.SCREEN_DIMS[1] // 2)
 
-      #Blit to surface
-      self.display.blit(text_surface, text_rect)
+            #Blit to surface
+            self.display.blit(text_surface, text_rect)
 
-      # Get all events
-      events = pygame.event.get()
+            # Get all events
+            events = pygame.event.get()
 
-      # Get all key presses
-      keys = pygame.key.get_pressed()
-      
-      for event in events:
+            # Get all key presses
+            keys = pygame.key.get_pressed()
+            
+            for event in events:
 
-          # Check if user wants to quit
-          if event.type == pygame.QUIT:
-              pygame.quit()
-              sys.exit()
+                    # Check if user wants to quit
+                    if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
 
-      #Update the display
-      pygame.display.update()
+            #Update the display
+            pygame.display.update()
 
-      #Tick the clock
-      dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
-        
-    return returnValues
+            #Tick the clock
+            dt = self.clock.tick(self.gameStateManager.REFRESH_RATE)
+                
+        return returnValues
 \end{mpy}
 
 \vs
 We also need to change the initial value of the game state manager's state from \m{'game_loop'} to \m{'start'}. Having done this, we get the following image (Figure \ref{fig:start_menu}) on the screen.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth]{Development/Images/start_menu.png}
-    \caption{An image capture of the start menu screen so far}
-    \label{fig:start_menu}
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/start_menu.png}
+        \caption{An image capture of the start menu screen so far}
+        \label{fig:start_menu}
 \end{figure}
 We can now take inputs from the keyboard and assign actions to them. Specifically, if the user presses a certain button we want to change the state of the \m{GameStateManager} using the setter method and then we want to set the inner loop to stop running so that we can go back to the outer loop and join the new state.
 
@@ -1394,9 +1394,9 @@ We can now take inputs from the keyboard and assign actions to them. Specificall
 We can assign the up arrow to be the keyboard event to change the state. This is done as follows.
 
 \begin{mpy}
-      if keys[K_UP]:
-          self.gameStateManager.setState('game_loop')
-          running = False
+            if keys[K_UP]:
+                    self.gameStateManager.setState('game_loop')
+                    running = False
 \end{mpy}
 
 This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later.
@@ -1408,28 +1408,28 @@ We will be implementing a \m{Button} class which we mentioned before. This will 
 \begin{mpy}
 class Button(Block):
 
-  def __init__(self, centre, length0, length2, colour, SCREEN_DIMS, text, bg_color):
-    
-    #Middle of the screen
-    camera_position = U.mult(SCREEN_DIMS, 0.5)
+    def __init__(self, centre, length0, length2, colour, SCREEN_DIMS, text, bg_color):
+        
+        #Middle of the screen
+        camera_position = U.mult(SCREEN_DIMS, 0.5)
 
-    #Position as an integer
-    camera_position = [int(i) for i in camera_position]
+        #Position as an integer
+        camera_position = [int(i) for i in camera_position]
 
-    #Initiate the block class in the 
-    super(Button, self).__init__(centre, length0, length2, colour, SCREEN_DIMS, camera_position)
+        #Initiate the block class in the 
+        super(Button, self).__init__(centre, length0, length2, colour, SCREEN_DIMS, camera_position)
 
-    #Set the bg color
-    self.BG_COLOR = bg_color
+        #Set the bg color
+        self.BG_COLOR = bg_color
 
-    #Set the text surface and rect to write on
-    self.text_surface, self.text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+        #Set the text surface and rect to write on
+        self.text_surface, self.text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
 
-    #Set the centre of the button on the screen
-    self.text_rect.center = self.centre
+        #Set the centre of the button on the screen
+        self.text_rect.center = self.centre
 
-    #Set screen dims for rendering
-    self.SCREEN_DIMS = SCREEN_DIMS
+        #Set screen dims for rendering
+        self.SCREEN_DIMS = SCREEN_DIMS
 \end{mpy}
 
 We set the camera position to be in the middle of the screen, which means that we don't need to adjust our render functions, and we can just use this as our camera position, since we won't be moving anyway.
@@ -1439,22 +1439,22 @@ We will now write the render function as follows.
 
 \begin{mpy}
 
-  #Modified render function of the button
-  def render(self, display, dt):
+    #Modified render function of the button
+    def render(self, display, dt):
 
-    #Render the rectange
-    super().render(display, U.mult(self.SCREEN_DIMS, 0.5), [0, 0], dt, self.SCREEN_DIMS)
+        #Render the rectange
+        super().render(display, U.mult(self.SCREEN_DIMS, 0.5), [0, 0], dt, self.SCREEN_DIMS)
 
-    #Render the text on top
-    display.blit(self.text_surface, self.text_rect)
+        #Render the text on top
+        display.blit(self.text_surface, self.text_rect)
 \end{mpy}
 
 \href{https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame}{This was an important link, and we need to reference it}. We will now change the \m{Start} menu class to make use of this new button. We begin by adding the following lines to the constructor.
 
 \vs
 \begin{mpy}
-    #Create button instance to use
-    self.button = Button(U.mult(self.SCREEN_DIMS, 0.5), 350, 80, self.BG_COLOR, self.SCREEN_DIMS, "hello", self.BG_COLOR)
+        #Create button instance to use
+        self.button = Button(U.mult(self.SCREEN_DIMS, 0.5), 350, 80, self.BG_COLOR, self.SCREEN_DIMS, "hello", self.BG_COLOR)
 \end{mpy}
 
 This ensures that we can now use the button object inside of the main loop. However, as of right now, it doesn't have any functionality, so we will implement a click function which will tell us when the mouse cursor is over the button. We can then find when the mouse button is clicked and if both conditions are met then the button has been clicked. In the \m{Button} class we can add a new function.
@@ -1469,16 +1469,16 @@ We will be creating a new class \m{GameLoop}, which will be running the game loo
 \begin{mpy}
 class GameLoop:
 
-  def __init__(self, display, gameStateManager):
+    def __init__(self, display, gameStateManager):
 
-    #Get the display we are working on
-    self.display = display
+        #Get the display we are working on
+        self.display = display
 
-    #Get the gameStateManager, so we can process it within the class
-    self.gameStateManager = gameStateManager
+        #Get the gameStateManager, so we can process it within the class
+        self.gameStateManager = gameStateManager
 
-    #Get the screen dimensions conveniently
-    self.SCREEN_DIMS = self.gameStateManager.SCREEN_DIMS
+        #Get the screen dimensions conveniently
+        self.SCREEN_DIMS = self.gameStateManager.SCREEN_DIMS
 \end{mpy}
 
 \vs
@@ -1487,91 +1487,91 @@ We also need to initialise a new clock and set \m{dt} in order to be able to use
 \vs
 
 \begin{mpy}
-    #Placeholders for the moment
-    self.pos_x = self.SCREEN_DIMS[0]//2
-    self.pos_y = self.SCREEN_DIMS[1]//2
+        #Placeholders for the moment
+        self.pos_x = self.SCREEN_DIMS[0]//2
+        self.pos_y = self.SCREEN_DIMS[1]//2
 
-    #Initialise the clock, and set the refresh rate
-    self.clock = pygame.time.Clock()
-    self.REFRESH_RATE = self.gameStateManager.REFRESH_RATE
+        #Initialise the clock, and set the refresh rate
+        self.clock = pygame.time.Clock()
+        self.REFRESH_RATE = self.gameStateManager.REFRESH_RATE
 \end{mpy}
 \vs
 We need to create an actual game loop. Specifically, we need to contain this game loop inside of a run function, since all of the game state objects will contain a \m{run()} function that will be called everytime we are changing states. 
 \begin{mpy}
-  def run(self, returnValues):
+    def run(self, returnValues):
 
-    dt = 0
+        dt = 0
 
-    player1 = Player([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
+        player1 = Player([self.pos_x, self.pos_y], [0, -1], 0, 'empty')
 
-    #List of all players
-    self.players = [player1]
+        #List of all players
+        self.players = [player1]
 
-    running = True
+        running = True
 
-    while running:
+        while running:
 
-      self.display.fill((255, 255, 255))
+            self.display.fill((255, 255, 255))
 
-      #Check if player wants to quit
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-          pygame.quit()
-          sys.exit()
+            #Check if player wants to quit
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-      #Get the key presses and mouse position and buttons
-      keys = pygame.key.get_pressed()
+            #Get the key presses and mouse position and buttons
+            keys = pygame.key.get_pressed()
 
-      mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = pygame.mouse.get_pos()
 
-      mouse_clicks = pygame.mouse.get_pressed()
+            mouse_clicks = pygame.mouse.get_pressed()
 
-      #Get direction vector
-      player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
+            #Get direction vector
+            player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
 
-      #Normalise direction vector
-      dir_mag = sqrt(sum([i**2 for i in player1_direction]))
-      player1_direction = [i / dir_mag for i in player1_direction]
+            #Normalise direction vector
+            dir_mag = sqrt(sum([i**2 for i in player1_direction]))
+            player1_direction = [i / dir_mag for i in player1_direction]
 
-      #Update the direction vector
-      player1.forward_vec = player1_direction
+            #Update the direction vector
+            player1.forward_vec = player1_direction
 
-      #Get the directions which are pressed
-      directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
+            #Get the directions which are pressed
+            directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
 
-      for player in self.players:
-          player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
+            for player in self.players:
+                    player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
 
-      #Update the display
-      pygame.display.update()
+            #Update the display
+            pygame.display.update()
 
-      #Tick the clock
-      dt = self.clock.tick(self.REFRESH_RATE)/1000
+            #Tick the clock
+            dt = self.clock.tick(self.REFRESH_RATE)/1000
 
-    return None
+        return None
 \end{mpy}
 
 We will now re-write the \m{render()} function in the \m{Player} class, since there is a lot of ineffecienies in the way it was written, and now that the \m{Utility} class is available we can make the code a lot more efficient, readable, and maintainable. Additionally, there were a lot of values that were being calculated twice, and now we can get rid of that. This produces the following code.
 \vs
 
 \begin{mpy}
-  #Renders the character to the display of the player
-  def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
+    #Renders the character to the display of the player
+    def render(self, display, camera_position, directions, dt, SCREEN_DIMS):
 
-    #Find relative posistion
-    rel_pos = U.convertToScreen(camera_position, self.position, SCREEN_DIMS)
+        #Find relative posistion
+        rel_pos = U.convertToScreen(camera_position, self.position, SCREEN_DIMS)
 
-    #Draw the circle
-    pygame.draw.circle(display, self.colour, rel_pos, self.radius)
+        #Draw the circle
+        pygame.draw.circle(display, self.colour, rel_pos, self.radius)
 
-    #Final extent of the forward vector
-    for_pos = U.vecAdd(U.mult(self.forward_vec, 100), rel_pos)
+        #Final extent of the forward vector
+        for_pos = U.vecAdd(U.mult(self.forward_vec, 100), rel_pos)
 
-    #Draw anti-aliased line for forward vector
-    pygame.draw.aaline(display, (0, 0, 0), rel_pos, for_pos)
+        #Draw anti-aliased line for forward vector
+        pygame.draw.aaline(display, (0, 0, 0), rel_pos, for_pos)
 
-    #Move the player
-    self.movePlayer(directions, dt)
+        #Move the player
+        self.movePlayer(directions, dt)
 \end{mpy}
 
 
@@ -1579,39 +1579,39 @@ We will now re-write the \m{render()} function in the \m{Player} class, since th
 Setting the start state to be \m{"game_loop"}, we can only see a blank screen. This is because we aren't drawing anything to the screen. Therefore, we need to add the \m{render()} function to the main loop. Whilst we are doing that, we can also add a block, since the player will just be stationary in the middle of the screen. We start by adding the block to the section before the \m{while} loop in the \m{run()} function.
 
 \begin{mpy}
-    block1 = Block([self.pos_x, self.pos_y + 200], 100, 200, (100, 0, 0), self.SCREEN_DIMS, player1.position)
+        block1 = Block([self.pos_x, self.pos_y + 200], 100, 200, (100, 0, 0), self.SCREEN_DIMS, player1.position)
 
-    #List of all blocks
-    blocks = [block1]
+        #List of all blocks
+        blocks = [block1]
 \end{mpy}
 
 Then, we add the following lines of code in the \m{while} loop, as shown below. The first and last lines are already present, but were added for clarity. This will now render both the player and the block.
 
 \begin{mpy}
-      #Get the directions which are pressed
-      directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
+            #Get the directions which are pressed
+            directions = [int(keys[K_d]), int(keys[K_a]), int(keys[K_s]), int(keys[K_w])]
 
-      for player in players:
-        player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
+            for player in players:
+                player.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
 
-      for block in blocks:
-        block.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
+            for block in blocks:
+                block.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS)
 
-      #Update the display
-      pygame.display.update()
+            #Update the display
+            pygame.display.update()
 \end{mpy}
 
 This results in the output shown below.
 
 \begin{figure}[H]
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_1.png}}
-    }
-    \caption{An image capture of the game loop}
-    \label{fig:game_loop_1}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_1.png}}
+        }
+        \caption{An image capture of the game loop}
+        \label{fig:game_loop_1}
 \end{figure}
 
 Here is a \href{https://youtu.be/ICvIX3ar_eY}{video} demonstrating what this looks like. Both keyboard and mouse inputs were given here.
@@ -1620,115 +1620,115 @@ Here is a \href{https://youtu.be/ICvIX3ar_eY}{video} demonstrating what this loo
 We can now add more players and more blocks into the map in order to make the game loop more alike to a real game setting. This is done simply by adding more player instances at different positions. For now, we will set the players to be in the top left corner of the map, and at regularly space intervals. We also want to be able to differentiate between the two teams, so we add this bit of code into the constructor for \m{Player}. This will allow us to choose colours based on which team the player is in.
 
 \begin{mpy}
-    self.colours = {0: (0, 100, 100),
-                    1: (100, 20, 0)
-                    }
+        self.colours = {0: (0, 100, 100),
+                                        1: (100, 20, 0)
+                                        }
 
-    self.colour = self.colours[team]
+        self.colour = self.colours[team]
 \end{mpy}
 
 Now that we have this, we can add the players as follows.
 
 \begin{mpy}
-    # Team 1
-    player1 = Player([self.pos_x - 500, self.pos_y + 400], [0, -1], 0, Shotgun())
-    player2 = Player([self.pos_x, self.pos_y + 400], [0, -1], 0, AssaultRifle()
-    )
-    player3 = Player([self.pos_x + 500, self.pos_y + 400], [0, -1], 0, SniperRifle()
-    )
+        # Team 1
+        player1 = Player([self.pos_x - 500, self.pos_y + 400], [0, -1], 0, Shotgun())
+        player2 = Player([self.pos_x, self.pos_y + 400], [0, -1], 0, AssaultRifle()
+        )
+        player3 = Player([self.pos_x + 500, self.pos_y + 400], [0, -1], 0, SniperRifle()
+        )
 
-    # Team 2
-    player4 = Player([self.pos_x - 500, self.pos_y], [0, 1], 1, Shotgun())
-    player5 = Player([self.pos_x, self.pos_y], [0, 1], 1, AssaultRifle())
-    player6 = Player([self.pos_x + 500, self.pos_y], [0, 1], 1, SniperRifle())
+        # Team 2
+        player4 = Player([self.pos_x - 500, self.pos_y], [0, 1], 1, Shotgun())
+        player5 = Player([self.pos_x, self.pos_y], [0, 1], 1, AssaultRifle())
+        player6 = Player([self.pos_x + 500, self.pos_y], [0, 1], 1, SniperRifle())
 
-    # Contains all of the players in the game
-    self.players = [player1, player2, player3, player4, player5, player6]
+        # Contains all of the players in the game
+        self.players = [player1, player2, player3, player4, player5, player6]
 \end{mpy}
 
 We will temporarily remove the block from the scene, and add it back later. We still need to make one more change however. Since the other players will be controlled with AI, we need to find some way of getting inputs to the other players. To do this, we will be using a list containing all of the inputs to the other players. We will set one of these inputs to be the human input, which will then control \m{player1}. To do this efficiently, we will use the \m{enumerate} keyword in \m{Python}. This is written as follows.
 
 \begin{mpy}
-      #Output from the model will go here
-      model_predictions = [
-        directions,
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-      ]
+            #Output from the model will go here
+            model_predictions = [
+                directions,
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+            ]
 
-      #Render and move players as needed
-      for i, player in enumerate(players, 0):
-        player.render(self.display, player1.position, model_predictions[i], dt, self.SCREEN_DIMS)
+            #Render and move players as needed
+            for i, player in enumerate(players, 0):
+                player.render(self.display, player1.position, model_predictions[i], dt, self.SCREEN_DIMS)
 \end{mpy}
 
 This appears as shown in Figure \ref{fig:game_loop_2}. \href{https://youtu.be/KU45hIX5U_0}{Here is a video} showing this in action.
 
 \begin{figure}
-  \centering
-  \begin{subfigure}{0.49\textwidth}
     \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2.png}}}
-    \caption{Screen Capture 1}
-    \label{fig:game_loop_2_1}
-    \end{subfigure}
     \begin{subfigure}{0.49\textwidth}
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2_b.png}}}
-    \caption{Screen Capture 2}
-    \label{fig:game_loop_2_2}
-  \end{subfigure}
-  \caption{Screen captures of two different states in the game loop.}
-  \label{fig:game_loop_2}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2.png}}}
+        \caption{Screen Capture 1}
+        \label{fig:game_loop_2_1}
+        \end{subfigure}
+        \begin{subfigure}{0.49\textwidth}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_2_b.png}}}
+        \caption{Screen Capture 2}
+        \label{fig:game_loop_2_2}
+    \end{subfigure}
+    \caption{Screen captures of two different states in the game loop.}
+    \label{fig:game_loop_2}
 \end{figure}
 
 \vs
 Then next thing we need to do is seperate the render function and the player update. This is important because we need to be able to manage the player states instead of moving it directly. Additionally, it is not the responsibility of the render function to do this. Therefore, we will create a new \m{updatePlayerState} which will take in the directions, and will update the player states.
 
 \begin{mpy}
-  def updatePlayerState(self, action, dt):
-    #Move the player
-    self.movePlayer(action, dt)
+    def updatePlayerState(self, action, dt):
+        #Move the player
+        self.movePlayer(action, dt)
 \end{mpy}
 
 We will now remove the \m{directions} and \m{dt} inputs from the \m{render()} function since they are no longer needed. This gives the same outputs as shown above. Furthermore, we want to now change the way we are taking inputs. This is because they are based on convention and will make the output from the models harder to work with. Additionally, when we start working with the AI, it is difficult to get an output for the forward and backwards directions and similarly for horizontal inputs, since it is much easier to work with just a single value between -1 and 1. Therefore, we will update the move player function as follows.
 
 \begin{mpy}
-  def movePlayer(self, directions, dt):
-    #directions = [horizontal input, vertical input]
+    def movePlayer(self, directions, dt):
+        #directions = [horizontal input, vertical input]
 
-    #Used to normalise directions
-    magnitude = sqrt(U.dot(directions, directions))
+        #Used to normalise directions
+        magnitude = sqrt(U.dot(directions, directions))
 
-    #If no movement, break
-    if magnitude == 0:
-        return None
+        #If no movement, break
+        if magnitude == 0:
+                return None
 
-    #Calculate movement in the frame
-    frameMovement = U.mult(directions, (dt * self.max_speed)/magnitude)
+        #Calculate movement in the frame
+        frameMovement = U.mult(directions, (dt * self.max_speed)/magnitude)
 
-    #Update position
-    updatedPosition = U.vecAdd(self.position, frameMovement)
+        #Update position
+        updatedPosition = U.vecAdd(self.position, frameMovement)
 
-    #Position must be inside of the field
-    for i in range(2):
-        
-      if updatedPosition[i] - self.radius <= 0:
-        updatedPosition[i] = self.radius
+        #Position must be inside of the field
+        for i in range(2):
+                
+            if updatedPosition[i] - self.radius <= 0:
+                updatedPosition[i] = self.radius
 
-      elif updatedPosition[i] + self.radius >= 8000:
-        updatedPosition[i] = 8000 - self.radius
+            elif updatedPosition[i] + self.radius >= 8000:
+                updatedPosition[i] = 8000 - self.radius
 
-    #Set new position
-    self.position = updatedPosition
+        #Set new position
+        self.position = updatedPosition
 \end{mpy}
 
 However, there is still a problem with this code. This is because, if we put our input into the red team, we see that the inputs are still moving the same way they would for the blue team. This is shown in this \href{https://youtu.be/XTUu_KktHLQ}{video}.
@@ -1736,26 +1736,26 @@ However, there is still a problem with this code. This is because, if we put our
 However, this is not what we expect to see. The way to resolve this is to use the initial forward vector of the player. This is done as follows. We need to start by creating a right pointing vector in the constructor.
 
 \begin{mpy}
-    if self.initial_forward_vec == [0, -1]:
-      self.initial_right_vec = [1, 0]
-    else:
-      self.inital_right_vec = [-1, 0]
+        if self.initial_forward_vec == [0, -1]:
+            self.initial_right_vec = [1, 0]
+        else:
+            self.inital_right_vec = [-1, 0]
 \end{mpy}
 
 However, there is still a more efficient way of doing this. The inputs are completely flipped for the opposite team, so we just need to multiply the input direction by -1 for the red team, and for 1 on the blue team. We can remove the right vector, since it is no longer required. We can add the following lines in the constructor.
 
 \begin{mpy}
-    if self.initial_forward_vec == [0, -1]:
-      self.movement_multiplier = 1
-    else:
-      self.movement_multiplier = -1
+        if self.initial_forward_vec == [0, -1]:
+            self.movement_multiplier = 1
+        else:
+            self.movement_multiplier = -1
 \end{mpy}
 
 Then, the movement is updated as follows.
 
 \begin{mpy}
-    #Calculate movement in the frame
-    frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
+        #Calculate movement in the frame
+        frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
 \end{mpy}
 
 This then produces the output we expect, as shown \href{https://youtu.be/ZixPY08tVlE}{in this video}.
@@ -1764,105 +1764,105 @@ This then produces the output we expect, as shown \href{https://youtu.be/ZixPY08
 The model will output a dictionary of the inputs that it wants the player to take. Therefore, we will modify our code as follows. In the \m{run()} function, we want to edit the \m{model_predictions} to be as follows.
 
 \begin{mpy}
-      #Output from the model will go here
-      model_predictions = [
-        {"forward": directions[1], "right": directions[0], "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-      ]
+            #Output from the model will go here
+            model_predictions = [
+                {"forward": directions[1], "right": directions[0], "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+            ]
 \end{mpy}
 
 In the \m{updatePlayerState()}, we do the following.
 
 \begin{mpy}
-  #Update the player state
-  def updatePlayerState(self, action, dt):
+    #Update the player state
+    def updatePlayerState(self, action, dt):
 
-    #Get the directions from the dictionary
-    directions = [action["right"], action["forward"]]
+        #Get the directions from the dictionary
+        directions = [action["right"], action["forward"]]
 
-    #Move the player
-    self.movePlayer(directions, dt)
+        #Move the player
+        self.movePlayer(directions, dt)
 \end{mpy}
 
 In the \m{run()} we also need to update the player state as follows. We will do this in a seperate loop, because we will also need to do state updates between the player movement update and the rendering.
 
 \begin{mpy}
-      #Update player states
-      for i, player in enumerate(players, 0):
-        player.updatePlayerState(model_predictions[i], dt)
+            #Update player states
+            for i, player in enumerate(players, 0):
+                player.updatePlayerState(model_predictions[i], dt)
 \end{mpy}
 
 We also need to rotate the direction vector. This is done as follows using the \m{U.rotateVec()} method we defined before. This is inserted into \m{updatePlayerState()}.
 
 \begin{mpy}
-    #If dt != 0 we want to turn
-    if dt != 0:
-      angleTurned = action["rot_rate"] * dt
-      self.forward_vec = U.rotateVector(self.forward_vec, angleTurned)
+        #If dt != 0 we want to turn
+        if dt != 0:
+            angleTurned = action["rot_rate"] * dt
+            self.forward_vec = U.rotateVector(self.forward_vec, angleTurned)
 \end{mpy}
 
 We will also change the rotation rate for some of the characters. This will allow us to this in action.
 
 \begin{mpy}
-      #Output from the model will go here
-      model_predictions = [
-        {"forward": directions[1], "right": directions[0], "rot_rate": 0},
-        {"forward": 0, "right": 0, "rot_rate": 1.5},
-        {"forward": 0, "right": 0, "rot_rate": -1},
-        {"forward": 0, "right": 0, "rot_rate": 1},
-        {"forward": 0, "right": 0, "rot_rate": -1},
-        {"forward": 0, "right": 0, "rot_rate": 0},
-      ]
+            #Output from the model will go here
+            model_predictions = [
+                {"forward": directions[1], "right": directions[0], "rot_rate": 0},
+                {"forward": 0, "right": 0, "rot_rate": 1.5},
+                {"forward": 0, "right": 0, "rot_rate": -1},
+                {"forward": 0, "right": 0, "rot_rate": 1},
+                {"forward": 0, "right": 0, "rot_rate": -1},
+                {"forward": 0, "right": 0, "rot_rate": 0},
+            ]
 \end{mpy}
 
 This produces the output as shown in Figure \ref{fig:game_loop_3_rot}, and also in \href{https://youtu.be/GxHD5rflfGw}{this video}.
 
 \begin{figure}
-  \centering
-  \begin{subfigure}{0.49\textwidth}
     \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_a.png}}}
-    \caption{Screen Capture 1}
-    \label{fig:game_loop_3_1}
-    \end{subfigure}
     \begin{subfigure}{0.49\textwidth}
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_b.png}}}
-    \caption{Screen Capture 2}
-    \label{fig:game_loop_3_2}
-  \end{subfigure}
-  \caption{Screen captures of two different states in the game loop whilst the players are rotating.}
-  \label{fig:game_loop_3_rot}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_a.png}}}
+        \caption{Screen Capture 1}
+        \label{fig:game_loop_3_1}
+        \end{subfigure}
+        \begin{subfigure}{0.49\textwidth}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width = \textwidth]{Development/Images/game_loop_3_b.png}}}
+        \caption{Screen Capture 2}
+        \label{fig:game_loop_3_2}
+    \end{subfigure}
+    \caption{Screen captures of two different states in the game loop whilst the players are rotating.}
+    \label{fig:game_loop_3_rot}
 \end{figure}
 
 The next thing we want to do is to implement the firing system. This is the primary mechanic in the game, so it is important to implement it. To do this, we will need to setup a few things. Firstly, we need to take inputs for whether the player is firing or not. We can do this using another key in the inputs dictionary. We can also add an extra line in the \m{updatePlayerState()} to account for this. This is done as follows.
 \begin{mpy}
-    #Array of [Position, Final Extent, Damage]
-    if action["firing"]:
-      weaponRay = self.fire()
-    else:
-      weaponRay = []
+        #Array of [Position, Final Extent, Damage]
+        if action["firing"]:
+            weaponRay = self.fire()
+        else:
+            weaponRay = []
 
-    return weaponRay
+        return weaponRay
 \end{mpy}
 
 We have not accounted for the cooldown of the weapon yet, but this is something we will implement in the next iteration of the weapon system. For now, we will need to update the main \m{run()} function. This is done as follows.
 
 \begin{mpy}
-      rays = {}
-      #Update player states
-      for i, player in enumerate(players, 0):
-        rays[player] = player.updatePlayerState(model_predictions[i], dt)
+            rays = {}
+            #Update player states
+            for i, player in enumerate(players, 0):
+                rays[player] = player.updatePlayerState(model_predictions[i], dt)
 \end{mpy}
 
 We will also create a new function \m{handlesRayCollisions()} to deal with all of the rays that are being fired.
@@ -1883,121 +1883,121 @@ text_font = pygame.freetype.SysFont('iosevka', 48)
 In the render function, we add the following lines at the end.
 
 \begin{mpy}
-        #Create text surface of the health
-        self.text_surface, self.text_rect = text_font.render(str(self.health), fgcolor=(255,255,255), bgcolor=self.colour)
+                #Create text surface of the health
+                self.text_surface, self.text_rect = text_font.render(str(self.health), fgcolor=(255,255,255), bgcolor=self.colour)
 
-        #Set text position
-        self.text_rect.center = rel_pos
+                #Set text position
+                self.text_rect.center = rel_pos
 
-        #Blit the text
-        display.blit(self.text_surface, self.text_rect)
+                #Blit the text
+                display.blit(self.text_surface, self.text_rect)
 \end{mpy}
 
-This will create the text surface, and will draw it onto the screen. The screen capture of the game is shown in \ref{fig:game_loop_4}.
+This will create the text surface, and will draw it onto the screen. The screen capture of the game is shown in Figure \ref{fig:game_loop_4}.
 
 \begin{figure}[H]
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_4.png}}
-    }
-    \caption{A screen capture of the game loop with the health drawn on the players.}
-    \label{fig:game_loop_4}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_4.png}}
+        }
+        \caption{A screen capture of the game loop with the health drawn on the players.}
+        \label{fig:game_loop_4}
 \end{figure}
 
 We will now create \m{handleRayCollisions()} which takes in the \m{rays} dictionary containing all of the rays and which players were the source. We being by creating a dictionary crediting the players for damage in any given frame and whether the player eliminated other players. Additionally, we will set a \m{deathCredit} dictionary to account for whether a player has died. We can use this to find the total amount of damage dealt, eliminations and deaths per player for a whole game. We need to pass \m{player1} into the function, since we need to be able to render the rays, and so we need \m{player1}'s position.
 
 \begin{mpy}
-  def handleRayCollisions(self, rays, player1):
-    
-    #Dicts for credit
-    damageCredit = {p: 0 for p in self.players}
-    eliminationCredit = {p: 0 for p in self.players}
-    deathCredit = {p: 0 for p in self.players}
+    def handleRayCollisions(self, rays, player1):
+        
+        #Dicts for credit
+        damageCredit = {p: 0 for p in self.players}
+        eliminationCredit = {p: 0 for p in self.players}
+        deathCredit = {p: 0 for p in self.players}
 \end{mpy}
 
 We now want to iterate through all of the players and see what rays they have fired. We will then credit them appropriately. We then decompose the fired ray into it's line and damage. This will then be used to do a line-circle collision test with all of the other players that are not on the same team. This will ensure that all of the rays are only fired against the enemy team, and that the ray has in fact hit a player.
 
 \begin{mpy}
-    #Iterate through all players
-    for player_i in self.players:
-      firedRays = rays[player_i]
+        #Iterate through all players
+        for player_i in self.players:
+            firedRays = rays[player_i]
 
-      for ray in firedRays:
+            for ray in firedRays:
 
-        #Larger than possible hit range
-        t = 2
-        bestHit = None
+                #Larger than possible hit range
+                t = 2
+                bestHit = None
 
-        #Line we want to test with
-        line = ray[0:2]
+                #Line we want to test with
+                line = ray[0:2]
 \end{mpy}
 
 In order to render the line, we need the start and end points of the line to be converted into co-ordinates relative to the player. This will make them render properly. This, can be done as follows.
 
 \begin{mpy}
-        relPos = U.convertToScreen(player1.position, line[0], self.SCREEN_DIMS)
+                relPos = U.convertToScreen(player1.position, line[0], self.SCREEN_DIMS)
 
-        finalRelPos = U.convertToScreen(player1.position, line[1], self.SCREEN_DIMS)
+                finalRelPos = U.convertToScreen(player1.position, line[1], self.SCREEN_DIMS)
 
-        pygame.draw.aaline(self.display, (226,135,67), relPos, finalRelPos)
+                pygame.draw.aaline(self.display, (226,135,67), relPos, finalRelPos)
 \end{mpy}
 
 Then next thing we need to do is to iterate through all of the players and check whether there is a hit. Particularly, we want to find the closest hit and only that one is registered. We also don't want to register a hit if the player is part of our own team, so we can avoid testing for it altogether. This code then assigns the credit to whichever player was responsible for causing the damage and also shows which players died in each frame.
 
 \begin{mpy}
-        #Iterate through test players
-        for testPlayer in self.players:
+                #Iterate through test players
+                for testPlayer in self.players:
 
-          #Don't check if test is the player
-          if testPlayer != player_i and testPlayer.team != player_i.team:
+                    #Don't check if test is the player
+                    if testPlayer != player_i and testPlayer.team != player_i.team:
 
-            #Player circle
-            circle = [testPlayer.position, testPlayer.radius]
+                        #Player circle
+                        circle = [testPlayer.position, testPlayer.radius]
 
-            #Check if hit has occurred
-            hitResult = U.lineCircleCollision(line, circle)
+                        #Check if hit has occurred
+                        hitResult = U.lineCircleCollision(line, circle)
 
-            #Is there a hit, and was it closer
-            if hitResult[0] and t > hitResult[1]:
+                        #Is there a hit, and was it closer
+                        if hitResult[0] and t > hitResult[1]:
 
-              #If so, update bestHit and min t
-              t = hitResult[1]
-              bestHit = testPlayer
+                            #If so, update bestHit and min t
+                            t = hitResult[1]
+                            bestHit = testPlayer
 
-            #If hit registered
-            if bestHit:
+                        #If hit registered
+                        if bestHit:
 
-              #Reduce health of player which was killed
-              bestHit.health -= ray[2]
-              
-              #If player died
-              if bestHit.health <= 0:
+                            #Reduce health of player which was killed
+                            bestHit.health -= ray[2]
+                            
+                            #If player died
+                            if bestHit.health <= 0:
 
-                #Reset the player
-                bestHit.reset()
+                                #Reset the player
+                                bestHit.reset()
 
-                #Add elim credit to player_i
-                eliminationCredit[player_i] += 1
+                                #Add elim credit to player_i
+                                eliminationCredit[player_i] += 1
 
-                #Add death credit to player which died
-                deathCredit[bestHit] += 1
+                                #Add death credit to player which died
+                                deathCredit[bestHit] += 1
 
-              #Add damage credit to player_i for the hit
-              damageCredit[player_i] += ray[2]
+                            #Add damage credit to player_i for the hit
+                            damageCredit[player_i] += ray[2]
 
-    return damageCredit, eliminationCredit, deathCredit
+        return damageCredit, eliminationCredit, deathCredit
 \end{mpy}
 
 One other thing we need to be able to do is to reset the player's character. To do this, we will modify the \m{Player} class once more to add \m{Player.reset()}. This will reset the player to it's original position once more.
 
 \begin{mpy}
-  def reset(self):
-    self.position = self.spawn_point
-    self.forward_vec = self.initial_forward_vec
-    self.rotation_rate = 0
-    self.health = self.max_health
+    def reset(self):
+        self.position = self.spawn_point
+        self.forward_vec = self.initial_forward_vec
+        self.rotation_rate = 0
+        self.health = self.max_health
 \end{mpy}
 
 This will let us set the position back to the spawn point, will set the forward vector to be in it's original position, and will set the rotation rate to be 0 once more. It will also reset the health of the player.
@@ -2007,28 +2007,28 @@ We now need to add \m{self.handleRayCollisions(ray, player1)} into the game loop
 
 \vs
 \begin{figure}[H]
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_rendering.png}}
-    }
-    \caption{A screen capture of the game loop with the weapon firing.}
-    \label{fig:game_loop_5_rendering}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_rendering.png}}
+        }
+        \caption{A screen capture of the game loop with the weapon firing.}
+        \label{fig:game_loop_5_rendering}
 \end{figure}
 
 
 We can now observe a bug. The first enemy (\m{Player4}) actually receives 60 damage, but (\m{Player5}) receives 40 damage, and (\m{Player6}) receives 20 damage, which is not what we expected. This is a very peculiar bug, and we can examine why this occurs. This is demonstrated in the previous video and in Figure \ref{fig:game_loop_5_firing_bug}. When the player's forward vector snaps back to the original position, they have just respawned.
 
 \begin{figure}[H]
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_firing_bug.png}}
-    }
-    \caption{A screen capture of the game loop with the weapon firing one shot at each enemy.}
-    \label{fig:game_loop_5_firing_bug}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_5_firing_bug.png}}
+        }
+        \caption{A screen capture of the game loop with the weapon firing one shot at each enemy.}
+        \label{fig:game_loop_5_firing_bug}
 \end{figure}
 
 \vs
@@ -2048,31 +2048,31 @@ The reason for this problem is because of how we defined the \m{directions} inpu
 We can make this adjustment to the code in the \m{movePlayer()} function.
 
 \begin{mpy}
-    #Calculate movement in the frame
-    frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
+        #Calculate movement in the frame
+        frameMovement = U.mult(directions, self.movement_multiplier * dt * self.max_speed/magnitude)
 
-    #Orient the player movement properly
-    frameMovement[0] *= -1
+        #Orient the player movement properly
+        frameMovement[0] *= -1
 \end{mpy}
 
 We can see that this works, if we set \m{player4} to have input of \m{{"forward": 1, "right": -1}}. This should produce a movement into the bottom right of the screen, since \m{player4} is moving relative to it's team. This means that it means rightwards for us. This is shown in \href{https://youtu.be/pZOJSH7F0G8}{this video} and in Figure \ref{fig:game_loop_6_movement_bug} confirming that it is indeed working as expected.
 
 \begin{figure}[H]
-    \centering
-    {
-    \setlength{\fboxsep}{0pt}%
-    \setlength{\fboxrule}{1pt}%
-    \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_6_movement_bug.png}}
-    }
-    \caption{A screen capture of the enemy player with inputs moving forward and to the left}
-    \label{fig:game_loop_6_movement_bug}
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_6_movement_bug.png}}
+        }
+        \caption{A screen capture of the enemy player with inputs moving forward and to the left}
+        \label{fig:game_loop_6_movement_bug}
 \end{figure}
 
 The next thing to fix is the problem with the other mouse click registers. We can do this by considering this StackExchange post \cite{pygame_mouse_clicks}. In the post it mentions that we can consider \m{event.button} which can take 5 values depending on which value was chosen. We want to only consider \m{event.button == 1} for this case. This will work as follows.
 
 \begin{mpy}
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-          mouse_clicked = True
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_clicked = True
 \end{mpy}
 
 This will ensure that the left mouse button is the only button that is clicked. \href{https://youtu.be/FmqvJE9Qpc8}{We can see that this works in the following video}. This is also a change that we need to replicate to other areas of the code since this is something that other bits of the code have also used.
@@ -2084,24 +2084,24 @@ The next thing we need to implement is the firing cooldown. Effectively, we want
 The first thing to implement is a dictionary of clocks marking the time since the last firing of a weapon. We can find if a player has fired a weapon by returning a flag in the \m{updatePlayerState()} function, since this is quicker than searching the dictionary. This is done by adjusting the following lines to the \m{playerUpdateState()}.
 
 \begin{mpy}
-    #Array of [Position, Final Extent, Damage]
-    if action["firing"]:
-      weaponRay = self.fire()
-      fired = True
-    else:
-      weaponRay = []
-      fired = False
+        #Array of [Position, Final Extent, Damage]
+        if action["firing"]:
+            weaponRay = self.fire()
+            fired = True
+        else:
+            weaponRay = []
+            fired = False
 
-    return weaponRay, fired
+        return weaponRay, fired
 \end{mpy}
 
 \vs
 The next thing to do is to receive this \m{fired} flag, which is done as follows.
 
 \begin{mpy}
-      #Update player states
-      for i, player in enumerate(self.players, 0):
-        rays[player], fired = player.updatePlayerState(model_predictions[i], dt)
+            #Update player states
+            for i, player in enumerate(self.players, 0):
+                rays[player], fired = player.updatePlayerState(model_predictions[i], dt)
 \end{mpy}
 
 \vs
@@ -2111,7 +2111,7 @@ The next thing to do is to receive this \m{fired} flag, which is done as follows
 We make the following change in the \m{Weapon} class's initialiser.
 
 \begin{mpy}
-  self.frameCooldown = self.cooldown * REFRESH_RATE
+    self.frameCooldown = self.cooldown * REFRESH_RATE
 \end{mpy}
 
 Another change we need to make here is to convert this into \m{int} values otherwise, we run the risk of getting floating point errors, which could slow the game down. Because of this change, we also need to \m{REFRESH_RATE} to all of the weapon instances that we created, and also to the initialisers of all of the weapon subclasses.
@@ -2120,13 +2120,13 @@ Another change we need to make here is to convert this into \m{int} values other
 Overall, this will mean that we have a specific number of frames that we can use as a cooldown. We can now set up the following in the \m{run()} function of the \m{GameLoop} class. This is done as shown below.
 
 \begin{mpy}
-      #Update player states
-      for i, player in enumerate(self.players, 0):
-        rays[player], fired = player.updatePlayerState(model_predictions[i], countdowns[player], dt)
-        if fired:
-          countdowns[player] = player.weapon.maxFrameCooldown
-        else:
-          countdowns[player] -= 1
+            #Update player states
+            for i, player in enumerate(self.players, 0):
+                rays[player], fired = player.updatePlayerState(model_predictions[i], countdowns[player], dt)
+                if fired:
+                    countdowns[player] = player.weapon.maxFrameCooldown
+                else:
+                    countdowns[player] -= 1
 \end{mpy}
 
 \href{https://youtu.be/Bd2_x8gDJYE}{This works as expected as we can see in this video}. 
@@ -2135,20 +2135,20 @@ Overall, this will mean that we have a specific number of frames that we can use
 One of the other things we need to add is the collision of the rays being fired with the blocks on the map. This is fairly simple to do. Effectively, we need to find the closest hit along the ray that hits a block. Then, we need to see if there are any player hits which are closer still. In our code, we have an initial value for $t$, which is 2, therefore, we can simply use this bit of code to reassign $t$ depending on the closest block hit.
 
 \begin{mpy}
-        #Iterate through all blocks
-        for block in self.blocks:
+                #Iterate through all blocks
+                for block in self.blocks:
 
-          #Determine whether a result is met
-          hitResult = U.lineRectCollision(line, block)
+                    #Determine whether a result is met
+                    hitResult = U.lineRectCollision(line, block)
 
-          #If a hit has occurred
-          if hitResult[0]:
+                    #If a hit has occurred
+                    if hitResult[0]:
 
-            #If the result is closer
-            if hitResult[1] < t:
+                        #If the result is closer
+                        if hitResult[1] < t:
 
-              #Reassign the hit result
-              t = hitResult[1]
+                            #Reassign the hit result
+                            t = hitResult[1]
 \end{mpy}
 
 To check that this code works we can add a block to the map and then fire at enemies through it and then see if the enemy takes damage. As we can see in \href{https://youtu.be/6PZf1pQkwMM}{this video} and in Figure (\textcolor{red}{INSERT FIGURE HERE}), the collisions are handled appropriately, and therefore can move on.
@@ -2159,22 +2159,22 @@ GAME LOOP 8
 One of the other things we want to implement in our game is player-player collision. This is effectively just a circle-circle collision, and we have covered how this function works in the \m{Utility} class. Therefore, we can just write the following function to handle collisions. The first step after creating the outer for loop is to find the player's circle, since this is used to detect collisions and this is more efficient than recalculating it each iteration of the inner loop.
 
 \begin{mpy}
-  # Checks for hits between rays and objects in the map
-  def handleCollisions(self):
-    for player in self.players:
-      playerCircle = [player.position, player.radius]
+    # Checks for hits between rays and objects in the map
+    def handleCollisions(self):
+        for player in self.players:
+            playerCircle = [player.position, player.radius]
 \end{mpy}
 
 We can then iterate through all pairs of players and ensure that no players are overlapping. If a player is overlapping we can simply push them by the distance required.
 
 \begin{mpy}
-      for collision_player in self.players:
-        if collision_player != player:
-          hitResult = U.circleCircleCollision(
-              playerCircle, [collision_player.position, collision_player.radius]
-          )
-          if hitResult[0] == True:
-            player.position = U.vecAdd(player.position, hitResult[1])
+            for collision_player in self.players:
+                if collision_player != player:
+                    hitResult = U.circleCircleCollision(
+                            playerCircle, [collision_player.position, collision_player.radius]
+                    )
+                    if hitResult[0] == True:
+                        player.position = U.vecAdd(player.position, hitResult[1])
 \end{mpy}
 
 GAME LOOP 9
@@ -2189,18 +2189,18 @@ In order to fix this, we need to move both players an equal amount. This means t
 To do this we need to make the following change to the code in the \m{Utility} class.
 
 \begin{mpy}
-    mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
+        mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
 
-    #The vector to push the player back by
-    delta_position = Utility.mult(mid_circum_vec, -1)
+        #The vector to push the player back by
+        delta_position = Utility.mult(mid_circum_vec, -1)
 \end{mpy}
 
 Furthermore, we need to apply the \m{delta} vector to both players equally and this changes is reflected in the code as follows.
 
 \begin{mpy}
-          if hitResult[0] == True:
-            player.position = U.vecAdd(player.position, hitResult[1])
-            collision_player = U.vecSub(collision_player.position, hitResult[1])
+                    if hitResult[0] == True:
+                        player.position = U.vecAdd(player.position, hitResult[1])
+                        collision_player = U.vecSub(collision_player.position, hitResult[1])
 \end{mpy}
 
 Combined, the result of this change can be seen in \href{https://youtu.be/Tt9WJCQ5C9Y}{this video, demonstrating that collisions between players are now properly handled}. This change was justified since the game should be fair for all players, especially since we will be using AI, which are notorious for finding bugs in environments and exploiting them to their advantage, as shown in this OpenAI paper \cite{openai_emergent_tool}!
@@ -2209,119 +2209,278 @@ Combined, the result of this change can be seen in \href{https://youtu.be/Tt9WJC
 The next thing we need to implement is circle-block collision, as explained in \cite{rectangle_circle_collision}. This will let us check whether there is a collision and by how much so that we can adjust the player position accordingly.
 \vs
 
-
-
-
 We will firstly find the corners and edges of the player circle. We add this to the \m{Player} class.
 
 \begin{mpy}
-  def getCorners(self):
-    #TL, BL, BR, TR
-    corners = []
+    def getCorners(self):
+        #TL, BL, BR, TR
+        corners = []
 
-    for i in range(-1, 2, 2):
-        for j in range(-1, 2, 2):
-            corners.append(U.vecAdd(self.position, [i * self.radius, i * j * self.radius]))
+        for i in range(-1, 2, 2):
+                for j in range(-1, 2, 2):
+                        corners.append(U.vecAdd(self.position, [i * self.radius, i * j * self.radius]))
 
-      return corners
-
-  def getEdges(self):
-    #Get the corners
-    corners = self.getCorners()
-
-    #Decompose the rectangle into 4 lines: TL -> TR, TR -> BR, BR -> BL, BL -> TL
-    #Top, Right, Bottom, Left
-    lines = [[corners[i], corners[i+1]] for i in range(-1, 3)]
-
-    return lines
+            return corners
 \end{mpy}
 
 This code is partially taken from the \m{lineRectCollision} function and the \m{Block} class, so we have already tested that this works. To do the actual collision checking, we can write the following code in the \m{Utility} class.
 
 \begin{mpy}
-  #Determine whether there is a collision and by how much
+    #Determine whether there is a collision and resolve it
+    @staticmethod
+    def circleRectCollision(player, block):
+        #https://dot32.dev/tutorials/circle-vs-rectangle-collision
 
+        #Get player position
+        px, py = player.position
+
+        #Get block corners
+        bCorners = block.getCorners()
+        
+        #Get rectangle values
+        #Top left x, y
+        rect_x = bCorners[0][0]
+        rect_y = bCorners[0][1]
+
+        #Width and length
+        rect_w = block.length1
+        rect_h = block.length2
+
+        #Closest point on the rectangle
+        px = max(px, rect_x)
+        px = min(px, rect_x + rect_w)
+        py = max(py, rect_y)
+        py = min(py, rect_y + rect_h)
+
+        #Closest point
+        point = [px, py]
+
+        #Check for collision
+        isCollision = ((player.position[1] - py)**2 + (player.position[0] - px)**2) < player.radius**2
+
+        #If collision occured find vector to resolve
+        if isCollision:
+
+            #Find the offset between the centre and closest point
+            offset = Utility.vecSub(player.position, point)
+
+            #Magnitude of offset
+            offset_mag = sqrt(Utility.dot(offset, offset))
+
+            #Find correction needed
+            delta = Utility.mult(offset, (player.radius - offset_mag)/offset_mag)
+
+            #Return value
+            return [True, delta]
+
+        #No collision occured
+        return [False, None]
 \end{mpy}
-
 
 The next thing to do is to test the collision function to make sure that it works as expected. To do this, we can create a block and a circle and modify their positions and check for collisions. We want to make sure that the boundary cases work as expected as well, and that they do not cause any errors.
 
 \begin{mpy}
-
-
+>>> p = Player([150, 0], None, 0, None)
+>>> b = Block([0, 0], 150, 150, None, [0, 0], [0, 0])
+>>> U.circleRectCollision(p, b)
+[False, None]
+>>> p.position = [149, 0]
+>>> U.circleRectCollision(p, b)
+[True, [1.0, 0.0]]
+>>> p.position = [126, 126]
+>>> U.circleRectCollision(p, b)
+[True, [2.0330085889910645, 2.0330085889910645]]
 \end{mpy}
-
-
 
 This works as expected. However, there is a potential bug that could occur here, which is on division by 0. In order to fix this, we can add a clause for division by zero, but hopefully the collision will not be so severe. Now, we can add this to our main game loop as shown below.
 
 \begin{mpy}
-
-
-
+            #Avoids div by 0 error
+            if offset_mag == 0:
+                return [False, None]
 \end{mpy}
 
-We can now run the game loop and ensure that it works as expected, as seen in Figure INSERT FIGURE HERE, and in \href{}{this video here}. 
-
-{\huge \textcolor{red}{INSERT YT VIDEO HERE}}
-
-\vs
-We have a few more changes to make before we can use the game to do training with. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway.
+We can now run the game loop and test to ensure that it works as expected.
 
 \begin{mpy}
+    def handleBlockCollisions(self, player1):
 
-
-
+        for player in self.players:
+            for block in self.blocks:
+                #Do dat thing
+                delta = U.circleRectCollision(player, block)
+                if delta[0]:
+                    player.position = U.vecAdd(player.position, delta[1])
 \end{mpy}
 
-We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows. The score, the damage dealt, the eliminations and the deaths will all be passed to the game over menu, which will then be able to render everything. We want to display the user's score and how they performed against the enemy team. We can track the game length using frames once more. We can find the total lengths of the games in frames by tracking the numbers of second the game should last and the frame rate.
-
-\begin{mpy}
+This code works by iterating through all players and iterating through all blocks and checking for collisions. If there is a collision we update the player position as needed, since the blocks cannot be moved.
 
 
-\end{mpy}
+As seen in Figure \ref{fig:game_loop_10_block_collisions}, and in \href{https://youtu.be/ii-GUwrp9Yg}{this video here, the code works as expected}.
 
-Now that the values have been returned we can decompose them and render the text to the screen. The code for the game over menu appears as follows.
-
-
-\begin{mpy}
-
-
-
-\end{mpy}
-
-
-We can write the time left and the team scores on the screen whilst the game is running. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
-
-\begin{mpy}
-
-
-\end{mpy}
-
-{\huge \textcolor{red}{INSERT FIGURE AND VIDEO HERE}}
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_10_block_collisions.png}}
+        }
+        \caption{A screen capture of the player colliding with the block}
+        \label{fig:game_loop_10_block_collisions}
+\end{figure}
 
 
 \vs
-Another thing we need to fix is what happens if the player wants to "zoom" out so that they can see where they are aiming on the screen. To do this, we need to update all of the render functions appropriately. Firstly, we need to define the behaviour of such a scaling. Firstly, it must preserve the main character being in the middle of the screen, and it must maintain the relative spacing between objects and lines. Effectively, we just need to add a zoom factor to everything that we are doing. Zooming out will have a factor less than 1, since we are reducing the distances between everything, and zooming in will have the opposite effect.
+Another thing we need to implement is what happens if the player wants to "zoom" out so that they can see where they are aiming on the screen. To do this, we need to update all of the render functions appropriately. Firstly, we need to define the behaviour of such a scaling. Firstly, it must preserve the main character being in the middle of the screen, and it must maintain the relative spacing between objects and lines. Effectively, we just need to add a zoom factor to everything that we are doing. Zooming out will have a factor less than 1, since we are reducing the distances between everything, and zooming in will have the opposite effect.
 \vs
 
 The first change to make is to the \m{convertToScreen()} function, which will now take in a zoom factor. This zoom factor will be decided on by the state in which we are in. For example, if we are using the sniper, and we are "aiming down sights", then we want to see more of the map, therefore the zoom factor will be less than 1.
 
 \begin{mpy}
-  #Will convert the world position of the character to a camera position for the player
-  @staticmethod
-  def convertToScreen(camera_position, object_position, SCREEN_DIMS, zoom):
-    screenPosition = [zoom*(object_position[i] - camera_position[i]) + SCREEN_DIMS[i]//2 for i in (0, 1)]
-    return screenPosition
+    #Will convert the world position of the character to a camera position for the player
+    @staticmethod
+    def convertToScreen(camera_position, object_position, SCREEN_DIMS, zoom):
+        screenPosition = [zoom*(object_position[i] - camera_position[i]) + SCREEN_DIMS[i]//2 for i in (0, 1)]
+        return screenPosition
 \end{mpy}
 
-This can be seen in Figure %\ref{fig:game_loop_x_}
+The next adjustment to make is to the sizes of everything that we are rendering. We will start with the \m{Player} class. In the render function, we simply need to multiply the radius of the circle by \m{zoom}. Additionally, when rendering the forward vector line, we just need to update the start and end position which are both calculated using the \m{convertToScreen()} method, and therefore we just pass \m{zoom} into them as well.
+
+\begin{mpy}
+    #Renders the character to the display of the player
+    def render(self, display, camera_position, SCREEN_DIMS, zoom):
+
+        #Find relative posistion
+        rel_pos = U.convertToScreen(camera_position, self.position, SCREEN_DIMS, zoom)
+
+        #Draw the circle
+        pygame.draw.circle(display, self.colour, rel_pos, self.radius * zoom)
+
+        #Final extent of the forward vector
+        for_pos = U.vecAdd(U.mult(self.forward_vec, 100*zoom), rel_pos)
+
+        #Draw anti-aliased line for forward vector
+        pygame.draw.aaline(display, (0, 0, 0), rel_pos, for_pos)
+
+        #Create text surface of the health
+
+        if zoom == 1:
+            self.text_surface, self.text_rect = text_font.render(str(self.health), fgcolor=(255,255,255), bgcolor=self.colour)
+        else:
+            self.text_surface, self.text_rect = zoomed_out.render(str(self.health), fgcolor=(255,255,255), bgcolor=self.colour)
+
+        #Set text position
+        self.text_rect.center = rel_pos
+
+        #Blit the text
+        display.blit(self.text_surface, self.text_rect)
+\end{mpy}
+
+We also created a new font object which is used so that we can render the font accurate to the size of the players. In the main game loop, we make the following changes.
+
+\begin{mpy}
+        #Zoom factor
+        zoom = 0.5
+\end{mpy}
+
+In the \m{render()} function calls we make these changes.
+
+\begin{mpy}
+            #Render players as needed
+            for i, player in enumerate(self.players, 0):
+                player.render(self.display, player1.position, self.SCREEN_DIMS, zoom)
+
+            #Render blocks
+            for block in self.blocks:
+                block.render(self.display, player1.position, directions, dt, self.SCREEN_DIMS, zoom)
+\end{mpy}
+
+
+In the \m{Block} class, we can create a new rectangle with the same properties but smaller using \m{rect.scale_by()} in \m{PyGame}. This is done as follows.
+
+\begin{mpy}
+    def render(self, display, camera_position, directions, dt, SCREEN_DIMS, zoom):
+
+        self.rect.center = U.convertToScreen(camera_position, self.centre, SCREEN_DIMS, zoom)
+
+        if zoom != 1:
+            scaled_rect = self.rect.scale_by(zoom)
+            pygame.draw.rect(display, self.colour, scaled_rect)
+        else:
+            pygame.draw.rect(display, self.colour, self.rect)
+\end{mpy}
+
+This will ensure that we aren't creating unnecessary rectangle objects if we aren't zooming out. This will improve the efficiency of our code as it is rendering. \vs Combining all of these effects together, we get the following demonstration.
+Finally, we want to also update all of the other instances of \m{convertToScreen} which was done when considering the rays which are being fired from the players.
 
 
 
-The next adjustment to make is to the sizes of everything that we are rendering. We will start with the \m{Player} class.
+This can be seen in Figure \ref{fig:game_loop_11_zoom}, \href{https://youtu.be/JdXm3c4cWb4}{and in this video}.
 
-Combining all of this together, we get the following demonstration.
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_11_zoom.png}}
+        }
+        \caption{A screen capture of the map being zoomed out}
+        \label{fig:game_loop_11_zoom}
+\end{figure}
+
+\vs
+After this, we want to bind zoom to a key input. We will use the right mouse button for this. We can do a similar thing to what we did for firing. Depending on the input that is given, we can change the zoom. We could also make this reliant on the weapon. For example, the player with the shotgun can zoom out the least compared to the player with the sniper rifle. This is more interactive, since the player with the sniper rifle needs to be able to see further than a player with a shotgun, since the sniper has a much longer range.
+\vs
+The maximum zoom can be set as follows.
+
+\begin{mpy}
+        #Zoom factor
+        zoom = 1
+
+        #Set min zoom factor
+        if isinstance(player1.weapon, SniperRifle):
+            maxZoom = 0.5
+        elif isinstance(player1.weapon, AssaultRifle):
+            maxZoom = 0.75
+        else:
+            maxZoom = 1
+        #Main loop
+        running = True
+
+        #Are we zoomed in
+        zoomed_in = False
+\end{mpy}
+
+Now, we want to set the zoom to the maximum amount once the button is pressed down, and then reset it when the button is lifted. This is as follows in the \m{while} loop.
+
+\begin{mpy}
+            #Check if player wants to quit
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_clicked = True
+                #Zoom functions
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+                    zoomed_in = True
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 3:
+                    zoomed_in = False
+\end{mpy}
+
+\href{https://youtu.be/RHITCvZCQn8}{We can this in action in the following video.} and in Figure \ref{fig:game_loop_12_bound_zoom}
+
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_12_bound_zoom.png}}
+        }
+        \caption{A screen capture of the map being zoomed out via the bound buttons}
+        \label{fig:game_loop_12_bound_zoom}
+\end{figure}
+
 
 This marks the end of the first iteration of the game. In order to get a better idea of how the stakeholders felt about the game, I decided to let them play it, and see what they felt about the project.
 

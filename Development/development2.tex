@@ -116,3 +116,41 @@ Next, we need to instantiate our environment.
 
 \vs
 After this, we need to 
+
+\subsection{\textcolor{red}{Game Loop}}
+
+
+\vs
+We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway.
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows. The score, the damage dealt, the eliminations and the deaths will all be passed to the game over menu, which will then be able to render everything. We want to display the user's score and how they performed against the enemy team. We can track the game length using frames once more. We can find the total lengths of the games in frames by tracking the numbers of second the game should last and the frame rate.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+Now that the values have been returned we can decompose them and render the text to the screen. The code for the game over menu appears as follows.
+
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+
+We can write the time left and the team scores on the screen whilst the game is running. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+{\huge \textcolor{red}{INSERT FIGURE AND VIDEO HERE}}
