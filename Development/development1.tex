@@ -2206,7 +2206,50 @@ Furthermore, we need to apply the \m{delta} vector to both players equally and t
 Combined, the result of this change can be seen in \href{https://youtu.be/Tt9WJCQ5C9Y}{this video, demonstrating that collisions between players are now properly handled}. This change was justified since the game should be fair for all players, especially since we will be using AI, which are notorious for finding bugs in environments and exploiting them to their advantage, as shown in this OpenAI paper \cite{openai_emergent_tool}!
 
 \vs
-The next thing we need to implement is circle-block collision. However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
+The next thing we need to implement is circle-block collision, as explained in \href{https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection}{this link}. This will let us check whether there is a collision and by how much so that we can adjust the player position accordingly.
+\vs
+
+To do this we can write the following code in the \m{Utility} class.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
 
 \vs
 In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter. The overall response was positive, with Frank saying that it was "a completely logical decision", and that he would not notice the difference much, if at all. 
@@ -2245,7 +2288,7 @@ We will firstly find the corners and edges of the player circle. We add this to 
 This code is partially taken from the \m{lineRectCollision} function and the \m{Block} class, so we have already tested that this works.
 
 \vs
-Now, we can use the tests as shown in \cite{rectangle_collisions} to determine whether a collision has occurred or not. If a collision has happened we want to find out in which direction and of what magnitude.
+Now, we can use the tests as shown in UPDATE THIS CITATION \cite{rectangle_collisions} to determine whether a collision has occurred or not. If a collision has happened we want to find out in which direction and of what magnitude.
 \vs
 
 The first check we will do is to see if there is an overlap in the $x$-axis. Effectively, we want to see if the rightmost edge of the player is to the right of the leftmost edge of the block, and vice versa. We also want to check this for the other side of the player/block and for the $y$-axis. This code looks as follows.
