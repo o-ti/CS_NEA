@@ -2206,60 +2206,11 @@ Furthermore, we need to apply the \m{delta} vector to both players equally and t
 Combined, the result of this change can be seen in \href{https://youtu.be/Tt9WJCQ5C9Y}{this video, demonstrating that collisions between players are now properly handled}. This change was justified since the game should be fair for all players, especially since we will be using AI, which are notorious for finding bugs in environments and exploiting them to their advantage, as shown in this OpenAI paper \cite{openai_emergent_tool}!
 
 \vs
-The next thing we need to implement is circle-block collision, as explained in \href{https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection}{this link}. This will let us check whether there is a collision and by how much so that we can adjust the player position accordingly.
+The next thing we need to implement is circle-block collision, as explained in \cite{rectangle_circle_collision}. This will let us check whether there is a collision and by how much so that we can adjust the player position accordingly.
 \vs
 
-To do this we can write the following code in the \m{Utility} class.
-
-\begin{mpy}
 
 
-\end{mpy}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-However, this is very computationally expensive and it is much easier / reliable to do all of this with rectangles. Therefore, we will be using rectangles as a collision object, which will not be drawn.
-
-\vs
-In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter. The overall response was positive, with Frank saying that it was "a completely logical decision", and that he would not notice the difference much, if at all. 
-
-\vs
-This change would, however, make the game much more maintainable and reliable, and therefore we will be using rectangles to handle the collisions.
-
-\vs
-We need to find a way to handle collisions with the blocks. In order to do that, we can split the rectangle into 4 lines. To do this, we can split both the rectangle and the player into 4 bounding lines. Once this is done, we can then go ahead and check for a collision. Once we have identified by how much the player is colliding with the block in each direction we can move the player back by that amount, similar to how we will likely handle the player-player collision.
-\vs
 
 We will firstly find the corners and edges of the player circle. We add this to the \m{Player} class.
 
@@ -2285,13 +2236,52 @@ We will firstly find the corners and edges of the player circle. We add this to 
     return lines
 \end{mpy}
 
-This code is partially taken from the \m{lineRectCollision} function and the \m{Block} class, so we have already tested that this works.
+This code is partially taken from the \m{lineRectCollision} function and the \m{Block} class, so we have already tested that this works. To do the actual collision checking, we can write the following code in the \m{Utility} class.
+
+\begin{mpy}
+  #Determine whether there is a collision and by how much
+
+\end{mpy}
+
+
+The next thing to do is to test the collision function to make sure that it works as expected. To do this, we can create a block and a circle and modify their positions and check for collisions. We want to make sure that the boundary cases work as expected as well, and that they do not cause any errors.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+
+
+This works as expected. However, there is a potential bug that could occur here, which is on division by 0. In order to fix this, we can add a clause for division by zero, but hopefully the collision will not be so severe. Now, we can add this to our main game loop as shown below.
+
+\begin{mpy}
+
+
+
+\end{mpy}
+
+We can now run the game loop and ensure that it works as expected, as seen in Figure INSERT FIGURE HERE, and in \href{}{this video here}. 
+
+{\huge \textcolor{red}{INSERT YT VIDEO HERE}}
 
 \vs
-Now, we can use the tests as shown in UPDATE THIS CITATION \cite{rectangle_collisions} to determine whether a collision has occurred or not. If a collision has happened we want to find out in which direction and of what magnitude.
-\vs
+We have a few more changes to make before we can use the game to do training with. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway.
 
-The first check we will do is to see if there is an overlap in the $x$-axis. Effectively, we want to see if the rightmost edge of the player is to the right of the leftmost edge of the block, and vice versa. We also want to check this for the other side of the player/block and for the $y$-axis. This code looks as follows.
+\begin{mpy}
+
+
+
+\end{mpy}
+
+We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows. The score, the damage dealt, the eliminations and the deaths will all be passed to the game over menu, which will then be able to render everything. We want to display the user's score and how they performed against the enemy team. We can track the game length using frames once more. We can find the total lengths of the games in frames by tracking the numbers of second the game should last and the frame rate.
+
+\begin{mpy}
+
+
+\end{mpy}
+
+Now that the values have been returned we can decompose them and render the text to the screen. The code for the game over menu appears as follows.
 
 
 \begin{mpy}
@@ -2300,49 +2290,15 @@ The first check we will do is to see if there is an overlap in the $x$-axis. Eff
 
 \end{mpy}
 
-With this code in place, we can now find the displacement required to fix the collision if a collision has occurred.
 
-
-\begin{mpy}
-
-
-
-\end{mpy}
-
-
-
-
-
-
-
-\vs
-Now that we have a way to handle collisions with blocks, we can design the final map. This can be done by changing the positions of the objects on the map. This is done as follows.
-
-
-\vs
-We have a few more changes to make before we can use the game to do training with. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map.
-
-\begin{mpy}
-
-
-
-\end{mpy}
-
-We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows.
+We can write the time left and the team scores on the screen whilst the game is running. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
 
 \begin{mpy}
 
 
 \end{mpy}
 
-We can write the time left and the team scores on the screen. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
-
-\begin{mpy}
-
-
-\end{mpy}
-
-INSERT FIGURE AND VIDEO HERE
+{\huge \textcolor{red}{INSERT FIGURE AND VIDEO HERE}}
 
 
 \vs
