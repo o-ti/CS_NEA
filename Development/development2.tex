@@ -1,24 +1,3 @@
-\subsection{\textcolor{red}{Game Loop}}
-
-Now that we have all of the constituent classes required to add things to the map, we now need to make sure that they can interact in the way that makes sense for the game.
-
-\vs
-The first thing to do is to program the functionality of the forward vector. For the user, this will be using their mouse and we want the forward vector to point towards the mouse. To do this, we can find the direction vector in the \m{Player} class, but we need to find the mouse position in the game loop itself.
-
-\begin{mpy}
-    mouse_pos = pygame.mouse.get_pos()
-
-    #Get direction vector
-    player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
-
-    #Normalise direction vector
-    dir_mag = sqrt(sum([i**2 for i in player1_direction]))
-    player1_direction = [i / dir_mag for i in player1_direction]
-
-\end{mpy}
-
-Testing this out we can see it works as follows INSERT SCREENSHOT HERE. However, we do see that it doesn't work if the cursor is centred at the centre of the screen as we get a dividing by zero error.
-
 \subsection{\textcolor{red}{Database Handling}}
 
 Based on our previous discussion of using the \m{Utility} class through its static methods, we can also update the \m{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the references to \m{self}.
@@ -37,6 +16,28 @@ The first step in doing this is to remove all of the rendering functions. This i
 Insert code 
 \vs
 The other thing we need to implement is the spoke detection for the player.
+
+Overall, we need to decide what observations we want to feed to the agents and in what format. There will be 16 spokes, which will be equally spread out angularly across the player's field of vision. These will then intersect with other players and blocks. We will return the ratio of the distance from the end of the spoke to the intersection and the length of the spoke. We also want to return the type of the intersection. For each spoke we can have 3 things happening.
+
+\begin{enumerate}[label=\arabic*.]
+    \item Nothing happens, there are no intersections.
+    \item A player or enemy is standing somewhere along the spoke.
+    \item There is a block intersecting with the spoke.
+\end{enumerate}
+
+We want to handle these accordingly.
+
+\begin{enumerate}[label=\arabic*.]
+    \item We want to return a 0 for the distance and a 0 for the intersection type
+    \item We want to return the ratio of the intersection distance and the length of the spoke, and a 1 or -1 multiplied by the player health for the intersection type depending on whether the player is a team-mate or enemy
+    \item We want to return the ratio of the intersection distance and the length of the spoke, and 0 for the intersection type
+\end{enumerate}
+
+The actual order of the inputs does not matter since we are using a neural network. There are some additional inputs we need to add. The first one is for what angle the player is at with respect to their initial forward vector. We can find this using the dot product, or we can track it directly. Using the dot product will give a much more consistent answer however.
+
+\vs
+On top of this we want to give other inputs showing whether we can fire or not in any given frame, and if not how long we have until we can. Furthermore, we want to give the health of the agent as an input so it can make more responsible choices.
+
 
 \subsection{\textcolor{red}{Training and AI}}
 
