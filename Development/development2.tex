@@ -3,13 +3,21 @@
 Based on our previous discussion of using the \m{Utility} class through its static methods, we can also update the \m{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the references to \m{self}.
 
 
+\subsection{\textcolor{red}{Optimisation}}
+
+One of the things that we will be improving in the project is optimisation. We need to be able to run many frames per second and therefore, we need to be able to optimise the code. In order to do this, we will use the package \m{Cython}. In order to do this, we will compile all of the classes that we have written in order to make them more efficient to prevent excessive recompilation.
+\vs
+
+To do this, we can create a \m{setup.py} file, and convert all of our files in to \m{.pyx} files. Running 
+
+\tbc
+
 \subsection{\textcolor{red}{Environment}}
 
 The first thing we need to do before starting doing any AI is to create the environment. This involves converting our game loop into something that can be run by a program which is then used to train the AI.
 
 \vs
 The first step in doing this is to remove all of the rendering functions. This is because we aren't rendering the game anymore and so we can just remove it. However, for the moment we will just create a copy of the game and comment out all of the rendering references in the main game loops. We only need the \m{GameLoop.run()} function primarily. 
-
 
 \vs
 
