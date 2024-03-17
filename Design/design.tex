@@ -319,7 +319,51 @@ The box will have a background colour which will be different to the rest of the
 \subsubsection{\textcolor{red}{Login Menu}}
 
 \vs
-In the login menu, we want to allow the user to enter in their details and click submit to authenticate their account. This will be linked to the database handler, and so w
+In the login menu, we want to allow the user to enter in their details and click submit to authenticate their account. This will be linked to the database handler, and so will need to provide the password to the database handler.
+
+
+
+\subsubsection{\textcolor{red}{Main Menu}}
+
+The main menu will house all of the other options that are available to the user, and so as shown in INSERT FIGURE AND DIAGRAM HERE, I have placed buttons adjacent to each other in a way that is intuitive.
+
+\vs
+Additionally, as seen in Box (INSERT BOX LETTERS HERE), we can see that there is still a background behind each box as explained previously.
+
+\vs
+Additionally, as shown in Box (INSERT LETTERS HERE), we can see the game's logo to create a sense of excitement, and since this is fairly common for games to do.
+
+\subsubsection{\textcolor{red}{Set Timer}}
+
+Here, we want to set the global timer, which will shut the game off after a game is finished. This will mean that we need to set a definite time limit as dictated by the user. We will also display the time at which the user's time will be over, so that they are aware of how long they have left.
+
+INSERT DIAGRAM HERE
+
+\subsubsection{\textcolor{red}{Create Game}}
+
+In this menu, we want to be able to set the game's difficulty. This is done using arrows, since this seems to be the most intuitive way of doing something like this. Alternatively, a plus sign and a minus sign could be used also, since those explain more clearly what is going on.
+
+INSERT DIAGRAM HERE
+
+\subsubsection{\textcolor{red}{Game Loop}}
+
+In the main game loop, we still have some UI elements to draw on. Primarily, we need to draw on the time as shown in Box INSERT BOXHERE, and we can draw other elements in a more clear way, such as by writing the amount of health each player has on the player itself, which quite clearly shows what is going on.
+
+\vs
+
+INSERT DIAGRAM HERE
+
+
+\subsubsection{\textcolor{red}{Game Over}}
+
+Once the game is over, we want to show the player where they have ranked relative to the other players.
+
+INSERT DIAGRAM HERE
+
+\subsubsection{\textcolor{red}{Leader Board}}
+
+
+INSERT DIAGRAM HERE
 
 \tbc
 
@@ -343,16 +387,19 @@ The best model for this project is multi-agent reinforcement learning, as this w
 The algorithm we will be using is Proximal Policy Optimisation, which relies on a clipped surrogate objective. This is an algorithm which can be expanded to a multi-agent version, which is what we want.
 
 \vs
-In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the data buffer from the player to be transferred to the other two bots. This gives the game the feeling of playing with a team, rather than a more individual experience. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have 
+In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the data buffer from the player to be transferred to the other two bots. This gives the game the feeling of playing with a team, rather than a more individual experience. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have to have decentralised training and critics.
 
 \vs
 Additionally, during training, the rendering can be disabled, and the frame rate set to a very high value, in order to increase the speed at which the models can be trained. Because the model will progress from one frame to the next, the speed between frames can be altered without any consequence on the other bots on the team.
 
 \vs
-Furthermore, we will use a technique known as self-play. This is relevant since this is a competitive / co-operative game, we will put two separate versions of the model against each other. This will allow the model to play against "players" of it's own strength, and will produce better training results. Additionally, we don't have any ready-made players to play against, so this is our only option. We will initialise the model with random values to begin with, and will train it against itself in the first iteration. After this, we will
+Furthermore, we will use a technique known as self-play. This is relevant since this is a competitive / co-operative game, we will put two separate versions of the model against each other. This will allow the model to play against "players" of it's own strength, and will produce better training results. Additionally, we don't have any ready-made players to play against, so this is our only option. We will initialise the model with random values to begin with, and will train it against itself in the first iteration. 
 
 \vs
-The first thing we need to in order to train the AI is to create an environment in order to train it. We will be using the \m{gym} wrapper to do this. This provides a strictly defined way of stating the game, using observation spaces, action spaces and rewards.
+After this, we will take a snapshot of both agents, and then we will stop training the second agent, but keep updating the first one. With this, we can then train for a few more episodes and then take another snapshot of the agent. We will then sample the most recent models from the snapshot window and then train our agent against those. This will provide a way to train the AI against a wide variety of different agents which may have different ways of playing the game.
+
+\vs
+The first thing we need to in order to train the AI is to create an environment in order to train it. We will be using the \m{PettingZoo} wrapper to do this. This provides a strictly defined way of stating the game, using observation spaces, action spaces and rewards.
 
 \vs
 The observation space is the things which each agent can see. In the design section, we mentioned that each agent will have spokes which go out from the centre of the player. This will let the agents see the environment around them in a limited way.
@@ -371,6 +418,11 @@ Both networks use the same input, which is the observation for that time-step to
 
 \vs
 From the original paper, we can see the process unfolding as follows. We firstly initialise our networks, and start a loop, and we can train for as long as we like. We then execute something known as a policy roll-out. This is effectively running our agent in the environment for a few time-steps, and recording the observations, actions, rewards and resulting states. This will allow us to gather information to train our network with. We also compute something known as advantages. Effectively, this gives us an idea of how much better off we are due to an action. We use a discount parameter and a GAE parameter.
+
+\vs
+On top of this, we will be using a library called \m{TianShou} which provides a high-level API on top of PyTorch in order to implement reinforcement learning algorithms. Additionally, it supports multi-agent reinforcement learning with heterogenous agents (agents which are not the same), and will allow us to do self-play to train the agents.
+
+\vs
 
 
 \subsection{\textcolor{red}{Utility Class}}

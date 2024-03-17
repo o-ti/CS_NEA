@@ -27,7 +27,9 @@ Beyond this, I would also train the agents for longer, since this would allow th
 One of the other things that would be interesting to the players would be a menu to select the strenght of the bots that they are playing against and playing with. This would allow them to find a setting which they are comfortable in, or one that is extremely difficult as a challenge, which can be very rewarding. This would keep the game experience much more fresh, and would be very exciting for the player.
 
 \vs
+On top of this, if the game were to be put into a real production setting, then the database would not be on the user's hard-drive, and the game client would need to send a request to a server which would then handle the request. This would mean that the \m{DatabaseHandler} class would need to exist on the server and not on the client, and the client would simply have a \m{DatabaseQuerier} class which would simply process and send queries to the server. This would need to be done securely to prevent user details being leaked or intercepted during transmission.
 
+\vs
 
 \tbc
 
