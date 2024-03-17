@@ -1,5 +1,7 @@
 \subsection{\textcolor{red}{Usability Testing}}
 
+In order to evaluate how effective my final project was, I decided to let two of my stakeholders test out the game. I let them play for two rounds, and then interviewed them on how they found the experience. I decided to create some questions to ask them, and I have shown why I asked them these questions below.
+
 \tbc
 
 \subsection{\textcolor{red}{Reviewing Success Criteria}}
@@ -16,16 +18,48 @@
 
 \subsection{\textcolor{red}{Further Development}}
 
+To develop my project further, I would consider changing the types of observations and monitoring how those would impact the agent's ability to play the game. Having different observation types would allow for a more diverse range of agents and seeing how these interact would allow me to choose the best type to use in the future.
+
+\vs
+Beyond this, I would also train the agents for longer, since this would allow them to converge on a better solution which would mean that they are able to play more effectively.
+
+\vs
+One of the other things that would be interesting to the players would be a menu to select the strenght of the bots that they are playing against and playing with. This would allow them to find a setting which they are comfortable in, or one that is extremely difficult as a challenge, which can be very rewarding. This would keep the game experience much more fresh, and would be very exciting for the player.
+
+\vs
+
+
 \tbc
 
 \subsection{\textcolor{red}{Maintenance Issues}}
+
+One of the problems that I faced during the development of my NEA was lacking an understanding of how reinforcement learning libraries I was using worked, and how they handled inputs and outputs. If I understood this from before, it would have made the game much easier to program and convert into an environment.
+
+\vs
+In terms of maintenance, the AI could be trained for longer, since we can just load the last set of saved weights, and continue the training loop on the environment. This does mean that the environment cannot be changed otherwise the AI would need to be trained once more from scratch, perhaps even with a new architechture if new inputs are bound. This is a problem, since users will likely expect updates to the game and will want to have a more interactive experience.
+
+\vs
+Furthermore, there is a lot of conventions that were followed in the code that would be confusing to somebody who had not seen the code already. In order to address this in the future, more dictionaries and string labels could be used, which despite being a bit slower and memory intensive, would allow for much more readable code.
+
+\vs
+Furthermore, since I used \m{Cython}, everytime the game code is changed, that change needs to be reflected in the compiled versions of the game code. However, I still believe that using this package was a net positive for the project, since it allowed for a much more performant version of the game, and static code that was not changing much was optimised by only needing to be compiled once. This significantly boosted the project's speed, and would mean that nicer graphics could eventually become a feature, if more improvements were to be made.
+
 
 \tbc
 
 \subsection{\textcolor{red}{Limitations of the Solution}}
 
+Within my solution, I was unable to make the graphics much more visually appealing, but they were clear. The reason for this was that the code was not able to run at very high frame-rates due to the large amount of computation that was needed. In order to make this better in the future, I could port the game to a faster language in a framework that handles all of this, like Unity or Unreal Engine. I did discuss previously why these were not as suitable, but with more experience, I believe that those frameworks would allow for a much more performant game which was more appealing to new players.
+
+\vs
+Furthermore, I was limited by the fact that I had hardware limitations. I was only able to use my desktop computer, which meant that I was limited in how much processing power was available to me. With better computer hardware, I could have trained more iterations of the agents which would have made them much more capable.
+
+\vs
+Despite this
+
 \tbc
 
 \subsection{\textcolor{red}{Developments on Limitations}}
+
 
 \tbc

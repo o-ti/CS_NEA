@@ -34,6 +34,64 @@ Here is a top-down diagram showing all of the different sections of the project.
     \label{fig:td_diagram}
 \end{figure}
 
+In consideration of all these features there are few different languages and frameworks which come to mind as being suitable for the job. These are Unreal Engine, Unity, and PyGame. We will evaluate each one in turn.
+
+\begin{longtable}{|p{2.8cm}|p{1.6cm}|p{5cm}|p{5cm}|}
+    \hline
+    Framework & Language & Pros & Cons\\
+    \hline
+    \hline
+    Unreal Engine & C++ & \begin{itemize}
+        \item Extremely performance orientated
+        \item Supports OOP
+        \item Has Learning Agents library (PPO)
+    \end{itemize}
+     & \begin{itemize}
+        \item Not familiar with C++
+        \item C++ is difficult to write and maintain compared to others
+        \item Platform dependent
+        \item Very hardware intensive
+        \item Better suited to 3D games
+    \end{itemize}\\
+    \hline
+    Unity & C\# & \begin{itemize}
+        \item Also supports OOP
+        \item Platform independence (bytecode)
+        \item Implements MLAgents 
+    \end{itemize} & \begin{itemize}
+        \item Not familiar with C\#
+        \item Lot of framework specific knowledge required
+        \item Learning algorithm cannot be modified as much
+    \end{itemize}\\
+    \hline
+    PyGame & Python & \begin{itemize}
+        \item Very familiar with Python
+        \item Many ML libraries in Python
+        \item PyGame is much simpler than Unity and UE
+        \item Platform independence
+        \item Supports OOP
+    \end{itemize} & \begin{itemize}
+        \item Python is significantly slower than C++/C\#
+        \item PyGame lacks lots of functionality that others provide
+    \end{itemize}\\
+    \hline
+\end{longtable}
+
+Based on all of these, I have chosen to go with PyGame for my project. 
+\vs
+
+\textbf{Justification:} This is because it provides the best flexibility and means that I do not have to work within the confines of a game engine that I am not as familiar with. This will allow for a much more controlled environment, and I have a lot of flexibility in how the game is implemented.
+
+\vs
+Additionally, PyGame is still relatively light, so despite Python being slow, it is possible to still get a 2D game running at 500-600 frames per second, and so even with more load placed on the system it should still be relatively quick.
+
+\vs
+One library that may be very useful to us, is \m{Cython}. This is a Python library which allows for Python files to be compiled into C, and then executed at runtime at a much faster speed thanks to C's performance.
+
+\vs
+However, this does have one caveat that the game code will have to be recompiled each time I want to make a change. Therefore, it makes the most sense to compile the game code at the very end when we have finalised all of the aspects of each class. This will provide a much more stable environment to work with and mean that I am not excessively recompiling each time I want to check whether a change has worked.
+
+
 \tbr
 
 \subsection{\textcolor{blue}{Game States}}
@@ -51,7 +109,7 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
     Start & This will be the main menu of the game, and will allow us to create a game, options, set timer, and exit game. & This is the main interface through which the user will interact with the game. Therefore, we need to have this in order to allow a user to intuitively interact with the game.\\
     \hline
-    Options & This will be the options menu, containing things like TODO & This is important because it allows the users to customise the game to their standards and this makes it more enjoyable for the player, since it is to their liking.\\
+    Options & This will be the options menu, containing things like keybindings. & This is important because it allows the users to customise the game to their standards and this makes it more enjoyable for the player, since it is to their liking.\\
     \hline
     Login & This will let a user who already has an account to submit their login credentials and will then verify these details. If they are valid, they are redirected to the start menu. & This is important because we need to have some way to track user progress in an accurate way, and so we also need to keep this in the game's state in some manner.\\
     \hline
@@ -67,7 +125,17 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
 \end{longtable}
 
-\tbc
+We will need to pass values between the game states in order to allow things like global variables to exist in the game state. This will contain things like player settings, PlayerID, and the amount of time left until the game will close itself.
+
+
+\vs
+There are a few possible \textbf{data structures} that we could use to transmit return values between different states. These are dictionaries, classes, and lists (linked lists and arrays are modelled as the same thing in Python.)
+
+
+\vs
+We will be using a dictionary to transfer these return values, because this is the most convenient and versatile format that will allow us to transfer data between states in a way that is maintainable. The other options that we have available to us is a class or a list.
+
+\vs
 
 \subsection{\textcolor{red}{Game Loop}}
 
@@ -233,6 +301,26 @@ UI is essential to ensure that a user is able to quickly understand what each bu
 \vs
 Here are some flowcharts detailing how the UI will lead to different sections of the game.
 
+
+\vs
+
+Additionally, we will now examine some different elements of the UI and justify why they are designed in a specific manner.
+
+\vs
+Firstly, I have chosen Iosevka as my font, as it is a sleek, modern font which I think is quite readable, but is very unique. This adds a unique element to the game.
+
+\subsubsection{\textcolor{red}{Start Menu}}
+
+The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box INSERT FIGURE AND BOX NUMBER HERE.
+
+The box will have a background colour which will be different to the rest of the screen in order to highlight that they can click there. This is important because usually in applications the cursor changes if you can click on something, however that is not the case here, and so we need to provide another way of conveying that information.
+
+\vs
+\subsubsection{\textcolor{red}{Login Menu}}
+
+\vs
+In the login menu, we want to allow the user to enter in their details and click submit to authenticate their account. This will be linked to the database handler, and so w
+
 \tbc
 
 \subsection{\textcolor{red}{AI}}
@@ -290,7 +378,7 @@ From the original paper, we can see the process unfolding as follows. We firstly
 There are a lot of maths related functions which we will need to use particularly in detecting collisions with players, objects and rays. In particular we will need the following to be implemented.
 
 \vs
-We will first look at line-to-line collisions, since they underpin a large proportion of the game. Once, we can do line-to-line collisions we can also do line-to-rectangle collisions which are important for the weapon aspect of the game. We can derive a formula for how far along the ray the collision occurs. In the entirety of the game, we want to work with vectors and scales of 0 to 1 between the start and endpoints. Let us call these constrains $\vec{p_1}$ and $\vec{p_2}$ for line 1, and $\vec{p_3}$ and $\vec{p_4}$ for line 2. We first find a possible solution, then check that it works for 
+We will first look at line-to-line collisions, since they underpin a large proportion of the game. Once, we can do line-to-line collisions we can also do line-to-rectangle collisions which are important for the weapon aspect of the game. We can derive a formula for how far along the ray the collision occurs. In the entirety of the game, we want to work with vectors and scales of 0 to 1 between the start and endpoints. Let us call these constrains $\vec{p_1}$ and $\vec{p_2}$ for line 1, and $\vec{p_3}$ and $\vec{p_4}$ for line 2. We first find a possible solution, then check that it the values that we have received are both between 0 and 1, since they are both bound segments.
 
 \vs
 
@@ -306,27 +394,55 @@ We will first look at line-to-line collisions, since they underpin a large propo
 	y_1 + \lambda (y_2 - y_1) &= y_3 + \mu (y_4 - y_3)\\
 	\lambda (x_2 - x_1) + \mu (x_3 - x_4) &= x_3 - x_1\\
 	\lambda (y_2 - y_1) + \mu (y_3 - y_4) &= y_3 - y_1\\
+    \begin{bmatrix} x_2 - x_1 & x_3 - x_4 \\ y_2 - y_1 & y_3 - y_4 \end{bmatrix} \begin{bmatrix} \lambda \\ \mu \end{bmatrix} &= \begin{bmatrix} y_2 - y_1 \\ y_3 - y_4 \end{bmatrix}\\
 \end{align*}
 
 \vs
 We have arrived at a series of simulataneous equations. These can be easily solved with the \m{np.linalg.solve()} in NumPy, which means we don't have to solve it ourselves. However, this does have one restriction that the equations must be linearly indepenent. This just means that we need to check before hand what the determinant of the matrix is.
-
 \vs
 
 We also need to implement some more methods that are really important to the game and are going to be used repeatedly. These are addition, subtraction and the dot product. These are the most frequently used in vector equations and so are important to have implemented. This also gives us a quick way of finding the square of the magnitude of a vector by taking a dot product with itself.
 
+\vs
+In order to add or subtract two vectors, we can just take each element of the vector and add or subtract these elements to get our final result. Since all of our vectors are only having two dimensions we can just do this manually, or using list comprehension which is much more readable and easier to debug.
 
 \vs
 Furthermore, we need to have methods for collisions which we will be doing repeatedly throughout the game, and so this is best abstracted into the \m{Utility} class such that we can worry about other implementation details instead of re-coding the same methods over and over again.
 
-\tbc
+\vs
+In order to do this, we can split the collisions into a few main components. The first one is between two players. Since the players are rendered as circles, we can use this to find how to adjust the player positions.
 
+\vs
+Here is a diagram INSERT DIAGRAM HERE, showing two players overlapping. We can immediately see a few important details. The first one is that the distance between the two player's centres must be shorter than 2 times the radius of the player, since this will mean that the players are overlapping.
 
+\vs
+In order to resolve the collision, we need to move a player by an amount such that they will no longer be colliding, but just touching. Assuming that there is a collision, the derivation for the amount to the move the player by is as follows.
 
+\begin{align*}
+    TODO &= NOT+DONE+YET\\
+\end{align*}
 
+\vs
+On top of this we need some way to handle collisions between lines and circles. This is because one of our primary success criteria was that there had to be weapons in the game, and that the user had to be able to shoot other players and that damage had to be processed.
 
-
+\vs
+During my research I found this method to detect a collision between a line and circle is two constraint points were used. This method involved computing multiple dot products until a quadratic equation was reached, and from there, it was just a simple comparision to find whether a collision had occurred.
 
 
 \vs
-In order to decide whether this decision would be negatively perceived by stakeholders, I contacted some people that I had interviewed before and got their opinions on the matter. The overall response was positive, with Frank saying that it was "a completely logical decision", and that he would not notice the difference much, if at all. 
+Furthermore, since there will be blocks in the game, the player must not be able to pass through them and neither should any fired rays. In order to satisfy this, we need to consider two more types of collisions.
+
+\vs
+The first type is between a line and rectangle. This is quite simple, since we can just break a rectangle down into 4 lines and check for intersections with each one. We just want to find the intersection which is closest to the origin of the ray.
+
+\vs
+The second type of collision is between a circle and a rectangle. In order to do this, we need to find the point on the rectangle which is closest to the rectangle. In order to do this, I have referred to \cite{rectangle_circle_collision}, which explains in detail how this is handled.
+
+\vs
+This will then let us resolve the collision by moving it an appropriate distance.
+
+\vs
+Now that we have looked at how this works in theory, we should discuss how this works in implementation. In order to speed up the process as much as possible, I have considered other libraries to handle mathematical operations, such as adding vectors, dot products, matrices, etc.
+
+\vs
+The most popular scientific computing library in Python is \m{NumPy}, which provides a lot of different methods all written in native C code, and compiled providing extremely fast computations. However, there is one issue with this, in that in order to use \m{NumPy} methods we need to be working with NumPy objects. This is an issue because creating NumPy objects like arrays is incredibly slow, and therefore we will need to assess whether it is worth using this at all, since it is very plausible that casting to NumPy objects is slow enough to outweight the efficiency of using NumPy methods.

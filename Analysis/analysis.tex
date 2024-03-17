@@ -193,8 +193,8 @@ Within chess, the Elo algorithm is extensively used from official FIDE competiti
 Assume that there are two players, with ratings $r_1$, and $r_2$. Then, the probabilities of each player winning is 
 
 \begin{align*}
-    p_1 &= r_1 / (r_1 + r_2)\\
-    p_2 &= r_2 / (r_1 + r_2)\\
+    p_1 &= \frac{r_1}{r_1 + r_2}\\
+    p_2 &= \frac{r_2}{r_1 + r_2}\\
 \end{align*}
 respectively. A rating shifting factor, $k$ is used to determine how strongly each player's rating is affected by each game. For example, if player 1 has won the game, then the following equations are used to adjust each rating.
 \begin{align*}
@@ -205,9 +205,6 @@ respectively. A rating shifting factor, $k$ is used to determine how strongly ea
 If a game is the first to be played by a player, $k$ will be larger, so winning will give a much larger reward, and losing will give a much larger loss. This allows for people's ratings to fluctuate and eventually settle around a mean value that represents their true skill as the value of $k$ changes.
 
 \subsubsection{Player Interaction with Games}
-
-
-\vs
 
 The traditional way of doing multiplayer games is to use a client-server model, because this prevents or reduces the risk of cheating because adjustments to the player are made on the server and so any mods on the local client will not affect other players. Additionally, it means that people will all be playing on a level playing field because otherwise you would have some players with very low latency and others on very high latency. This provides a middle ground which keeps the game fair.
 \vs
@@ -221,8 +218,8 @@ The traditional way of doing multiplayer games is to use a client-server model, 
 \end{wrapfigure}
 
 \vs
-
 Currently, the player's interaction with the game is shown as below. The game will initially take the user's credentials in order to be able to authenticate the user. If the user has entered an invalid username or password, the game will show the original screen again, with a prompt telling them that they have entered the password incorrectly. If the credentials are correct, the user is moved to the main menu level, where they can select to change their settings, to join a multi-player game, or to quite the game. 
+
 
 \vs
 This will then lead to the other modules, which handle each component, and their flow charts are shown as well. This system is very familiar to most people and is quite logical, so there are not many possible misunderstandings. This makes it very effective at communicating to the user what is going on, and so serves its purpose well. Some games have hidden menus when the user clicks on play, such as offering different game modes, but many don't have a way of showing how popular each game mode is. This means that a user may click on a less popular game mode, and wait for a long time before a game lobby is formed.
@@ -238,8 +235,8 @@ There are many actions that a player can undertake, and all of these combined ar
 	\label{fig:game_loop}
 	\vspace{-15pt}
 \end{wrapfigure}
-\vs 
 
+\vs 
 Each client sends a command to the server, indicating the move that has been played, and from that the server can apply those changes and replicate it to all of the other players, ensuring that everyone has a consistent version of the game state. The server is generally placed centrally amongst the players geographically, to ensure that all of them receive roughly equal latency which creates an even playing field. Additionally, once the game has finished, the player is shown an end screen, usually detailing their score, and their performance in the game, and then finally sends them back to the main menu, or gives them the option to play another game.
 
 \vs
@@ -255,24 +252,32 @@ Once a user clicks on the multiplayer button, the begin matchmaking procedure oc
 
 
 \vs
-
 Once this happens, any rating changes are applied, and users have the ability to go to the main menu, or play another game. In many cases, the matchmaking procedure can cause long delays whilst players wait for a lobby of their current skill level to form. As a game loses active users, queue times can become much longer as there are just not enough people to fill a lobby, and eventually, people completely stop playing the game. 
 
 
 \vs
 This is obviously not ideal for players who are still interested, and therefore, it is essential that some sort of competitive bots are in place that will allow a player to still get the thrill of playing against people, but not actually require multiple active users to still be online. Additionally, as it is just the player, they can adjust game settings, timings, etc, to their liking, meaning they can find new ways to make the game fun again.
 
-\vs
-
 \subsection{Explanation of Choice of Project}
 
-Firstly, a game that can be played on computer provides the best platform for a game, because it is easily accessible to most people, and provides enough computational processing power so that a more detailed game can be run. This however limits my audience to be mainly an audience of PC or laptop users. Additionally, the game will be written in PyGame, which is very lightweight and does not require advanced graphics processing. Hence, the game is portable, and can be played on a laptop without consuming lots of power. Furthermore, a computational solutions allows for some sort of AI to be implemented, which is almost impossible to do mechanically. This will allow for a much more immersive experience, and encourage people to play without requiring large time commitments. It is also better to run the game on a computer than a mobile device due to the larger computational processing which is possible. It would drain the battery of the user's device if they decided to play on a phone due to the large demands of AI based algorithms, especially neural networks.
+Firstly, a game that can be played on computer provides the best platform for a game, because it is easily accessible to most people, and provides enough computational processing power so that a more detailed game can be run. This however limits my audience to be mainly an audience of PC or laptop users. Additionally, the game will be written in PyGame, which is lightweight and does not require advanced graphics processing.
+
+
+\vs
+Hence, the game is portable, and can be played on a laptop without consuming lots of power. Furthermore, a computational solutions allows for some sort of AI to be implemented, which is almost impossible to do mechanically. This will allow for a much more immersive experience, and encourage people to play without requiring large time commitments. It is also better to run the game on a computer than a mobile device due to the larger computational processing which is possible. It would drain the battery of the user's device if they decided to play on a phone due to the large demands of AI based algorithms, especially neural networks.
+
 
 \vs
 There are multiple platforms to publish games on, such as Steam, and the Epic Games Store, which have very wide audiences, and this adds a sense of community to the game as well as allowing things like leaderboards to form, which will add more of a sense of competition to the game. This can mean that people are more willing to spend more time playing the game. Alternatively, I could create a website that people can access to download the game.
 
 \vs
 On top of this, it is generally much clearer to see what is going on when viewed on a larger monitor compared to a mobile device, and this is one of the things that was mentioned by stakeholders as will be shown below. This will also result in a more immersive experience that is more enjoyable for the users.
+
+\vs
+Additionally, using a computer will mean that there are more inputs available to the user. For example, from a computer, we have an entire keyboard which provides binary inputs, and a mouse which has further binary inputs in the form of buttons as well as an optical sensor which can provide a much more refined input and a scroll wheel which can be used to allow for quick changes.
+
+\vs
+On a phone however, this would be much more limited since any inputs would have to be in the form of touching buttons on the screen, which will take space away from the main content that is display. These buttons need to be clear in their meaning so that it is intuitive how the play the game 
 
 \subsection{Stakeholders}
 
@@ -407,6 +412,16 @@ Moosa is currently studying engineering at university, and therefore is quite bu
 \end{enumerate}
 
 \subsection{\textcolor{red}{Analysis of Interviews}}
+
+We will look through each question in turn.
+
+\subsubsection{\textcolor{red}{Question 1}}
+
+Most people said that they were not comfortable playing during the week, primarily due to the amount of work that they had to do. This means that short round times, and preferably no queue times would be necessary in order to allow people to feel more comfortable playing games as a way of relaxing during the week.
+
+\subsection{\textcolor{red}{Question 2}}
+
+
 
 \tbc
 
