@@ -132,7 +132,7 @@ from gymnasium.spaces.utils import flatten_space
 from math import pi
 \end{mpy}
 
-Now, I need to create my environment's constructor. For this, I have just removed all of the calls to rendering and anything related to graphics.
+Now, I need to create my environment's constructor. For this, I have just removed all of the calls to rendering and anything related to graphics. This has most of the same code as the constructor from the \m{GameLoop} class.
 
 \begin{mpy}
 class Momentum(ParallelEnv):
@@ -172,6 +172,8 @@ class Momentum(ParallelEnv):
         #Set countdowns
         self.countdowns = {p: 0 for p in self.players}
 \end{mpy}
+
+Furthermore, we want to be able to interchange between player instances and labels and so we will use dictionaries since they are perfect for this purpose. We will also create an array of all of the agents, so that the AI code can find the agents that we want to use.
 
 
 \begin{mpy}
@@ -213,9 +215,7 @@ class Momentum(ParallelEnv):
 \end{mpy}
 
 
-We need to create our observation and action spaces.
-
-
+We need to create our observation and action spaces. This is done using the \m{gym} API, specifically the \m{Spaces} class, which will let us define th behaviour of our observation and action spaces.
 
 \begin{mpy}
 
@@ -241,6 +241,7 @@ We need to create our observation and action spaces.
 
 \end{mpy}
 
+We will just copy the code for handling collisions from before. This has all already been tested, so we don't need to redo this step.
 
 \begin{mpy}
     # Checks for hits between rays and objects in the map
@@ -364,6 +365,29 @@ We need to create our observation and action spaces.
         return damageCredit, eliminationCredit, deathCredit
 \end{mpy}
 
+Next, we will get the observations for each player. This is code that we will need to be added to the main environment as well.
+
+\vs
+We need to decide what observations we want to feed to the agents and in what format. There will be 16 spokes, which will be equally spread out angularly across the player's field of vision. These will then intersect with other players and blocks. We will return the ratio of the distance from the end of the spoke to the intersection and the length of the spoke. We also want to return the type of the intersection. For each spoke we can have 3 things happening.
+
+\begin{enumerate}[label=\arabic*.]
+    \item Nothing happens, there are no intersections.
+    \item A player or enemy is standing somewhere along the spoke.
+    \item There is a block intersecting with the spoke.
+\end{enumerate}
+
+We want to handle these accordingly.
+
+\begin{enumerate}[label=\arabic*.]
+    \item We want to return a 0 for the distance and a 0 for the intersection type
+    \item We want to return the ratio of the intersection distance and the length of the spoke, and a 1 or -1 multiplied by the player health for the intersection type depending on whether the player is a team-mate or enemy
+    \item We want to return the ratio of the intersection distance and the length of the spoke, and 0 for the intersection type
+\end{enumerate}
+
+The actual order of the inputs does not matter since we are using a neural network, as long as it is consistent. There are some additional inputs we need to add. The first one is for what angle the player is at with respect to their initial forward vector. We can find this using the dot product, or we can track it directly. Using the dot product will give a much more consistent answer however.
+
+\vs
+On top of this we want to give other inputs showing whether we can fire or not in any given frame, and if not how long we have until we can. Furthermore, we want to give the health of the agent as an input so it can make more responsible choices.
 
 \begin{mpy}
     def getObservations(self, player):
@@ -457,14 +481,6 @@ We need to create our observation and action spaces.
         else:
             can_fire = False
 
-        # observation = {
-        #     "distances": distances,
-        #     "healths": healths,
-        #     "alliances": alliances,
-        #     "player_health": player.health,
-        #     "can_fire": can_fire,
-        # }
-
         observations = distances + healths + alliances
         observations.append(player.health)
         observations.append(can_fire)
@@ -474,6 +490,8 @@ We need to create our observation and action spaces.
         return observations
 \end{mpy}
 
+
+We also need to add a function for resetting the environment, which is done by setting the environment back to it's original environment.
 
 \begin{mpy}
     def reset(self, seed=None, options=None):
@@ -501,6 +519,7 @@ We need to create our observation and action spaces.
         return observations, infos
 \end{mpy}
 
+We also have added a step function for taking an action from the agents and then updating the state, returning new observations and rewards from this environment.
 
 \begin{mpy}
     def step(self, actions):
@@ -581,6 +600,7 @@ We need to create our observation and action spaces.
         return observations, rewards, terminations, truncations, infos
 \end{mpy}
 
+Finally, we have some extra functions that we need to set, but these are fairly self-explanatory.
 
 \begin{mpy}
     def render(self):
@@ -596,34 +616,10 @@ We need to create our observation and action spaces.
         return self.lastVals
 \end{mpy}
 
-\vs
-The other thing we need to implement is the spoke detection for the player.
-
-Overall, we need to decide what observations we want to feed to the agents and in what format. There will be 16 spokes, which will be equally spread out angularly across the player's field of vision. These will then intersect with other players and blocks. We will return the ratio of the distance from the end of the spoke to the intersection and the length of the spoke. We also want to return the type of the intersection. For each spoke we can have 3 things happening.
-
-\begin{enumerate}[label=\arabic*.]
-    \item Nothing happens, there are no intersections.
-    \item A player or enemy is standing somewhere along the spoke.
-    \item There is a block intersecting with the spoke.
-\end{enumerate}
-
-We want to handle these accordingly.
-
-\begin{enumerate}[label=\arabic*.]
-    \item We want to return a 0 for the distance and a 0 for the intersection type
-    \item We want to return the ratio of the intersection distance and the length of the spoke, and a 1 or -1 multiplied by the player health for the intersection type depending on whether the player is a team-mate or enemy
-    \item We want to return the ratio of the intersection distance and the length of the spoke, and 0 for the intersection type
-\end{enumerate}
-
-The actual order of the inputs does not matter since we are using a neural network. There are some additional inputs we need to add. The first one is for what angle the player is at with respect to their initial forward vector. We can find this using the dot product, or we can track it directly. Using the dot product will give a much more consistent answer however.
-
-\vs
-On top of this we want to give other inputs showing whether we can fire or not in any given frame, and if not how long we have until we can. Furthermore, we want to give the health of the agent as an input so it can make more responsible choices.
-
 
 \subsection{\textcolor{red}{Training and AI}}
 
-We will be using the standard implementation of PPO in the official PyTorchRL tutorials and documentation. We will modify this in order to use this in a MAPPO context. Another change compared to the rest of this project is that we will be using Jupyter Notebooks for the AI training. This is because it is much more convenient that using a Python script, since we can re-run small sections of the code without having to re-run the entire script. This is useful since Python is an interpreted language, and AI scripts can take a very long time to run, and so if there is some problem later on in the program, we could potentially lose a lot of progress. However, using these Notebooks means that we can add code blocks on to the end and can re-run them if errors happen.
+We will be using the standard implementation of PPO in the official PyTorchRL tutorials and documentation. We will modify this in order to use this in a IPPO context. Another change compared to the rest of this project is that we will be using Jupyter Notebooks for the AI training. This is because it is much more convenient that using a Python script, since we can re-run small sections of the code without having to re-run the entire script. This is useful since Python is an interpreted language, and AI scripts can take a very long time to run, and so if there is some problem later on in the program, we could potentially lose a lot of progress. However, using these Notebooks means that we can add code blocks on to the end and can re-run them if errors happen.
 
 \vs
 
@@ -642,63 +638,108 @@ cuda:0
 
 \vs
 This confirms that we have indeed used the GPU. We will use this in all of our scripts in order to ensure that we have efficient code execution and improve performance. It also means that if there is a problem in the model when running it initially, we will not be too far behind and can retrain relatively easily.
-
 \vs
 
-We also need to create something known as an environment. This will allow the agents to interact with the environment. We will be using the PettingZoo library and API to create an environment which we can use to train. We can create a skeleton environment as seen here from the documentation.
+The very first thing to do is to import all of the libraries that we need in order to train our agent. This is done as follows.
 
 \begin{mpy}
-def insertTheStuffHere(self):
-	print(''Fill this in'')
-
-\end{mpy}
-
-\vs
-
-Now that we have our environment, we will define our actor and critic networks. However, the way that PPO trains the model is to use multi-variate normal distributions. This is because this allows for a certain amount of randomness when training and this means that we can explore the environment more and potentially uncover better policies to play the game by than the current one. So therefore, we will create two constructs, the first one being the actual model, and the other being the actor which we will use for the training. In this case, our policy network, will give the outputs of all of the agents of our team.
-
-\vs
-
-Let's begin by importing our libraries.
-\vs
-\begin{mpy}
+#Torch
 import torch
-
-from tensordict.nn import TensorDictModule
+from tensordict.nn import TensorDictModule, TensorDictSequential
 from tensordict.nn.distributions import NormalParamExtractor
+from torch import nn
 
-# Tensordict modules
-from torch import multiprocessing
-
-# Data collection
+#Data
 from torchrl.collectors import SyncDataCollector
-from torchrl.data.replay_buffers import ReplayBuffer
-from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
-from torchrl.data.replay_buffers.storages import LazyTensorStorage
+from torchrl.data.replay_buffers import ReplayBuffer, TensorDictReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
-# Env
-from torchrl.envs import RewardSum, TransformedEnv
-from torchrl.envs.libs.vmas import VmasEnv
-from torchrl.envs.utils import check_env_specs
+#Modules
+from torchrl.modules import ProbabilisticActor, ValueOperator, TanhNormal, MultiAgentMLP
 
-# Multi-agent network
-from torchrl.modules import MultiAgentMLP, ProbabilisticActor, TanhNormal
-
-# Loss
+#Objectives
 from torchrl.objectives import ClipPPOLoss, ValueEstimators
+from torchrl.objectives.value import GAE
+
+#Multi-processing
+from torch import multiprocessing
+from torchrl.envs import RewardSum, TransformedEnv, check_env_specs, Transform
+
+#Envs
+from momentum_env.momentum_env import Momentum
+from torchrl.envs import PettingZooWrapper
 \end{mpy}
 
-TODO: Need to reference this from the PPO tutorial.
-
-\vs
-Next, we need to instantiate our environment.
+Now, that we our libraries imported, we will now create the instance of our environment.
 
 \begin{mpy}
-    To do here
+env = Momentum()
+group_map = {"team0": ['player1', 'player2', 'player3'],
+            "team1": ['player4', 'player5', 'player6']}
+
+env = PettingZooWrapper(env, group_map=group_map)
 \end{mpy}
 
+We will now define our hyperparameters which will be used to train our networks.
+
+\begin{mpy}
+device = torch.device("cpu")
+
+# Sampling
+frames_per_batch = 6_000  # Number of team frames collected per training iteration
+n_iters = 30  # Number of sampling and training iterations
+total_frames = frames_per_batch * n_iters
+
+# Training
+num_epochs = 10  # Number of optimization steps per training iteration
+minibatch_size = 100  # Size of the mini-batches in each optimization step
+lr = 3e-4  # Learning rate
+max_grad_norm = 1.0  # Maximum norm for the gradients
+
+# PPO
+clip_epsilon = 0.2  # clip value for PPO loss
+gamma = 0.9  # discount factor
+lmbda = 0.9  # lambda for generalised advantage estimation
+entropy_eps = 1e-4
+\end{mpy}
+
+Now that we have our environment and hyperparameters, we will define our actor and critic networks. However, the way that PPO trains the model is to use multi-variate normal distributions. This is because this allows for a certain amount of randomness when training and this means that we can explore the environment more and potentially uncover better policies to play the game by than the current one. So therefore, we will create two constructs, the first one being the actual model, and the other being the actor which we will use for the training. In this case, our policy network, will give the outputs of all of the agents of our team.
+
 \vs
-After this, we need to 
+The next thing to do is to create a \m{Sequential} network which will take the observation in and will out a \m{loc} and \m{scale} for each value in each agent's action space.
+
+\begin{mpy}
+team0_policy_net = torch.nn.Sequential(
+    MultiAgentMLP(
+        n_agent_inputs=env.observation_spec["team0", "observation"].shape[-1],
+        n_agent_outputs = 2 * 4,
+        n_agents = 3,
+        centralised = False,
+        share_params = False,
+        device=device,
+        depth=2,
+        num_cells = 128,
+        activation_class = torch.nn.Tanh,
+    ),
+    NormalParamExtractor(),
+).to(device)
+
+\end{mpy}
+
+The number of agents on each team is 3, and therefore this policy will act on behalf of all three agents. We will now create a \m{TensorDictModule} which will let \m{TorchRL} more easily track the values that we are using, and means that we can much more easily debug the code. Using keys in this regard means that the behaviour of the code is much more easily understandable and controllable.
+
+\begin{mpy}
+team0_policy_module = TensorDictModule(
+    team0_policy_net,
+    in_keys = [("team0", "observation")],
+    out_keys = [("team0", "loc"), ("team0", "scale")],
+).to(device)
+\end{mpy}
+
+Finally, we want to wrap this in a \m{ProbabilisticActor}. This will mean that the \m{loc} and \m{scale} that we produced earlier will now be used in a \m{TanhNormal} distribution (a combination of a $\tanh$ distribution and a normal distribution). This will produce a final action for the team.
+
+\vs
+Now, we want to replicate all of this but now for the second team. This is so that we can get two 
+
 
 \subsection{\textcolor{red}{Game Loop}}
 
