@@ -41,12 +41,12 @@ In consideration of all these features there are few different languages and fra
     Framework & Language & Pros & Cons\\
     \hline
     \hline
-    Unreal Engine & C++ & \begin{itemize}
+    Unreal Engine & C++ & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Extremely performance orientated
         \item Supports OOP
         \item Has Learning Agents library (PPO)
     \end{itemize}
-     & \begin{itemize}
+     & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Not familiar with C++
         \item C++ is difficult to write and maintain compared to others
         \item Platform dependent
@@ -54,23 +54,23 @@ In consideration of all these features there are few different languages and fra
         \item Better suited to 3D games
     \end{itemize}\\
     \hline
-    Unity & C\# & \begin{itemize}
+    Unity & C\# & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Also supports OOP
         \item Platform independence (bytecode)
         \item Implements MLAgents 
-    \end{itemize} & \begin{itemize}
+    \end{itemize} & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Not familiar with C\#
         \item Lot of framework specific knowledge required
         \item Learning algorithm cannot be modified as much
     \end{itemize}\\
     \hline
-    PyGame & Python & \begin{itemize}
+    PyGame & Python & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Very familiar with Python
         \item Many ML libraries in Python
         \item PyGame is much simpler than Unity and UE
         \item Platform independence
         \item Supports OOP
-    \end{itemize} & \begin{itemize}
+    \end{itemize} & \begin{itemize}[leftmargin=*, topsep=0pt]
         \item Python is significantly slower than C++/C\#
         \item PyGame lacks lots of functionality that others provide
     \end{itemize}\\
@@ -256,8 +256,6 @@ The database is normalised to reduce data redundancy and maintain data integrity
 
 
 \vs
-
-
 \begin{longtable}{|p{3cm}|p{2cm}|p{9cm}|}
     \hline
     Field & Type & Justification\\
@@ -311,9 +309,32 @@ Firstly, I have chosen Iosevka as my font, as it is a sleek, modern font which I
 
 \subsubsection{\textcolor{red}{Start Menu}}
 
-The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box INSERT FIGURE AND BOX NUMBER HERE.
+The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box A in Figure \ref{fig:start_menu}
+
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+\vspace{-10pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/StartMenu.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.125,0.3098}{0.905,0.7098}{A}{0.125,0.7098}%tl
+\end{annotatedFigure}
+\caption{A sketch of what the start menu will look like}
+\label{fig:start_menu}
+\vspace{-10pt}
+\end{center}
+\end{wrapfigure}
 
 The box will have a background colour which will be different to the rest of the screen in order to highlight that they can click there. This is important because usually in applications the cursor changes if you can click on something, however that is not the case here, and so we need to provide another way of conveying that information.
+
+\vs
+This will make it clear to the user that the button can be clicked, and the message also conveys that in a very obvious way. One extra thing that can be done to increase interactivity is to make the background of the button change colour upon hovering over it. This would mean that the button's boundary is much clearer.
 
 \vs
 \subsubsection{\textcolor{red}{Login Menu}}
@@ -321,29 +342,136 @@ The box will have a background colour which will be different to the rest of the
 \vs
 In the login menu, we want to allow the user to enter in their details and click submit to authenticate their account. This will be linked to the database handler, and so will need to provide the password to the database handler.
 
+\begin{wrapfigure}{L}{0.5\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/LoginMenu.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the login menu will look like}
+\label{fig:login_menu}
+\end{center}
+\vspace{-15pt}
+\end{wrapfigure}
 
+\vs
+As shown in Box B, we will be placing the logo of the game at the top of the screen. This is a minor detail, but many games do it, and it helps to create a sense of excitement around the game. It also helps to give the menu a more welcoming feel.
+
+\vs
+Box C shows where the users can enter in their details. This will be used to authenticate the user and will then be used to track the player's progress through the game. This will be through the use of the return values in the form of a dictionary where we can add keys giving different details about the game and the user's experience.
+
+\vs
+The user's ID will be one part of this and will allow us to make calls to the database handler when needing to update the database. This will allow us to update the player's ratings after a game is over, using the score information and their \m{playerID}.
+
+\vs
+As shown in Box D, there will be a button at the bottom if the user has never played before, in which case the player will enter their details in order to register a new account. This will take them to a very similar screen but this time, it will say "Register" instead of "Login".
+
+\vs
+Additionally, the button for "Login", will be very similar to the button for the start menu, but will be a bit smaller, and will still change colour on hover in order to allow for a more intuitive experience.
 
 \subsubsection{\textcolor{red}{Main Menu}}
 
-The main menu will house all of the other options that are available to the user, and so as shown in INSERT FIGURE AND DIAGRAM HERE, I have placed buttons adjacent to each other in a way that is intuitive.
+The main menu will house all of the other options that are available to the user, and so as shown in Figure \ref{fig:main_menu}, I have placed buttons adjacent to each other in a way that is intuitive. This is a standard way of laying out a menu, and is similar to what is used in \emph{Rocket League} and \emph{Overwatch}.
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/MainMenu.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.83}{0.75,0.98}{E}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{F}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{G}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the main menu will look like}
+\label{fig:main_menu}
+\end{center}
+\vspace{-15pt}
+\end{wrapfigure}
+\vs
+Additionally, as seen in Box F, we can see that there is still a background behind each box as explained previously. Furthermore, in Box E, we can see the game's logo to create a sense of excitement, and this is fairly common for games to do.
 
 \vs
-Additionally, as seen in Box (INSERT BOX LETTERS HERE), we can see that there is still a background behind each box as explained previously.
-
-\vs
-Additionally, as shown in Box (INSERT LETTERS HERE), we can see the game's logo to create a sense of excitement, and since this is fairly common for games to do.
+Finally, we also have the exit button in Box G, which will let the player quit if they want to.
 
 \subsubsection{\textcolor{red}{Set Timer}}
 
 Here, we want to set the global timer, which will shut the game off after a game is finished. This will mean that we need to set a definite time limit as dictated by the user. We will also display the time at which the user's time will be over, so that they are aware of how long they have left.
 
-INSERT DIAGRAM HERE
+\begin{wrapfigure}{L}{0.5\textwidth}
+\vspace{-25pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/SetTimer.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{H}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{I}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{J}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the set timer screen will look like}
+\label{fig:set_timer_menu}
+\end{center}
+\vspace{-25pt}
+\end{wrapfigure}
+
+\vs
+Here we can see that there are two text boxes in Box I, which will let the user enter in how long they would like to player for. These inputs will be normalised or will output an error if the wrong types are inserted (for example, strings instead of integers).
+
+\vs
+In that case, it will come back to the same screen, this time with a error message showing that they entered the wrong type. If the numbers in the minutes box is over 60, we will just convert this into extra hours instead, with the remaining minutes staying as minutes.
+\vs
+
+Finally, in Box J, we can see the "Go!" button which will start the timer immediately. This will also direct them to the "Create Game" menu.
 
 \subsubsection{\textcolor{red}{Create Game}}
 
 In this menu, we want to be able to set the game's difficulty. This is done using arrows, since this seems to be the most intuitive way of doing something like this. Alternatively, a plus sign and a minus sign could be used also, since those explain more clearly what is going on.
 
-INSERT DIAGRAM HERE
+\begin{wrapfigure}{R}{0.5\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/CreateGame.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the create game screen will look like}
+\label{fig:create_game_menu}
+\end{center}
+\vspace{-15pt}
+\end{wrapfigure}
+
+\vs
+Additionally, there will be two rows of text, one showing the level of the team-mates that the user will be playing with, and the level of the agents the user will be playing against. These can be adjusted as the user prefers, and we will use the Elo algorithm to adjust for this change when we are finding the amount that the user's rating should change by. This is justified, since a player that is just starting out would prefer to play against easier opponents, or have better team-mates, and as they get better at the game, they may prefer to have slightly worse team-mates and better opponents in ordet to get more of a challenge.
+
+\vs
+Furthermore, we have a start button allowing the user to start the game, which is fairly self-explanatory. Having this chain of screens will make the game much more intuitive to play for the user, even if they have never played it before, or seen others play it.
 
 \subsubsection{\textcolor{red}{Game Loop}}
 
@@ -351,21 +479,101 @@ In the main game loop, we still have some UI elements to draw on. Primarily, we 
 
 \vs
 
-INSERT DIAGRAM HERE
+\begin{wrapfigure}{L}{0.45\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/GameLoop.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the game loop will look like}
+\label{fig:game_loop}
+\end{center}
+\vspace{-25pt}
+\end{wrapfigure}
 
+Within the game loop, we have multiple bits of information that we need to have visible. The first one is the time left in the round. This is justified since it will inform how the user will play the game.
+
+\vs
+Additionally, the score is written for both teams in Box INSERT BOX LABEL HERE. The background of the score will be written in the colour of the team. This is useful because it provides a clear way of understanding which team the score is attributed to.
+
+\vs
+Furthermore, the health of the player will be written on the player because it provides a quick way to see what the health of the player. On top of this, it is important to know the health of the player because the user's actions will be dependent on their own health and others health.
+
+\vs
+Also, blocks will be rendered on the screen so that the player can have a landmark relative to the map, and so that they can more easily see where they are moving.
 
 \subsubsection{\textcolor{red}{Game Over}}
 
-Once the game is over, we want to show the player where they have ranked relative to the other players.
+\begin{wrapfigure}{R}{0.5\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/GameOver.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the game over screen will look like}
+\label{fig:game_over_menu}
+\end{center}
+\vspace{-15pt}
+\end{wrapfigure}
 
-INSERT DIAGRAM HERE
+Once the game is over, we want to show the player where they have ranked relative to the other players. We will take all of the scores from the original game loop by using the return values that were passed to us. Since this will be in a set format, we can use this to render the scores on the screen in a fixed layout that is clear to the user.
+
+\vs
+The first thing we can see is that each team has it's own columns and has it's own rows for each team members. We also track the number of kills and deaths that each player had over the game, but we could also add other statistics, such as the amount of damage done and the total score of the player.
 
 \subsubsection{\textcolor{red}{Leader Board}}
 
+The leaderboard will make a call to the database handler, and will select the playerID for all players and will do this with the ascending flag set. This will allow for the data to already be sorted by the time the leaderboard screen receives it. Then, the data must be rendered to the screen as shown in Figure \ref{fig:leaderboard_menu}.
 
-INSERT DIAGRAM HERE
+\vs
+\begin{wrapfigure}{L}{0.5\textwidth}
+\vspace{-20pt}
+\begin{center}
+\begin{annotatedFigure}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Design/Images/LeaderBoard.jpg}}
+    }}
+    %bottom left corner to top right
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+\end{annotatedFigure}
+\caption{A sketch of what the set timer screen will look like}
+\label{fig:leaderboard_menu}
+\end{center}
+\vspace{-25pt}
+\end{wrapfigure}
 
-\tbc
+This has a set format which will allow for the users to quickly see the information that is most relevant at a glance. Again, since we are making a call from SQL, we know the format we expect the data to be in, so this makes the formatting very easy.
+
+\vs
+We also have a back button to allow the player to go back to the state that they were in previously, since there are no further options to move on to from here. The formatting of this leaderboard is justified since it provides all of the information needed, including the rankings, the player's ID and their rating in clear tabular manner, which is easy to process visually.
+
+\vs
+\tbr
+
+TODO: We need to fix up the formatting of the red boxes
 
 \subsection{\textcolor{red}{AI}}
 
@@ -377,17 +585,22 @@ I will be using PyTorch in order to handle the reinforcement learning aspect of 
     \item Current Health - Provided as real value between 0 and 1, and is computed by dividing the current health by the total health
     \item Distance to nearest health pad - This is given as a real value, and will be calculated using $r = \sqrt{(x_0 - x_1)^2 + (y_0 - y_1)^2}$, for the bot at $(x_0, y_0)$, and a health pack at $(x_1, y_1)$.
     \item Angle to nearest health pad - This is given as a real value, and can be calculated by $\arctan \frac{y_1 - y_0}{x_1 - x_0}$
-    \item Spokes protruding from the centre of the players will extend to a set distance $r$, and will return 0 if there is no objects obstructing the spoke, will return $d$ if there is any enemy at distance $d$ from the centre of the player along that spoke, where $d<r$, and $-d$ if there is a wall obstructing the spoke at a distance $d<r$.
+    \item Spokes protruding from the centre of the players will extend to a set distance $r$
+    \begin{itemize}
+        \item Returns (0, 0, 0) if there is no objects obstructing the spoke 
+        \item Will return $(d/r, \text{player health}, \text{player alliance})$ if there is any player at distance $d$ from the centre of the player along that spoke where $d<r$
+        \item The alliance is whether the player and the detected player are on the same team
+    \end{itemize}
 \end{enumerate}
 
 \vs
 The best model for this project is multi-agent reinforcement learning, as this will allow me to generate multiple bots which can compete against each other. Something like Deep Q Networks would not function in this environment because of the continuous nature of the game and the complex nature of the game.
 
 \vs
-The algorithm we will be using is Proximal Policy Optimisation, which relies on a clipped surrogate objective. This is an algorithm which can be expanded to a multi-agent version, which is what we want.
+The algorithm we will be using is Multi-Agent Proximal Policy Optimisation, which relies on a clipped surrogate objective. This is an algorithm which can be expanded to a multi-agent version, which is what we want.
 
 \vs
-In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the data buffer from the player to be transferred to the other two bots. This gives the game the feeling of playing with a team, rather than a more individual experience. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have to have decentralised training and critics.
+In order to do this, there will be a shared experience buffer, which will allow the agents to learn much faster than if they were playing individually. In order to allow the player to play, during the actual game, one of the agents will be "turned off", restricting the inputs that the AI gives, but still allowing the others to play. This variant of the original Proximal Policy Optimisation which we will be using specifically, is known as MAPPO (Multi-agent Proximal Policy Optimisation) which uses centralised training, and decentralised execution. This is perfect for our situation, because, the player will not be able to communicate with the other bots during the game, and so it is ideal to have to have decentralised execution. This will effectively "ingrain" team behaviours into the agents without needing to actually 
 
 \vs
 Additionally, during training, the rendering can be disabled, and the frame rate set to a very high value, in order to increase the speed at which the models can be trained. Because the model will progress from one frame to the next, the speed between frames can be altered without any consequence on the other bots on the team.
@@ -418,9 +631,6 @@ Both networks use the same input, which is the observation for that time-step to
 
 \vs
 From the original paper, we can see the process unfolding as follows. We firstly initialise our networks, and start a loop, and we can train for as long as we like. We then execute something known as a policy roll-out. This is effectively running our agent in the environment for a few time-steps, and recording the observations, actions, rewards and resulting states. This will allow us to gather information to train our network with. We also compute something known as advantages. Effectively, this gives us an idea of how much better off we are due to an action. We use a discount parameter and a GAE parameter.
-
-\vs
-On top of this, we will be using a library called \m{TianShou} which provides a high-level API on top of PyTorch in order to implement reinforcement learning algorithms. Additionally, it supports multi-agent reinforcement learning with heterogenous agents (agents which are not the same), and will allow us to do self-play to train the agents.
 
 \vs
 
@@ -469,13 +679,21 @@ Here is a diagram INSERT DIAGRAM HERE, showing two players overlapping. We can i
 
 \vs
 In order to resolve the collision, we need to move a player by an amount such that they will no longer be colliding, but just touching. Assuming that there is a collision, the derivation for the amount to the move the player by is as follows.
+\vs
+
+
+The first thing to do is to consider the line joining the centres of the two circles. We can then multiply the vector between the two positions by $\frac{r}{|\vec{r_2} - \vec{r_1}|}$, which will give us the point on the circle which lies on the line between the two centres. We can also find the midpoint of the collision, by considering $\frac{\vec{r_2} - \vec{r_1}}{2}$, and then finding the difference between these two, we get half of the distance that we need to move one player by.
 
 \begin{align*}
-    TODO &= NOT+DONE+YET\\
+    \underline{\delta r} &= \frac{2r}{|\vec{r_2} - \vec{r_1}} (\vec{r_2} - \vec{r_1}) - (\vec{r_2} - \vec{r_1})\\
 \end{align*}
+
+We can update the position by this amount to solve the collision.
+
 
 \vs
 On top of this we need some way to handle collisions between lines and circles. This is because one of our primary success criteria was that there had to be weapons in the game, and that the user had to be able to shoot other players and that damage had to be processed.
+
 
 \vs
 During my research I found this method to detect a collision between a line and circle is two constraint points were used. This method involved computing multiple dot products until a quadratic equation was reached, and from there, it was just a simple comparision to find whether a collision had occurred.
@@ -483,6 +701,7 @@ During my research I found this method to detect a collision between a line and 
 
 \vs
 Furthermore, since there will be blocks in the game, the player must not be able to pass through them and neither should any fired rays. In order to satisfy this, we need to consider two more types of collisions.
+
 
 \vs
 The first type is between a line and rectangle. This is quite simple, since we can just break a rectangle down into 4 lines and check for intersections with each one. We just want to find the intersection which is closest to the origin of the ray.

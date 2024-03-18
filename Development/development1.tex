@@ -825,7 +825,7 @@ The next thing to do is to find the point on the edge of \m{circle1} which lies 
         mid_circum_vec = Utility.vecSub(intersect_dir, centre_mid_point)
 
         #The vector to push the player back by
-        delta_position = Utility.mult(mid_circum_vec, -1)
+        delta_position = Utility.mult(mid_circum_vec, -2)
 
         return [True, delta_position]
 \end{mpy}

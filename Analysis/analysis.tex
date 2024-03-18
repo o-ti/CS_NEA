@@ -48,8 +48,7 @@ In box B, we can see the computer analysis of the game. Normally, this would not
 In box C, we display the name and the rating of the player. This tells you who you are playing against and what their ELO is, which is a ranking often used in chess. This isn't particularly relevant, but it shows you that you are playing against a real player, which is a concern for some people. Additionally, if you want to play against friends, it's useful to make sure that you are playing against the right person. Another advantage is that it shows you if you are matched with a novice player or someone who has played the game for a long time, which may not affect the actions of the player directly, but it will inform them as to the level of play they can expect in the game.
 
 \vs
-Finally, the lettering on the bottom and left edge of the board lets us easily identify which square a certain piece is on, and this is helpful when communicating with other players about moves, and is the standard notation for chess globally. This is useful, for example, for a coach who might want to help their play spot a move on the board.
-
+Finally, the lettering on the bottom in Box D and the left edge of the board lets us easily identify which square a certain piece is on, and this is helpful when communicating with other players about moves, and is the standard notation for chess globally. This is useful, for example, for a coach who might want to help their play spot a move on the board.
 \vs
 
 
@@ -172,6 +171,15 @@ At the bottom of the screen, we have box L. It shows the player the health that 
 
 \end{figure}
 
+\textcolor{cyan}{\textbf{Analysis:}} Firstly, we can see on the screen that there is a lot of vibrant colours which helps to exchange players and gives it an exciting feel. In Box M, we can see a lot of information, including the time left in the game and the number of goals that each team has. The score is colour-coded depending on the colour of the team. This is very helpful since the colour of the player's car matches which team they are on, and so it is easy to spot how many goals a player's team has.
+
+\vs
+Additionally, in Box N, we can the player tags. The game is very fast-paced and therefore, it can sometimes be difficult to see what is going on in the game. The players have large labels with their team colour and their username on it which makes it much easier to spot players, especially when they are further away and not close to each other.
+
+\vs
+In box O, we can see the amount of boost that the player has. This is a number between 0 and 100 and will allow the player to 
+
+
 \textcolor{green}{\textbf{Positives:}} Rocket League is extremely vibrant, with lots of customisation options for your car. This provides a lot of flexibility and adds character to the game. Additionally, there is a lot of mechanics that can be used and discovered, which keeps the game fresh. This allows for a lot of engagement with the players and means that they are never bored as there is always something to learn or do within Rocket League.
 
 \vs
@@ -193,8 +201,8 @@ Within chess, the Elo algorithm is extensively used from official FIDE competiti
 Assume that there are two players, with ratings $r_1$, and $r_2$. Then, the probabilities of each player winning is 
 
 \begin{align*}
-    p_1 &= \frac{r_1}{r_1 + r_2}\\
-    p_2 &= \frac{r_2}{r_1 + r_2}\\
+    p_1 &= r_1/r_1 + r_2\\
+    p_2 &= r_2/r_1 + r_2\\
 \end{align*}
 respectively. A rating shifting factor, $k$ is used to determine how strongly each player's rating is affected by each game. For example, if player 1 has won the game, then the following equations are used to adjust each rating.
 \begin{align*}
@@ -203,6 +211,9 @@ respectively. A rating shifting factor, $k$ is used to determine how strongly ea
 \end{align*}
 
 If a game is the first to be played by a player, $k$ will be larger, so winning will give a much larger reward, and losing will give a much larger loss. This allows for people's ratings to fluctuate and eventually settle around a mean value that represents their true skill as the value of $k$ changes.
+
+\vs
+Additionally, if a player has a very high rating (in chess this stage is usually above the rank of Master), their $k$ value is much lower, and so they must play for a lot longer in order to get a similar change in their rating.
 
 \subsubsection{Player Interaction with Games}
 
@@ -419,15 +430,31 @@ We will look through each question in turn.
 
 Most people said that they were not comfortable playing during the week, primarily due to the amount of work that they had to do. This means that short round times, and preferably no queue times would be necessary in order to allow people to feel more comfortable playing games as a way of relaxing during the week.
 
-\subsection{\textcolor{red}{Question 2}}
+\subsubsection{\textcolor{red}{Question 2}}
 
+One of the things that was mentioned by users was that the design must be intuitive and easy to use, but also having reliable shooting mechanics that are fun to use. Additionally, almost everyone mentioned that it had to look aesthetically pleasing.
 
+\subsubsection{\textcolor{red}{Question 3}}
 
-\tbc
+Most people were not bothered by the idea of playing against bots instead of real people, although Frank did mention that he would prefer if the bots were good otherwise it would become boring quite quickly. Moosa also mentioned the idea of playing with friends against the bots would be acceptable as well.
 
-\subsection{\textcolor{red}{Essential Features}}
+\subsubsection{\textcolor{red}{Question 4}}
 
-\tbc
+This was received well, but ultimately, it was not as important, since there was a global timer, but most people preferred having shorter rounds.
+
+\vs
+The overall constraint that people wanted was on the amount of time that they spent playing the game. Furthermore, people said that it would be a nice feature to have but not that it had to be in the game for them to play it.
+
+\subsubsection{\textcolor{red}{Question 5}}
+
+Everybody was very accepting of this idea and said that it was something that they would want in the game and would be a useful feature to have. Particularly, having short rounds and then a global timer seemed to be the preferred option.
+
+\vs
+This also would help them to solve the problem of having not enough time to play during the week, since now they can limit themselves to only play for a limited amount of time.
+
+\subsubsection{\textcolor{red}{Question 6}}
+
+People mentioned that they would be more likely to play a game during a week if there was some kind of ranking system or a leaderboard of some kind.
 
 \subsection{Stakeholder and Public Requirements Summary}
 
@@ -490,18 +517,33 @@ On top of this, there will be a leaderboard and rank system which be based on th
 
 The solution must have short queue times, and short round times, ensuring that the player will be active for as long as possible, encouraging them to play further.
 
-The most common comment on what factors deter people from playing during the week was time commitments, and so it was essential that the game prioritised quick game times, and fast matchmaking, in order to maximise the time that the player is active playing rather than waiting for a game to start
+\vs
+The most common comment on what factors deter people from playing during the week was time commitments, and so it was essential that the game prioritised quick game times, and fast matchmaking, in order to maximise the time that the player is active playing rather than waiting for a game to start.
 
 \vs
 In order to solve this, we will use artificial intelligence to create "bots" who can fill lobbies if they are not filled sufficiently quickly. This will allow for games to start as soon as possible, and reduce the amount of time people must wait before a game starts, hence making them more likely to play the game. This promotes starting a game, because the amount of time between pressing the play button and joining a game is shorter, and so people are more inclined to start new games, because they do not take as long to find. Additionally, this will still give the players a feeling of playing with other people, even though they are not.
 
 \vs
-
 Shorter rounds ensure that there is less at stake, and that many rounds can be played in a shorter period of time, and so each game does not feel like as much of a commitment and therefore leaving a game does not have as much of an affect on the player. Additionally, there is no pressure of being judged by other players, or ruining another player's game, since there are just bots playing on the other side, so people will be more likely to judge when they should start and stop playing.
 
 \vs
 Additionally, the game will include fast-paced mechanics in order to allow for more intense rounds, which will mean that players see more action in a shorter period of time. There are very very few games which are left in this niche, as many games and franchises, have made their games slower and more tactical. The mechanics within the game will be things just as dashing, sliding, etc. This will allow players to move across the map even faster, and due to the open map design this will be much more easily accomplished. 
 
+\subsubsection{\textcolor{red}{Hardware Requirements}}
+
+In order to run the AI on the machine, the computer must have a CUDA-enabled graphics card. This is quite a steep limitation, but it is available for most people, and so shouldn't be a problem. Furthermore, the computer must have a monitor, keyboard and mouse, because there are the inputs and outputs that are most commonly used and therefore our game will also process using these.
+
+\vs
+Additionally, it will need to have at least 4GB of RAM in order to house all of the AI models and all of the data that goes alongside the game. This is necessary, since AI is a key part of our game and we have to load it into memory otherwise the game would be completely unplayable.
+
+\vs
+\subsubsection{\textcolor{red}{Software Requirements}}
+
+In order to run the code, the user will need to have CUDA installed, which will allow the neural network to take advantage of the massively parallel architechture of the GPU. This is important as we want to minimise the amount of time it takes to use the model to produce an action. 
+
+\vs
+
+Furthermore, since the game will be written in Python \verb|3.10|, the device must have this version of Python installed, otherwise the game will not operator properly. Additionally, all of the libaries that will be used in the game's final code must be installed also. This is absolutely required, since otherwise the project would take extremely long to complete without libraries, and often libaries have been tested and optimised repeatedly, thus offering a significant performance advantage over raw Python code.
 
 \subsection{Justification of Computational Methods}
 
@@ -521,8 +563,11 @@ Abstraction will be used in order to create flowcharts and pseudo-code which wil
 
 \vs
 Furthermore, we will be using external libraries in order to add some abstraction to the graphical and hardware elements of the project. For example, many machine learning libraries are very inefficient to run on a CPU so will use low-level hardware interfaces like CUDA to speed up the process with GPUs which utilise parallelisation in order to do operations like matrix multiplication and addition many times faster. On top of this, a library like PyGame will allow me to focus on the core aspects of the game instead of also having to worry about the implementation of the graphical processing of the game. This adds some abstraction to the game since I no longer have to worry about these things, and it is now hidden by the veil of other classes and methods that have already been tested thoroughly, which means I also can reduce the amount of testing that needs to be done.
-
 \vs
+
+Furthermore, abstraction will be useful as it will allow us to remove details which are irrelevant, and focus on the important attributes and procedures that we need to implement. For example, for a button, we don't need to know what the button does specifically, only that it has a shape, colour, position, and text written on it, and that we want to be able to detect if we are clicking the button at any time.
+
+
 \subsubsection{Decomposition and Modularity}
 
 Additionally, we will be using classes in the game in order to create a modular program which is much easier to test as we go, and easier to debug. This is useful, since now we can create multiple instances of the same class, such as the player and enemies instead of having to create a number of instances manually. This also allows the game to be more versatile, since we can quickly change singular elements of the game, without having to alter the whole program. This could happen, for example, if users are giving feedback that the game needs changing. It also makes it easier to test and debug, since we can now test each class independently of other classes, and focus on their individual implementations.
@@ -558,17 +603,17 @@ These were found using existing computational solutions and the research done by
     Name & Success Criterion & Justification\\
     \hline
     \hline
-    Gameplay Length & Rounds lengths and number of rounds are set by users before the game starts. & This will let people decide how long they want to play for, and make it so that they can set the game to be as long as is enjoyable for them.\\
+    Gameplay Length & Allow the user to set the total amount of time they would like to play for. & This will let people decide how long they want to play for, and make it so that they can set the game to be as long as is enjoyable for them.\\
     \hline
-    Movement & Comprises of the following movements: Walk, Run, Dash, and Slide, each of which impacts the player's movement differently. & This will keep the game interesting for people to play, and mean that the game is unique due to these mechanics.\\
+    Movement & The player can walk around the map, rotate, and cannot pass through other players or objects. & This will make the game more realistic and intuitive to play, since most games already have collisions in them.\\
     \hline
     Player Login & This will let players enter their username and password, which will be checked against the entry in the database. If the login details are correct they will be able to view their profile and play games. & As mentioned before, this will encourage players to play more often, as there is a sense of progress in the game, which makes it more entertaining to play.\\
     \hline
-    Rating System & There will be a rating which will be visible to the user and is updated at the end of every match based on the ELO rating system as well as how they performed in the game. & This will further add to a sense of progress, and will provide us with a way to construct leaderboards and things of that nature. Furthermore, it encourages players to get better at the game.\\
+    Rating System & There will be a rating which will be visible to the user and is updated at the end of every match based on the Elo rating system as well as how they performed in the game. & This will further add to a sense of progress, and will provide us with a way to construct leaderboards and things of that nature. Furthermore, it encourages players to get better at the game.\\
     \hline
-    Weapon System & The game will contain several different weapons: Assault Rifle, Sniper, Machine Gun, and Shotgun. These will each function differently and have different behaviours. & This will add more variety to the game and allow the players to have a better experience.\\
+    Weapon System & The game will contain several different weapons: Assault Rifle, Sniper, and Shotgun. These will each function differently and have different behaviours. & This will add more variety to the game and allow the players to have a better experience.\\
     \hline
-    Database System & The database must hold the following information.
+    Database System & The database must hold the following information in 3NF.
     \begin{enumerate}
         \item Username, Email, Password
         \item Player Level
@@ -583,6 +628,14 @@ These were found using existing computational solutions and the research done by
     Bots & There will be bots which allows for players to play against them even if their friends are not online to play against. These bots must be able to play to a standard such that a human player would not be able to discern between a human and a bot. & This will solve a large part of the problem that people have with currently playing games, namely, a lack of time. Therefore, implementing this feature will allow people to play according to their schedule and convenience, which is a desirable feature as seen in the interviews.\\
     \hline
     Menu System & There will be a menu system that will let a player exit the game, set a timer, and create a game. Within the timer settings, the user can choose how long they wish this timer to be. Within the game creation menu, there will be options for the difficulty of the bots, the length of the rounds and the number of rounds. & This is a useful criterion for success of the project, as many people mentioned that they would be more willing to play if they knew that they would be able to control how long they are playing for, and not play for too long.\\
+    \hline
+    Difficulty Selection & The player must be able to choose the difficulty of the bots that they are playing against, and playing with. & For players that are less experienced, they can play with better team-mates and worse opponents in order to learn more about the game, and once they are more comfortable can play against better opponents.\\
+    \hline
+    Game Loop HUD & In the game loop the player must be able to clearly see the team scores, and the time left in the round. & This is important since the player's decision will be guided by the time and score of both teams.\\
+    \hline
+    Inputs & The user must be able to give inputs using their keyboard and mouse depending on the context. & This is the most commonly available input for a computer or laptop, and therefore, this is the input that our game must be compatible with.\\
+    \hline
+    Menu Screen UI & The menus must contain clickable buttons which are clearly labelled and will direct the user where they are supposed to. & Buttons are very intuitive to use and will mean that the user can understand what their purpose is when clicking on them. The menu must have buttons, since this is the most common way to interact with a game, and can be easily adapted for other inputs types in the future.\\
     \hline
 \end{longtable}
 \end{center}
