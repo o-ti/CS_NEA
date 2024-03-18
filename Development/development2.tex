@@ -8,9 +8,102 @@ Based on our previous discussion of using the \m{Utility} class through its stat
 One of the things that we will be improving in the project is optimisation. We need to be able to run many frames per second and therefore, we need to be able to optimise the code. In order to do this, we will use the package \m{Cython}. In order to do this, we will compile all of the classes that we have written in order to make them more efficient to prevent excessive recompilation.
 \vs
 
-To do this, we can create a \m{setup.py} file, and convert all of our files in to \m{.pyx} files. Running 
+To do this, we can create a \m{setup.py} file, and convert all of our files in to \m{.pyx} files. The setup file is as follows for each \m{.pyx} file that we want to use.
+
+\begin{mpy}
+import cython
+from setuptools import setup
+
+from Cython.Build import cythonize
+
+setup(ext_modules = cythonize("utils.pyx"))
+\end{mpy}
+
+Running this code, we get some new files, namely \m{utils.c} and \m{utils.cp310-win_amd64.pyd}. This still functions exactly like a normal Python class however, and we still retain all of the functiosn that we had in the original class.
 
 \tbc
+
+\subsection{\textcolor{red}{Game Loop HUD}}
+
+The Heads-up Display, will just be showing the score for each team, and the total amount of time left in the game. This will be done by tracking the amount of time that has passed in seconds, and then writing it to the screen using the button class we created. The score will be created using two more buttons on either side.
+
+\vs
+However, before that can happen we need to find a way of computing the score. To do that we will simply use a for loop. However, since one already exists in our code, we can use that but add another line to it.
+
+\vs
+\begin{mpy}
+            #Render players as needed
+            for i, player in enumerate(self.players, 0):
+                player.render(self.display, self.player1.position, self.SCREEN_DIMS, zoom)
+
+                self.scores[player.team] += deltaDamageCredit[player] + 50 * deltaEliminationCredit[player] - 50*deltaDeathCredit[player]
+
+\end{mpy}
+
+This can be done by adding text renders to the \m{GameLoop} class. We will create a new function. 
+
+\begin{mpy}
+    def drawHUD(self):
+        #Find remaining time
+        currentTime = time.time()
+        if currentTime - self.startTime >= self.maxTime:
+            return False
+
+        timeRemaining = int(300 - (currentTime - self.startTime))
+
+        minutesRemaining = timeRemaining // 60
+        secondsRemaining = timeRemaining % 60
+
+        #Render time text
+        time_text_surface, time_text_rect = text_font.render(str(minutesRemaining) + ":" + str(secondsRemaining), 
+            fgcolor=(255, 255, 255), bgcolor=(0, 0, 0))
+
+        #Set position on the screen
+        time_text_rect.center = [self.SCREEN_DIMS[0]//2, 50]
+
+        #Draw background rectangle
+        pygame.draw.rect(self.display, (0,0,0), self.time_rect)
+
+        self.display.blit(time_text_surface, time_text_rect)
+
+        #Scores for each team
+        #Team 1
+        score1_text_surface, score1_text_rect = text_font.render(str(self.scores[0]), 
+            fgcolor=(255, 255, 255), bgcolor=(0, 0, 255))
+
+        score1_text_rect.center = self.score_1_rect.center
+        pygame.draw.rect(self.display, (0, 0, 255), self.score_1_rect)
+        self.display.blit(score1_text_surface, score1_text_rect)
+
+        #Team 2
+        score2_text_surface, score2_text_rect = text_font.render(str(self.scores[1]), 
+            fgcolor=(255, 255, 255), bgcolor=(255, 0, 0))
+
+        score2_text_rect.center = self.score_2_rect.center
+        pygame.draw.rect(self.display, (255, 0, 0), self.score_2_rect)
+        self.display.blit(score2_text_surface, score2_text_rect)
+
+        return True
+
+\end{mpy}
+
+This code will produce the following output. As you can the score updates based on the things that are happening within the game.
+
+
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/game_loop_2_1_hud.png}}
+        }
+        \caption{A screen capture of the map being zoomed out via the bound buttons}
+        \label{fig:game_loop_2_1_hud}
+\end{figure}
+
+\vs
+With this done, we can now return the total score for each team at the end of the game.
+
 
 \subsection{\textcolor{red}{Environment}}
 
@@ -21,7 +114,488 @@ The first step in doing this is to remove all of the rendering functions. This i
 
 \vs
 
-Insert code 
+Here I have imported all of the libaries that I need to run my training environment.
+
+\begin{mpy}
+from pettingzoo import ParallelEnv
+from momentum_env.weapon import Weapon, Shotgun, AssaultRifle, SniperRifle
+from momentum_env.player import Player
+from momentum_env.block import Block
+from momentum_env.utils import Utility as U
+import numpy as np
+
+import functools
+from copy import copy
+
+from gymnasium.spaces import Discrete, MultiBinary, Dict, Box, Tuple
+from gymnasium.spaces.utils import flatten_space
+from math import pi
+\end{mpy}
+
+Now, I need to create my environment's constructor. For this, I have just removed all of the calls to rendering and anything related to graphics.
+
+\begin{mpy}
+class Momentum(ParallelEnv):
+    metadata = {
+        "name": "momentum_env",
+    }
+
+    def __init__(self, set_seed=42):
+        self.REFRESH_RATE = 240
+        self.dt = 1 / self.REFRESH_RATE
+
+        # Team 1
+        self.player1 = Player([1000, 3000], [0, -1], 0, Shotgun(self.REFRESH_RATE))
+        self.player2 = Player([2000, 3000], [0, -1], 0, AssaultRifle(self.REFRESH_RATE)
+        )
+        self.player3 = Player([3000, 3000], [0, -1], 0, SniperRifle(self.REFRESH_RATE)
+        )
+
+        # Team 2
+        self.player4 = Player([3000, 1000], [0, 1], 1, Shotgun(self.REFRESH_RATE))
+        self.player5 = Player([2000, 1000], [0, 1], 1, AssaultRifle(self.REFRESH_RATE))
+        self.player6 = Player([1000, 1000], [0, 1], 1, SniperRifle(self.REFRESH_RATE))
+
+        # Contains all of the players in the game
+        self.players = [self.player1, self.player2, self.player3, self.player4, self.player5, self.player6]
+
+        #Blocks
+        self.block1 = Block([1500, 2000], 200, 1200)
+        self.block2 = Block([2500, 2000], 200, 1200)
+        #self.block3 = Block([1000, 2000], 400, 400)
+        #self.block4 = Block([2000, 2000], 400, 400)
+        #self.block5 = Block([3000, 2000], 400, 400)
+
+        #List of all blocks
+        self.blocks = [self.block1, self.block2]#, self.block3, self.block4, self.block5]
+
+        #Set countdowns
+        self.countdowns = {p: 0 for p in self.players}
+\end{mpy}
+
+
+\begin{mpy}
+        #Access player object using string
+        self.playerLabel = {"player1": self.player1,
+                            "player2": self.player2,
+                            "player3": self.player3,
+                            "player4": self.player4,
+                            "player5": self.player5,
+                            "player6": self.player6,
+        }
+
+        #Access player string using player object
+        self.invPlayerLabels = {self.player1: "player1",
+                                self.player2: "player2",
+                                self.player3: "player3",
+                                self.player4: "player4",
+                                self.player5: "player5",
+                                self.player6: "player6",
+        }
+
+        #Player strings
+        self.possible_agents = ["player1", "player2", "player3", "player4", "player5", "player6"]
+
+        #Current timestep
+        self.timesteps = 0
+
+        self.agent_selection = copy(self.possible_agents)
+
+        #Max timesteps in a game
+        self.max_timestep = 6000
+
+        self.scores = {0: 0, 
+                       1: 0}
+
+        self.max_score = 600
+
+        self.agents = copy(self.possible_agents)
+\end{mpy}
+
+
+We need to create our observation and action spaces.
+
+
+
+\begin{mpy}
+
+        low_obs = [0] * 8 + [0] * 8 + [-1]*8 + [0] + [0]
+        high_obs = [1] * 8 + [100] * 8 + [1]*8 + [100] + [1]
+
+        obs_space = Box(low=np.array(low_obs), high=np.array(high_obs), shape=(26,), dtype=np.float32)
+
+        self.observation_spaces = {a: obs_space for a in self.agents}
+
+
+        low_act = [-1, -1, -pi, 0]
+        high_act = [1, 1, pi, 1]
+
+        action_space = Box(low=np.array(low_act), high=np.array(high_act), shape=(4,), dtype=np.float32)
+
+        self.action_spaces = {a: action_space for a in self.agents}
+
+
+    #Nothing to really do here
+    def set_seed(self, seed):
+        pass
+
+\end{mpy}
+
+
+\begin{mpy}
+    # Checks for hits between rays and objects in the map
+    def handlePlayerCollisions(self):
+
+        #Iterate through players
+        for player in self.players:
+
+            #Get player circle
+            playerCircle = [player.position, player.radius]
+
+            #Iterate through all possible collisions
+            for collision_player in self.players:
+
+                #Don't self-check
+                if collision_player != player:
+
+                    #Collision checking
+                    hitResult = U.circleCircleCollision(playerCircle, [collision_player.position, collision_player.radius])
+
+                    #If a collision happened
+                    if hitResult[0] == True:
+
+                        #Resolve it
+                        player.position = U.vecAdd(player.position, hitResult[1])
+                        collision_player = U.vecSub(collision_player.position, hitResult[1])
+
+    #Collisions with the blocks
+    def handleBlockCollisions(self):
+
+        #Iterate through all players
+        for player in self.players:
+
+            #Iterate through all blocks
+            for block in self.blocks:
+
+                #Check for collision
+                delta = U.circleRectCollision(player, block)
+
+                #Resolve
+                if delta[0]:
+                    player.position = U.vecAdd(player.position, delta[1])
+
+    def handleRayCollisions(self, rays):
+        
+        #Dicts for credit
+        damageCredit = {p: 0 for p in self.players}
+        eliminationCredit = {p: 0 for p in self.players}
+        deathCredit = {p: 0 for p in self.players}
+
+        #Iterate through all players
+        for player_i in self.players:
+            firedRays = rays[player_i]
+
+            for ray in firedRays:
+
+                #Larger than possible hit range
+                t = 2
+                bestHit = None
+                
+                #Line we want to test with
+                line = ray[0:2]
+
+                #Iterate through all blocks
+                for block in self.blocks:
+
+                    #Determine whether a result is met
+                    hitResult = U.lineRectCollision(line, block)
+
+                    #If a hit has occurred
+                    if hitResult[0]:
+
+                        #If the result is closer
+                        if hitResult[1] < t:
+
+                            #Reassign the hit result
+                            t = hitResult[1]
+
+
+                #Iterate through test players
+                for testPlayer in self.players:
+
+                    #Don't check if test is the player
+                    if testPlayer != player_i and testPlayer.team != player_i.team:
+
+                        #Player circle
+                        circle = [testPlayer.position, testPlayer.radius]
+
+                        #Check if hit has occurred
+                        hitResult = U.lineCircleCollision(line, circle)
+
+                        #Is there a hit, and was it closer
+                        if hitResult[0] and t > hitResult[1]:
+
+                            #If so, update bestHit and min t
+                            t = hitResult[1]
+                            bestHit = testPlayer
+
+                #If hit registered
+                if bestHit:
+
+                    #Reduce health of player which was killed
+                    bestHit.health -= ray[2]
+                    
+                    #If player died
+                    if bestHit.health <= 0:
+
+                        #Reset the player
+                        bestHit.reset()
+
+                        #Add elim credit to player_i
+                        eliminationCredit[player_i] += 1
+
+                        #Add death credit to player which died
+                        deathCredit[bestHit] += 1
+
+                    #Add damage credit to player_i for the hit
+                    damageCredit[player_i] += ray[2]
+
+
+        return damageCredit, eliminationCredit, deathCredit
+\end{mpy}
+
+
+\begin{mpy}
+    def getObservations(self, player):
+
+        spokes = player.detectionSpokes()
+
+        distances = []
+        healths = []
+        alliances = []
+
+        for spoke in spokes:
+
+
+            #Larger than possible hit range
+            t = 2
+            bestHit = None
+            
+            #Line we want to test with
+            line = spoke
+
+            #Block hit
+            blockHit = False
+
+
+            #Iterate through all blocks
+            for block in self.blocks:
+
+                #Determine whether a result is met
+                hitResult = U.lineRectCollision(line, block)
+
+                #If a hit has occurred
+                if hitResult[0]:
+
+                    #If the result is closer
+                    if hitResult[1] < t:
+
+                        #Reassign the hit result
+                        t = hitResult[1]
+                        blockHit = True
+
+
+            #Iterate through test players
+            for testPlayer in self.players:
+
+                #Don't check if test is the player
+                if testPlayer != player:
+
+                    #Player circle
+                    circle = [testPlayer.position, testPlayer.radius]
+
+                    #Check if hit has occurred
+                    hitResult = U.lineCircleCollision(line, circle)
+
+                    #Is there a hit, and was it closer
+                    if hitResult[0] and t > hitResult[1]:
+
+                        #If so, update bestHit and min t
+                        t = hitResult[1]
+                        bestHit = testPlayer
+                        blockHit = False
+                            
+            #Case 1
+            if not blockHit and not bestHit:
+                distances.append(0)
+                healths.append(0)
+                alliances.append(0)
+
+            #Case 2
+            if not blockHit and bestHit:
+                if bestHit.team == player.team:
+                    team = 1
+                else:
+                    team = -1
+                distances.append(1-t)
+                healths.append(bestHit.health)
+                alliances.append(team)
+
+            #Case 3
+            if blockHit and not bestHit:
+                distances.append(1-t)
+                healths.append(0)
+                alliances.append(0)
+
+        #Add player information
+        #Add player health
+        #Add whether player is on cooldown or not
+
+        countdown = self.countdowns[player]
+        if countdown <= 0:
+            can_fire = True
+        else:
+            can_fire = False
+
+        # observation = {
+        #     "distances": distances,
+        #     "healths": healths,
+        #     "alliances": alliances,
+        #     "player_health": player.health,
+        #     "can_fire": can_fire,
+        # }
+
+        observations = distances + healths + alliances
+        observations.append(player.health)
+        observations.append(can_fire)
+
+        #obs = {self.invPlayerLabels[player]: observations, 'mask': [True, True, True, True]}
+
+        return observations
+\end{mpy}
+
+
+\begin{mpy}
+    def reset(self, seed=None, options=None):
+
+        self.agents = copy(self.possible_agents)
+
+        for player in self.players:
+            player.reset()
+
+        #Reset countdowns
+        self.countdowns = {p: 0 for p in self.players}
+
+        self.timestep = 0
+
+        infos = {a: {} for a in self.agents}
+
+        observations = {a: self.getObservations(self.playerLabel[a]) for a in self.agents}
+
+        rewards = {a: 0 for a in self.agents}
+        terminations = {a: False for a in self.agents}
+        truncations = {a: False for a in self.agents}
+        
+        self.lastVals = observations, rewards, terminations, truncations, infos
+
+        return observations, infos
+\end{mpy}
+
+
+\begin{mpy}
+    def step(self, actions):
+
+        rays = {}
+
+        #Update player states
+        for i, player in enumerate(self.players, 0):
+
+            playerStringLabel = self.invPlayerLabels[player]
+            playerActions = actions[playerStringLabel]
+
+            action = {"forward": playerActions[1],
+                    "right": playerActions[2],
+                    "rot_rate": playerActions[3],
+                    "firing": playerActions[0]}
+
+            rays[player], fired = player.updatePlayerState(action, self.countdowns[player], self.dt)
+
+            if fired:
+                self.countdowns[player] = player.weapon.maxFrameCooldown
+            else:
+                self.countdowns[player] -= 1
+
+        #Handle collision
+        self.handlePlayerCollisions()
+        self.handleBlockCollisions()
+        
+        #Handle ray collisions
+        deltaDamageCredit, deltaEliminationCredit, deltaDeathCredit = self.handleRayCollisions(rays)        
+        
+
+        #Create rews
+        rewards = {a: 0 for a in self.agents}
+
+        #Attribute rewards
+        for player in self.players:
+            rew = deltaDamageCredit[player] + deltaEliminationCredit[player] * 75 - 75 * deltaDeathCredit[player] + (abs(1500 - player.position[0]) + abs(1500 - player.position[1]))/250
+            a = self.invPlayerLabels[player]
+            rewards[a] = rew
+
+        #Adjust score
+        for player in self.players:
+            deltaScore = deltaDamageCredit[player] + deltaEliminationCredit[player] * 75
+            self.scores[player.team] += deltaScore
+
+        #Truncation conditions
+        truncations = {a: False for a in self.agents}
+        if self.timesteps > self.max_timestep:
+            truncations = {a: True for a in self.agents}
+
+        #Termination condition
+        terminations = {a: False for a in self.agents}
+        for i in range(0, 2):
+            if self.scores[i] > self.max_score:
+                for player in self.players:
+                    a = self.invPlayerLabels[player]
+                    if player.team == i:
+                        rewards[a] += 200
+                    else:
+                        rewards[a] -= 100
+
+        #Get observations
+        observations = {a: self.getObservations(self.playerLabel[a]) for a in self.agents}
+
+        #Additional info - dummy
+        infos = {a: {} for a in self.agents}
+
+        #If terminated
+        if any(terminations.values()) or all(truncations.values()):
+            self.agents = []
+
+        #Increment timestep
+        self.timestep += 1
+
+        self.lastVals = observations, rewards, terminations, truncations, infos
+
+        return observations, rewards, terminations, truncations, infos
+\end{mpy}
+
+
+\begin{mpy}
+    def render(self):
+        pass
+
+    def observation_space(self, agent):
+        return self.observation_spaces[agent]
+
+    def action_space(self, agent):
+        return self.action_spaces[agent]
+
+    def last(self, something):
+        return self.lastVals
+\end{mpy}
+
 \vs
 The other thing we need to implement is the spoke detection for the player.
 

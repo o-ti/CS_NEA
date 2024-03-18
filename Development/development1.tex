@@ -1551,6 +1551,44 @@ We need to create an actual game loop. Specifically, we need to contain this gam
         return None
 \end{mpy}
 
+In the design section, I mentioned that in order to find the direction of the player's forward vector, I would first find the angle that the vector makes. However, this has several flaws, and I will now justify why I have not chosen this approach and have instead opted to use a move vectorial approach.
+
+\vs
+Firstly, we see that with the angle-based approach, if the $x$-ordinate of the player and the cursor were at the same point, the formula would break and return a division by 0 error. This is extremely bad, since this would be a major annoyance to the user, as the game would simply stop running.
+\vs
+
+Additionally, this would mean that we would need to rotate a vector which would add more operations, when a simpler method is available. On top of this, with the angle approach, we would need to use \m{if} statements to determine which quadrant the vector is and therefore what it's angle is, but we can do this immediately using vectors.
+
+\vs
+In the current formulation of the code, I have decided to opt for directly finding the vector of the player, since this will give a much more safe approach for finding the direction vector, as it avoids the problem of dividing by zero.
+
+\vs
+However, having said that, there is still a division by zero error in the code. Specifically, if the cursor of the player is directly at the centre of the screen, we get this error as an output.
+
+\vs
+\begin{mpy}
+    player1_direction = [i / dir_mag for i in player1_direction]
+ZeroDivisionError: float division by zero
+\end{mpy}
+
+Therefore, in order to address this, we will now use an \m{if} statement to prevent a division by 0. Additionally, we will now use the \m{Utility} class in order to simplify the code and make it more readable.
+
+\begin{mpy}
+            #Get direction vector
+            player1_direction = [mouse_pos[0] - self.SCREEN_DIMS[0]//2, mouse_pos[1] - self.SCREEN_DIMS[1]//2]
+
+            #Normalise direction vector
+            dir_mag = sqrt(U.dot(player1_direction, player1_direction))
+            if dir_mag == 0:
+                player1_direction = player1.initial_forward_vec
+            else:
+                player1_direction = U.mult(player1_direction, 1 / dir_mag)
+
+\end{mpy}
+
+When doing the same action again, we no longer receive a division by zero error, and therefore we have fixed the error.
+
+\vs
 We will now re-write the \m{render()} function in the \m{Player} class, since there is a lot of ineffecienies in the way it was written, and now that the \m{Utility} class is available we can make the code a lot more efficient, readable, and maintainable. Additionally, there were a lot of values that were being calculated twice, and now we can get rid of that. This produces the following code.
 \vs
 

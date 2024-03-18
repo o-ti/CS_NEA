@@ -64,7 +64,6 @@ Chess is another game that satisfies my criteria and has another benefit. Online
 \textcolor{violet}{\textbf{Ideas taken:}} There are different time controls, which can be desirable so people can play as many rounds as they want depending on how much time they have, which would be ideal in my project, as time is a major restriction for most people. Additionally, the website \emph{chess.com} has bots on it that you can play against to practice with.
 \vs
 
-
 \subsubsection{Unreal Tournament}
 
 Unreal Tournament is a series of games made by Epic Games starting in 1999 and the final game due to be released in 2017, but being cancelled before it was ever released. This final iteration was released in pre-alpha, but of course was not a final product. There is still some footage from the pre-alpha, so we will analyse that here.
@@ -422,37 +421,37 @@ Moosa is currently studying engineering at university, and therefore is quite bu
     \item Obviously, popularity of the game helps. In-game interactions are quite funny. The social element of the game is the most important for me.
 \end{enumerate}
 
-\subsection{\textcolor{red}{Analysis of Interviews}}
+\subsection{Analysis of Interviews}
 
 We will look through each question in turn.
 
-\subsubsection{\textcolor{red}{Question 1}}
+\subsubsection{Question 1}
 
 Most people said that they were not comfortable playing during the week, primarily due to the amount of work that they had to do. This means that short round times, and preferably no queue times would be necessary in order to allow people to feel more comfortable playing games as a way of relaxing during the week.
 
-\subsubsection{\textcolor{red}{Question 2}}
+\subsubsection{Question 2}
 
 One of the things that was mentioned by users was that the design must be intuitive and easy to use, but also having reliable shooting mechanics that are fun to use. Additionally, almost everyone mentioned that it had to look aesthetically pleasing.
 
-\subsubsection{\textcolor{red}{Question 3}}
+\subsubsection{Question 3}
 
 Most people were not bothered by the idea of playing against bots instead of real people, although Frank did mention that he would prefer if the bots were good otherwise it would become boring quite quickly. Moosa also mentioned the idea of playing with friends against the bots would be acceptable as well.
 
-\subsubsection{\textcolor{red}{Question 4}}
+\subsubsection{Question 4}
 
 This was received well, but ultimately, it was not as important, since there was a global timer, but most people preferred having shorter rounds.
 
 \vs
 The overall constraint that people wanted was on the amount of time that they spent playing the game. Furthermore, people said that it would be a nice feature to have but not that it had to be in the game for them to play it.
 
-\subsubsection{\textcolor{red}{Question 5}}
+\subsubsection{Question 5}
 
 Everybody was very accepting of this idea and said that it was something that they would want in the game and would be a useful feature to have. Particularly, having short rounds and then a global timer seemed to be the preferred option.
 
 \vs
 This also would help them to solve the problem of having not enough time to play during the week, since now they can limit themselves to only play for a limited amount of time.
 
-\subsubsection{\textcolor{red}{Question 6}}
+\subsubsection{Question 6}
 
 People mentioned that they would be more likely to play a game during a week if there was some kind of ranking system or a leaderboard of some kind.
 
@@ -529,7 +528,7 @@ Shorter rounds ensure that there is less at stake, and that many rounds can be p
 \vs
 Additionally, the game will include fast-paced mechanics in order to allow for more intense rounds, which will mean that players see more action in a shorter period of time. There are very very few games which are left in this niche, as many games and franchises, have made their games slower and more tactical. The mechanics within the game will be things just as dashing, sliding, etc. This will allow players to move across the map even faster, and due to the open map design this will be much more easily accomplished. 
 
-\subsubsection{\textcolor{red}{Hardware Requirements}}
+\subsubsection{Hardware Requirements}
 
 In order to run the AI on the machine, the computer must have a CUDA-enabled graphics card. This is quite a steep limitation, but it is available for most people, and so shouldn't be a problem. Furthermore, the computer must have a monitor, keyboard and mouse, because there are the inputs and outputs that are most commonly used and therefore our game will also process using these.
 
@@ -537,7 +536,7 @@ In order to run the AI on the machine, the computer must have a CUDA-enabled gra
 Additionally, it will need to have at least 4GB of RAM in order to house all of the AI models and all of the data that goes alongside the game. This is necessary, since AI is a key part of our game and we have to load it into memory otherwise the game would be completely unplayable.
 
 \vs
-\subsubsection{\textcolor{red}{Software Requirements}}
+\subsubsection{Software Requirements}
 
 In order to run the code, the user will need to have CUDA installed, which will allow the neural network to take advantage of the massively parallel architechture of the GPU. This is important as we want to minimise the amount of time it takes to use the model to produce an action. 
 
@@ -596,7 +595,6 @@ In order to be able to evaluate the success of my project, I created a list of m
 These were found using existing computational solutions and the research done by interviewing stakeholders, which we covered before.
 \vs
 
-
 \begin{center}
 \begin{longtable}[c]{|p{2.7cm}|p{6.7cm}|p{5.7cm}|}
     \hline
@@ -637,8 +635,12 @@ These were found using existing computational solutions and the research done by
     \hline
     Menu Screen UI & The menus must contain clickable buttons which are clearly labelled and will direct the user where they are supposed to. & Buttons are very intuitive to use and will mean that the user can understand what their purpose is when clicking on them. The menu must have buttons, since this is the most common way to interact with a game, and can be easily adapted for other inputs types in the future.\\
     \hline
+    Game Over Screen & Once the game is over, it will display whether the player's team won the game or not and how many points the player got in that game. & This is important, since the player will want to know whether they have won the game or not, especially if they were more focused on playing the game rather than the score.\\
+    \hline
 \end{longtable}
 \end{center}
+
+We also need to find a way to display evidence of all these things occuring in the project. In order to do this, I will record my screen and take screenshots and insert them into this document or add links to YouTube, so that the evidence can be viewed for each bit.
 
 %\clearpage
 %Remove bg from flowcharts

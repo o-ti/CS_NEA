@@ -29,7 +29,7 @@ Here is a top-down diagram showing all of the different sections of the project.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=15cm]{Design/Images/TopDownDiagram.png}
+    \includegraphics[width=17cm]{Design/Images/TopDownDiagram.png}
     \caption{A top down diagram of the project}
     \label{fig:td_diagram}
 \end{figure}
@@ -90,11 +90,14 @@ One library that may be very useful to us, is \m{Cython}. This is a Python libra
 
 \vs
 However, this does have one caveat that the game code will have to be recompiled each time I want to make a change. Therefore, it makes the most sense to compile the game code at the very end when we have finalised all of the aspects of each class. This will provide a much more stable environment to work with and mean that I am not excessively recompiling each time I want to check whether a change has worked.
+\vs
 
+Additionally, it is important to make sure that we have backed up all of our work in the case of something happening to my computer. This would allow for me to also access all of my code online, even from a browser, so that I could edit it at school as well as at home, but still working on the same codebase.
 
-\tbr
+\vs
+In order to do this, I will use GitHub as this has all of the features that I need for my prurposes. I am also able to revert all of the changes that I have made in a commit, so that if there is some breaking changes in my code, I can undo it and have another attempt at what I need to do.
 
-\subsection{\textcolor{blue}{Game States}}
+\subsection{Game States}
 
 We will need several classes in order to run the game effectively. The first one is the \m{Game} class. This will control the whole application and contains the loop from which all other functions are called. This is justified because it allows us to encapsulate the entire application into one project, and we can have modules within it. It also makes certain things easier, such as managing all of the different states.
 
@@ -125,8 +128,23 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
 \end{longtable}
 
-We will need to pass values between the game states in order to allow things like global variables to exist in the game state. This will contain things like player settings, PlayerID, and the amount of time left until the game will close itself.
+Furthermore, we can create instances of the game in each case, and then 
 
+
+\clearpage
+
+\begin{wrapfigure}{R}{0.42\textwidth}
+\vspace{-25pt}
+\begin{center}
+    \includegraphics[width=0.95\linewidth]{Design/Images/Flowchart_Game_States.jpg}
+\caption{A flowchart depicting how the states will chain together}
+\label{fig:fc_game_states}
+\vspace{-40pt}
+\end{center}
+\end{wrapfigure}
+
+\vs
+We will need to pass values between the game states in order to allow things like global variables to exist in the game state. This will contain things like player settings, PlayerID, and the amount of time left until the game will close itself.
 
 \vs
 There are a few possible \textbf{data structures} that we could use to transmit return values between different states. These are dictionaries, classes, and lists (linked lists and arrays are modelled as the same thing in Python.)
@@ -136,7 +154,11 @@ There are a few possible \textbf{data structures} that we could use to transmit 
 We will be using a dictionary to transfer these return values, because this is the most convenient and versatile format that will allow us to transfer data between states in a way that is maintainable. The other options that we have available to us is a class or a list.
 
 \vs
+Furthermore, using the appropriate keys we can also set flags, for example, if a player is not authenticated it will automatically re-direct them to the login menu, or if they haven't set a timer but are trying to create a game, it will direct them to the set timer page. This will mean that a user will always have to set a timer, but this timer could be for an extremely long period of time if they don't have any restrictions on how long they want to play for. Everytime the player moves from one menu to another we will check for whether their time is over, and if it is we will close the game down.
 
+\vs
+Additionally, we can create more links, such as from the Game Over screen to the main menu, which would then allow them to adjust their timer, or to view the leaderboard.
+\vs
 \subsection{\textcolor{red}{Game Loop}}
 
 We need to create a base of the game loop and will house all of the mechanics which are relevant to the game, such as the time left in the round, the score of each player, the position of each player, etc. This is important since we need to be able to track all of these statistics as we will need to update the user's profile after the game is over.
@@ -163,26 +185,62 @@ Firstly, we will define the processes and events which take place in the game lo
     \hline
 \end{longtable}
 
+
+
+As you can see in Figure \ref{fig:fc_game_loop}, there are a large number of actions that need to be taken in the game loop. Primarily, we need to handle all of the aspects mentioned above in some order. We will now justify the order we have done this in.
+
+\begin{wrapfigure}{R}{0.45\textwidth}
+\vspace{-15pt}
+\begin{center}
+    \includegraphics[width=0.95\linewidth]{Design/Images/Flowchart_Game_Loop.jpg}
+\caption{A flowchart depicting how the game loop processes}
+\label{fig:fc_game_loop}
+\vspace{-30pt}
+\end{center}
+\end{wrapfigure}
+
 \vs
-We will have the player on the centre of the screen. We know the dimensions of the screen we are drawing, so for efficiency, if a player is not within those dimensions, we will not draw them, but they will still exist. We can do this, by calculating their relative positions to the player, and then translating to this to where they should be on the screen. We can do this with the formula shown below.
+Firstly, we need to start each frame by gathering actions. This is because this provides the quickest response the user's actions, since the frame is rendered immediately after the user's input. Additionally, we see that if we handled collisions before the player input is given, then user could theoretically overlap partially with other objects once the game is rendered, which would look very strange. Therefore, it is important to gather inputs, handle collisions, then render the frame, and in that order.
+
+\vs
+Furthermore, we see that the score and player score are only updated after the actions have been taken for that frame. This is important because it is much easier to process the change in the scores once we have the results of our actions already in that loop. It also means that we don't need to initialise our variables outside of the main game loop, which is helpful.
+
+\vs
+Finally, we only gather observations after everything else for that frame has finished. This is relevant because it means that the state that is being observed is a valid state for the game to exist in, and therefore, the AI will observe things that are valid. For example, if no-one made a step in the next frame, the state would have to stay constant, since no collisions are occuring when the observations are made, and no more players can take damage in that state.
+
+\vs
+If the game has run out of time, we will then exit out of the game loop, and if there is still time left, we will just decrement the time left, and go through the loop again. This is best modelled by a \m{while} loop since this will provide us with a more reliable means of finding where to stop the loop, since we are only in the loop on one condition. Additionally, it would be very difficult to find out exactly how long the game would need to be if using a \m{for} loop since the time taken to render a frame could be very different.
+
+
+\vs
+In terms of rendering, the user's player will stay in the centre of the screen. We know the dimensions of the screen we are drawing, so we can use this formula to find the relative position of the player relative to the screen. We can do this, by calculating their relative positions to the player, and then translating the surface we are rendering to where they should be on the screen. We can do this with the formula shown below.
 \begin{align*}
     x_\text{screen} &= x_\text{object} - x_\text{player} + \frac{x_\text{width}}{2}\\
 \end{align*}
 
 A similar expression is produced for the $y$ direction. We can calculate these co-ordinates for each object and then rule out those where the $x$ or $y$ ordinate is not on the screen. In the initial parts of the game's development, we will ignore this, and just render the whole map.
 
-\tbc
+\vs
+Additionally, since we will also need to implement a zoom of some sort, we can add a zoom factor to the screen. However, this has to be only the first two terms. This is because the distances relative to the player are now shorter, however the actual centre of the screen must remain fixed, and therefore, our adjusted formula for a scene with a zoom of $z$, where $z < 1$ means that we are zooming out (so see more of the scene) and $z>1$ means that we have zoomed in, gives the following.
+
+\begin{align*}
+    x_\text{zoomed screen} &= z(x_\text{object} - x_\text{player}) + \frac{x_\text{width}}{2}\\
+\end{align*}
+
 
 \subsection{\textcolor{blue}{Movement}}
 
 In order to create forwards and backwards movement, we just simply apply a multiple of the forward vector to the character. When the player presses W they will be moved forward, and when the player presses S they will be moved backwards. This is justified as this is the standard for most modern games, and so will be what most people are familiar with, hence making the game easier to start learning.
-\vs
+
+
 \vs
 In order to rotate the character, a mouse will be used and the position of the cursor from the character will determine the angle which the character faces. This is justified because this will be the only way of allowing the user to accurately rotate the character where they want, since the only other common input is a keyboard, but this has binary readouts which will not allow the user as much control as they would with a mouse, which provides a much more refined output. This is then the angle at which any shooting is done, and the movement vectors will stay consistent with the direction the player is facing. The player will see a rotated player, and the world will stay in the same direction on the screen. This is justified because it allows for a much more intuitive experience. 
-\vs
+
+
 \vs
 We can find this angle using the following formula, where we use $(x_0, y_0)$ to find the centre of the screen, and $(x_1, y_1)$ to represent the position of the cursor. Then, the angle below the horizontal line is $\theta$. If $\theta$ is negative, this just represents it points above the horizontal line. We will not run the code if the cursor is at the centre since otherwise this would return an infinite value. In that case, we can manually deal with the cases. We can see that if the cursor is below the centre of the screen then we must point downwards, and vice versa. We can justify using this formula since it is optimal for our application, as it has a constant complexity, and other ways that are not formulaic must have a larger time complexity. In a game, optimisation and efficiency are very important and so it is key that we use this formula to reduce computation time per frame, which is essential, since we are going to be using this formula very frequently.
-\vs
+
+
 \vs
 \begin{align*}
     \tan \theta &= \frac{y_1 - y_0}{x_1 - x_0}\\
@@ -191,16 +249,18 @@ We can find this angle using the following formula, where we use $(x_0, y_0)$ to
 \vs
 The shift button will be used to dash which will move the player very quickly across the map, and will be put on a cool-down. This will be done by adding a sudden acceleration to the character in the direction they are currently moving, and then removing this acceleration, and decreasing the speed drastically. This effectively creates the illusion of dashing or jumping which is what we want to achieve. This is a justified 
 \vs
-\vs
+
+
 Additionally, we will need a procedure to calculate position. We will set an initial position for each player. This will be where they spawn into the game initial, and where they respawn after each death. We will need to create an initial direction vector as well, in order to preserve the orientation of the player relative to the map.
 \vs
-\vs
+
+
 There are two aspects to the development of the game. The first is the underlying framework which handles the "back-end", such as physically moving the players on the map, firing projectiles, detecting collisions, and tracking scores. Then, we have another section which handles the user's point of view of the game, such as the menus, the camera which tracks the player's character, and the UI.
 \vs
-\vs
+
+
 Hence, in the development, we must consider the back-end of the project first, since this will allow us to train AI, who don't have a front-end to the game. The reason for this will be shown in the AI section.
 \vs
-\tbr
 
 \subsection{\textcolor{red}{Weapons}}
 
@@ -216,7 +276,7 @@ There will be one parent weapon class which will contain all of the common metho
 The base class will be as follows.
 
 \vs
-\begin{tabular}{|p{4cm}|p{11.5cm}|}
+\begin{longtable}{|p{4cm}|p{11.5cm}|}
     \hline
     Attribute & Purpose\\
     \hline
@@ -229,7 +289,7 @@ The base class will be as follows.
     \hline
     Reloading & This will cause the weapon to be unable to fire a period of time, but refills the ammo in the weapon.\\
     \hline
-\end{tabular}
+\end{longtable}
 
 \subsubsection{Firing Procedure}
 
@@ -239,13 +299,26 @@ We need to be able to fire a projectile in the direction of the weapon. We set t
 We will need to create a way to detect collisions between rays and blocks and between rays and players. We will then take the closest of the two collisions to be the "dominant" collision, in other words the collision which we will need to focus on primarily. If this collision is with another player, we will need to check whether they are on the enemy team or not, and if they are then we need to deal damage and award some points to the firing player, and otherwise, we do nothing.
 
 \vs
+We will return the start and end point of the ray that is being fired , and also the damage of the ray. This is important since we need to deliver the correct amount of damage to the player.
+\vs
+
+Additionally, we want to be able to track who fired each ray, so that they can get the appropriate score. In order to do this, we will be using a dictionary, since this will allow for us to track who fired each ray, and we can also track multiple rays fired by one individual.
 
 \subsubsection{Collision Detection}
 
 As mentioned before we need a way to detect collisions between a ray and an object. There are multiple types of collisions that we need to be able to detect and handle. In this case, the primary one is a collision between a line and a circle. We will be using vectors in our program, since this will let us quickly and effectively find collisions and use vector methods and properties which are much easier to work with than Cartesian equations.
 
+\vs
+Furthermore, we will be using the \m{Utility} class which we will descibe later in order to manage the collision, since this would make it a lot easier to detect. Within this class, we will be following this post from StackExchange \cite{line_circle_collision}.
 
-\tbc
+\vs
+We can see the following from the post. We let $\underline{q}$ be the position vector of the centre of the circle, and $\underline{p_1}$ and $\underline{p_2}$ are the constraint points of the ray, with $\underline{p_1}$ being the 
+
+\begin{align*}
+    \underline{q} &= \vec{r_1}\\
+    \vec{d} &= \underline{p_2} - \underline{p_1}\\
+\end{align*}
+
 \subsection{\textcolor{red}{Database / Account Management}}
 
 To do this, there is a class in the Unreal Engine framework that will enable me to connect the game to a database. This will be stored on a central server so that no user can access it directly, and a login page will be created. This login page will take a user's player name and password, hash the password locally, and transmit this data to the server. This ensures that no plain-text passwords are being transmitted which improves security. The server will then check whether such a player exists and whether their password hash matches what is stored. If it is correct, then the user is sent to the main menu, where they will be able to select from different options.
