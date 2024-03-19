@@ -128,7 +128,7 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
 \end{longtable}
 
-Furthermore, we can create instances of the game in each case, and then 
+Furthermore, we can create instances of the states in each case, and then 
 
 
 \clearpage
@@ -159,7 +159,7 @@ Furthermore, using the appropriate keys we can also set flags, for example, if a
 \vs
 Additionally, we can create more links, such as from the Game Over screen to the main menu, which would then allow them to adjust their timer, or to view the leaderboard.
 \vs
-\subsection{\textcolor{red}{Game Loop}}
+\subsection{Game Loop}
 
 We need to create a base of the game loop and will house all of the mechanics which are relevant to the game, such as the time left in the round, the score of each player, the position of each player, etc. This is important since we need to be able to track all of these statistics as we will need to update the user's profile after the game is over.
 
@@ -228,7 +228,7 @@ Additionally, since we will also need to implement a zoom of some sort, we can a
 \end{align*}
 
 
-\subsection{\textcolor{blue}{Movement}}
+\subsection{Movement}
 
 In order to create forwards and backwards movement, we just simply apply a multiple of the forward vector to the character. When the player presses W they will be moved forward, and when the player presses S they will be moved backwards. This is justified as this is the standard for most modern games, and so will be what most people are familiar with, hence making the game easier to start learning.
 
@@ -262,7 +262,7 @@ There are two aspects to the development of the game. The first is the underlyin
 Hence, in the development, we must consider the back-end of the project first, since this will allow us to train AI, who don't have a front-end to the game. The reason for this will be shown in the AI section.
 \vs
 
-\subsection{\textcolor{red}{Weapons}}
+\subsection{Weapons}
 
 There will be one parent weapon class which will contain all of the common methods and parameters that each weapon will take, such as handling ray casting to detect collisions with objects, and then further to see whether damage should be dealt to it. From this, individual weapon classes will be created which will allow for individual weapon categories to be made and customised, which players will then be able to select at the start of a game.
 
@@ -319,7 +319,7 @@ We can see the following from the post. We let $\underline{q}$ be the position v
     \vec{d} &= \underline{p_2} - \underline{p_1}\\
 \end{align*}
 
-\subsection{\textcolor{red}{Database / Account Management}}
+\subsection{Database / Account Management}
 
 To do this, there is a class in the Unreal Engine framework that will enable me to connect the game to a database. This will be stored on a central server so that no user can access it directly, and a login page will be created. This login page will take a user's player name and password, hash the password locally, and transmit this data to the server. This ensures that no plain-text passwords are being transmitted which improves security. The server will then check whether such a player exists and whether their password hash matches what is stored. If it is correct, then the user is sent to the main menu, where they will be able to select from different options.
 
@@ -363,9 +363,8 @@ This gives us the following database structure.
 \vs
 This database structure is justified because it is in 3NF. This means that we can query and search the database effectively and maintain referential integrity across the tables. We have chosen Player ID to be a key across the entire database because this will allow us to access all user information given the ID of the player. They will also be using this to login, and so we can quickly verify their login credentials when they are trying to login.
 
-\tbc
 
-\subsection{\textcolor{red}{UI}}
+\subsection{UI}
 
 UI is essential to ensure that a user is able to quickly understand what each button does, and how to access what they need. For this reason, the only buttons present on the main menu will be "Play", "Settings", "Exit". This reduces any confusions that players may have, and allows the game to be much easier to pick up.
 
@@ -380,7 +379,7 @@ Additionally, we will now examine some different elements of the UI and justify 
 \vs
 Firstly, I have chosen Iosevka as my font, as it is a sleek, modern font which I think is quite readable, but is very unique. This adds a unique element to the game.
 
-\subsubsection{\textcolor{red}{Start Menu}}
+\subsubsection{Start Menu}
 
 The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box A in Figure \ref{fig:start_menu}
 
@@ -410,7 +409,7 @@ The box will have a background colour which will be different to the rest of the
 This will make it clear to the user that the button can be clicked, and the message also conveys that in a very obvious way. One extra thing that can be done to increase interactivity is to make the background of the button change colour upon hovering over it. This would mean that the button's boundary is much clearer.
 
 \vs
-\subsubsection{\textcolor{red}{Login Menu}}
+\subsubsection{Login Menu}
 
 \vs
 In the login menu, we want to allow the user to enter in their details and click submit to authenticate their account. This will be linked to the database handler, and so will need to provide the password to the database handler.
@@ -451,7 +450,7 @@ As shown in Box D, there will be a button at the bottom if the user has never pl
 \vs
 Additionally, the button for "Login", will be very similar to the button for the start menu, but will be a bit smaller, and will still change colour on hover in order to allow for a more intuitive experience.
 
-\subsubsection{\textcolor{red}{Main Menu}}
+\subsubsection{Main Menu}
 
 The main menu will house all of the other options that are available to the user, and so as shown in Figure \ref{fig:main_menu}, I have placed buttons adjacent to each other in a way that is intuitive. This is a standard way of laying out a menu, and is similar to what is used in \emph{Rocket League} and \emph{Overwatch}.
 
@@ -481,7 +480,7 @@ Additionally, as seen in Box F, we can see that there is still a background behi
 \vs
 Finally, we also have the exit button in Box G, which will let the player quit if they want to.
 
-\subsubsection{\textcolor{red}{Set Timer}}
+\subsubsection{Set Timer}
 
 Here, we want to set the global timer, which will shut the game off after a game is finished. This will mean that we need to set a definite time limit as dictated by the user. We will also display the time at which the user's time will be over, so that they are aware of how long they have left.
 
@@ -497,8 +496,7 @@ Here, we want to set the global timer, which will shut the game off after a game
     }}
     %bottom left corner to top right
     \annotatedFigureBox{0.225,0.8}{0.75,0.98}{H}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{I}{0.125,0.7098}%tl
-    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{J}{0.855,0.25}%tr
+    \annotatedFigureBox{0.125,0.329}{0.85,0.7098}{I}{0.125,0.7098}%tl
 \end{annotatedFigure}
 \caption{A sketch of what the set timer screen will look like}
 \label{fig:set_timer_menu}
@@ -513,9 +511,9 @@ Here we can see that there are two text boxes in Box I, which will let the user 
 In that case, it will come back to the same screen, this time with a error message showing that they entered the wrong type. If the numbers in the minutes box is over 60, we will just convert this into extra hours instead, with the remaining minutes staying as minutes.
 \vs
 
-Finally, in Box J, we can see the "Go!" button which will start the timer immediately. This will also direct them to the "Create Game" menu.
+Finally, at the bottom of the screen, we can see the "Go!" button which will start the timer immediately. This will also direct them to the "Create Game" menu.
 
-\subsubsection{\textcolor{red}{Create Game}}
+\subsubsection{Create Game}
 
 In this menu, we want to be able to set the game's difficulty. This is done using arrows, since this seems to be the most intuitive way of doing something like this. Alternatively, a plus sign and a minus sign could be used also, since those explain more clearly what is going on.
 
@@ -531,7 +529,7 @@ In this menu, we want to be able to set the game's difficulty. This is done usin
     }}
     %bottom left corner to top right
     \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.125,0.329}{0.99,0.7098}{C}{0.125,0.7098}%tl
     \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the create game screen will look like}
@@ -546,9 +544,9 @@ Additionally, there will be two rows of text, one showing the level of the team-
 \vs
 Furthermore, we have a start button allowing the user to start the game, which is fairly self-explanatory. Having this chain of screens will make the game much more intuitive to play for the user, even if they have never played it before, or seen others play it.
 
-\subsubsection{\textcolor{red}{Game Loop}}
+\subsubsection{Game Loop}
 
-In the main game loop, we still have some UI elements to draw on. Primarily, we need to draw on the time as shown in Box INSERT BOXHERE, and we can draw other elements in a more clear way, such as by writing the amount of health each player has on the player itself, which quite clearly shows what is going on.
+In the main game loop, we still have some UI elements to draw on. Primarily, we need to draw on the time as shown in Box B, and we can draw other elements in a more clear way, such as by writing the amount of health each player has on the player itself, which quite clearly shows what is going on.
 
 \vs
 
@@ -564,8 +562,7 @@ In the main game loop, we still have some UI elements to draw on. Primarily, we 
     }}
     %bottom left corner to top right
     \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
-    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+    \annotatedFigureBox{0.5,0.1}{0.855,0.235}{D}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the game loop will look like}
 \label{fig:game_loop}
@@ -576,7 +573,7 @@ In the main game loop, we still have some UI elements to draw on. Primarily, we 
 Within the game loop, we have multiple bits of information that we need to have visible. The first one is the time left in the round. This is justified since it will inform how the user will play the game.
 
 \vs
-Additionally, the score is written for both teams in Box INSERT BOX LABEL HERE. The background of the score will be written in the colour of the team. This is useful because it provides a clear way of understanding which team the score is attributed to.
+Additionally, the score is written for both teams in Box B. The background of the score will be written in the colour of the team. This is useful because it provides a clear way of understanding which team the score is attributed to.
 
 \vs
 Furthermore, the health of the player will be written on the player because it provides a quick way to see what the health of the player. On top of this, it is important to know the health of the player because the user's actions will be dependent on their own health and others health.
@@ -584,7 +581,7 @@ Furthermore, the health of the player will be written on the player because it p
 \vs
 Also, blocks will be rendered on the screen so that the player can have a landmark relative to the map, and so that they can more easily see where they are moving.
 
-\subsubsection{\textcolor{red}{Game Over}}
+\subsubsection{Game Over}
 
 \begin{wrapfigure}{R}{0.5\textwidth}
 \vspace{-20pt}
@@ -598,7 +595,7 @@ Also, blocks will be rendered on the screen so that the player can have a landma
     }}
     %bottom left corner to top right
     \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.02,0.329}{0.99,0.7098}{C}{0.04,0.7098}%tl
     \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the game over screen will look like}
@@ -612,7 +609,7 @@ Once the game is over, we want to show the player where they have ranked relativ
 \vs
 The first thing we can see is that each team has it's own columns and has it's own rows for each team members. We also track the number of kills and deaths that each player had over the game, but we could also add other statistics, such as the amount of damage done and the total score of the player.
 
-\subsubsection{\textcolor{red}{Leader Board}}
+\subsubsection{Leader Board}
 
 The leaderboard will make a call to the database handler, and will select the playerID for all players and will do this with the ascending flag set. This will allow for the data to already be sorted by the time the leaderboard screen receives it. Then, the data must be rendered to the screen as shown in Figure \ref{fig:leaderboard_menu}.
 
@@ -629,13 +626,12 @@ The leaderboard will make a call to the database handler, and will select the pl
     }}
     %bottom left corner to top right
     \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.75,0.7098}{C}{0.125,0.7098}%tl
     \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
 \end{annotatedFigure}
-\caption{A sketch of what the set timer screen will look like}
+\caption{A sketch of what the leaderboard screen will look like}
 \label{fig:leaderboard_menu}
 \end{center}
-\vspace{-25pt}
+\vspace{-30pt}
 \end{wrapfigure}
 
 This has a set format which will allow for the users to quickly see the information that is most relevant at a glance. Again, since we are making a call from SQL, we know the format we expect the data to be in, so this makes the formatting very easy.
@@ -644,11 +640,10 @@ This has a set format which will allow for the users to quickly see the informat
 We also have a back button to allow the player to go back to the state that they were in previously, since there are no further options to move on to from here. The formatting of this leaderboard is justified since it provides all of the information needed, including the rankings, the player's ID and their rating in clear tabular manner, which is easy to process visually.
 
 \vs
-\tbr
+\vs
+\vs
 
-TODO: We need to fix up the formatting of the red boxes
-
-\subsection{\textcolor{red}{AI}}
+\subsection{AI}
 
 I will be using PyTorch in order to handle the reinforcement learning aspect of the project. This is because it has extensive reinforcement learning tools, and is something which I am familiar with. Reinforcement learning works by using neural networks to create an output given a set of inputs. This is then processed and the action is taken. A reward is then assigned to this new state, and based on this, the model is adjusted through back-propagation and another step is taken. This continues millions of times, and this allows for the model to become progressively better. In order to create a game-like scenario, there will be 8 bots in two teams which will play against each other. The inputs to the bots are as follows, and all of this information will be condensed into a vector which is fed into the model.
 
@@ -708,7 +703,7 @@ From the original paper, we can see the process unfolding as follows. We firstly
 \vs
 
 
-\subsection{\textcolor{red}{Utility Class}}
+\subsection{Utility Class}
 
 There are a lot of maths related functions which we will need to use particularly in detecting collisions with players, objects and rays. In particular we will need the following to be implemented.
 
@@ -748,7 +743,7 @@ Furthermore, we need to have methods for collisions which we will be doing repea
 In order to do this, we can split the collisions into a few main components. The first one is between two players. Since the players are rendered as circles, we can use this to find how to adjust the player positions.
 
 \vs
-Here is a diagram INSERT DIAGRAM HERE, showing two players overlapping. We can immediately see a few important details. The first one is that the distance between the two player's centres must be shorter than 2 times the radius of the player, since this will mean that the players are overlapping.
+Consider two players overlapping. We can immediately see a few important details. The first one is that the distance between the two player's centres must be shorter than 2 times the radius of the player, since this will mean that the players are overlapping.
 
 \vs
 In order to resolve the collision, we need to move a player by an amount such that they will no longer be colliding, but just touching. Assuming that there is a collision, the derivation for the amount to the move the player by is as follows.

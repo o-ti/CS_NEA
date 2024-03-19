@@ -57,7 +57,7 @@ We assign the game state manager's attributes as the inputs we have defined. The
 
 \vs
 
-\subsection{\textcolor{blue}{Player}}
+\subsection{Player}
 
 We need to define a player class, a menu class and a weapon class. This will form the basis of our game.
 \vs
@@ -197,7 +197,7 @@ We will also write a rendering function, in order to remove this from the game l
 
 The player is rendered as just a circle for now, maybe later to be replaced with something else. The \m{pygame.draw} methods are from the documentation, and we convert the position to the screen position so that the player remains stationary relative to the screen and everything else moves relative to them. This will ensure a more intuitive game experience.
 
-\subsection{\textcolor{blue}{Database Handling}}
+\subsection{Database Handling}
 
 We will be using SQLite 3, since the project is small and likely to have only a few users. We are also not editing extremely frequently, only to create users, to login / register, or to update accounts after a game. Therefore, we can create a class to handle the management of the database, which we will call \m{DatabaseHandler}. We will define \m{SetupConnection()}, which will let the class instance connect to the database, and \m{CloseConnection()}, which will safely close the connection. This will ensure that we don't have issues in committing our changes to the database, and will ensure data safety.
 
@@ -317,7 +317,7 @@ Finally, we also need to define an authentication query, which will return true 
 \vs
 We have used a guard clause in order to decrease the amount of code written.
 
-\subsection{\textcolor{blue}{Utilities}}
+\subsection{Utilities}
 
 We need to be able to do many vector operations quickly without having to re-write the code consistently. This also allows us to more easily test all of these methods and ensure that they are working properly. We need to be certain that they are accurate and are providing reproducible results. To that extent, we will define a new class \m{Utility} which will handle all of these calls. A lot of these vector calculations are quite complicated so to that end they have been referenced from other resources and have been listed in this document. I have put this towards the start of the development section since, lots of other things rely on this, and it was essential to getting the rest of the code to work.
 
@@ -854,7 +854,7 @@ The result is as expected. We will also try a boundary case, where the two circl
 This is not quite as expected, however, we can see that no movement was output, and therefore, even though it says \m{True} it won't affect the gameplay in any manner.
 
 
-\subsection{\textcolor{blue}{Weapon}}
+\subsection{Weapon}
 We will give each player a weapon, of a specific class, which will have specified statistics. In order to do this, we can create a parent class \m{Weapon} and derive other weapons from it. There are a few specific attributes that we need to have for the parent class. 
 \vs
 \begin{mpy}
@@ -968,7 +968,7 @@ class Shotgun(Weapon):
         self.spread = 1
 \end{mpy}
 
-\subsection{\textcolor{blue}{Block}}
+\subsection{Block}
 
 We need to implement the \m{Block} class in order to add more interactivity with the game.
 
@@ -1006,7 +1006,7 @@ We will now examine each aspect of the code to ensure that it is valid. As menti
         pygame.draw.rect(display, self.colour, self.rect)
 \end{mpy}
 
-\subsection{\textcolor{red}{Game Class}}
+\subsection{Game Class}
 Now, we will implement the game class. This will control the main running of the game, and will contain all of the global variables. We will call an instance of this class from the \m{main.py} file, and we will run all of our other game states from this class.
 \vs
 
@@ -1160,7 +1160,7 @@ g.run()
 
 This will import the \m{Game} class and will create an instance, and run the game. What this means is that we can now draw things on the screen and run the code as one complete system. This simplifies iterative testing a lot. For now, we will take two menus, and just draw them as being different colours and switch between them to prove that the main game works.
 
-\subsection{\textcolor{red}{Menus}}
+\subsection{Menus}
 
 \vs
 We will create two classes, \m{MenuA} and \m{MenuB}. \m{MenuA} will be shaded in blue and \m{MenuB} will be in red. This will help to distinguish between the two. If we are in \m{MenuA} and we press the down key, we will move to \m{MenuB}, and if we are in \m{MenuB} and we press the up key, we want to move to \m{MenuA}. This can be done as follows.
@@ -1401,7 +1401,7 @@ We can assign the up arrow to be the keyboard event to change the state. This is
 
 This then means that we can switch to the main game loop immediately after pressing the up arrow key. We will introduce a delay, so that if the holds the arrow key for multiple frames this doesn't cause it to skip through menus. This will prevent them from accidentally skipping through important menus. Alternatively, we could use also use buttons in the menu, and only register when the user has pressed one of the mouse buttons. This will mean that we no longer need to use any delays, since the user will then have likely intentionally clicked on the button that they wanted to click on. Therefore, it would be useful to implement a button class, which we will do later.
 
-\subsection{\textcolor{red}{Button}}
+\subsection{Button}
 
 We will be implementing a \m{Button} class which we mentioned before. This will allow us to more easily use the menu system which we created in the previous section. As mentioned in the Design section, the button is just a rectangle over which we want to check if there has been any clicks. If there has been a click, then we take some action, such as leaving the game, or changing the state. This can be done as follows. We will inherit from the \m{Block} class, since this already implements some important features. Additionally, the \m{Rect} class in \m{PyGame} already implements a collide point method, so we can use that to see whether the position where the mouse has clicked is inside of the rectangle. We will write the constructor as follows.
 
@@ -1459,10 +1459,10 @@ We will now write the render function as follows.
 
 This ensures that we can now use the button object inside of the main loop. However, as of right now, it doesn't have any functionality, so we will implement a click function which will tell us when the mouse cursor is over the button. We can then find when the mouse button is clicked and if both conditions are met then the button has been clicked. In the \m{Button} class we can add a new function.
 
-\tbc
 
 
-\subsection{\textcolor{blue}{Game Loop}}
+
+\subsection{Game Loop}
 
 We will be creating a new class \m{GameLoop}, which will be running the game loop. To do this, we will be taking the \m{display} which we need to work on, the \m{GameStateManager}, and then we can assign all of the characteristics from this to the class in order to make them even easier to access.
 \vs
@@ -2189,9 +2189,7 @@ One of the other things we need to add is the collision of the rays being fired 
                             t = hitResult[1]
 \end{mpy}
 
-To check that this code works we can add a block to the map and then fire at enemies through it and then see if the enemy takes damage. As we can see in \href{https://youtu.be/6PZf1pQkwMM}{this video} and in Figure (\textcolor{red}{INSERT FIGURE HERE}), the collisions are handled appropriately, and therefore can move on.
-
-GAME LOOP 8
+To check that this code works we can add a block to the map and then fire at enemies through it and then see if the enemy takes damage. As we can see in \href{https://youtu.be/6PZf1pQkwMM}{this video}. the collisions are handled appropriately, and therefore can move on.
 
 \vs
 One of the other things we want to implement in our game is player-player collision. This is effectively just a circle-circle collision, and we have covered how this function works in the \m{Utility} class. Therefore, we can just write the following function to handle collisions. The first step after creating the outer for loop is to find the player's circle, since this is used to detect collisions and this is more efficient than recalculating it each iteration of the inner loop.
@@ -2215,7 +2213,6 @@ We can then iterate through all pairs of players and ensure that no players are 
                         player.position = U.vecAdd(player.position, hitResult[1])
 \end{mpy}
 
-GAME LOOP 9
 This can be seen in this \href{https://youtu.be/BrL2xX1aqjc}{this video}. However, there is a problem with this in that, \m{player1} cannot push any other players, but \m{player2} can push \m{player1} which is obviously not fair. This also means that the entirety of the red team can push the blue team but not the other way around. In order to observe why this is occurring, we need to look at how the function works.
 
 \vs
@@ -2523,11 +2520,8 @@ Now, we want to set the zoom to the maximum amount once the button is pressed do
 This marks the end of the first iteration of the game. In order to get a better idea of how the stakeholders felt about the game, I decided to let them play it, and see what they felt about the project.
 
 
-INSERT OTHER PEOPLE PLAYING HERE AND THEIR OPINIONS
 
-FOR FUTURE REFERENCE USE \verb|\href{}{}| around the image insert in order to link the image to a website.
-
-\subsection{\textcolor{red}{Game Loop}}
+\subsection{Game Loop}
 
 Now that we have all of the constituent classes required to add things to the map, we now need to make sure that they can interact in the way that makes sense for the game.
 
@@ -2546,4 +2540,4 @@ The first thing to do is to program the functionality of the forward vector. For
 
 \end{mpy}
 
-Testing this out we can see it works as follows INSERT SCREENSHOT HERE. However, we do see that it doesn't work if the cursor is centred at the centre of the screen as we get a dividing by zero error.
+Testing this out we can see it works as expected.

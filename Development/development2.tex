@@ -1,9 +1,11 @@
-\subsection{\textcolor{red}{Database Handling}}
+\subsection{Database Handling}
 
-Based on our previous discussion of using the \m{Utility} class through its static methods, we can also update the \m{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the references to \m{self}.
+Based on our previous discussion of using the \m{Utility} class through its static methods, we can also update the \m{DatabaseHandler} to use static methods too, which are more efficient in Python. This involves just removing the references to \m{self}, and returning the \m{connection} and \m{cursor} objects instead of attributing them to the class.
 
+\vs
+This is a justified change since it improves efficiency both in terms of memory and in terms of time, since static methods are much faster in Python, and don't require an instance to already exist, which also makes the code more readable and maintainable.
 
-\subsection{\textcolor{red}{Optimisation}}
+\subsection{Optimisation}
 
 One of the things that we will be improving in the project is optimisation. We need to be able to run many frames per second and therefore, we need to be able to optimise the code. In order to do this, we will use the package \m{Cython}. In order to do this, we will compile all of the classes that we have written in order to make them more efficient to prevent excessive recompilation.
 \vs
@@ -21,9 +23,10 @@ setup(ext_modules = cythonize("utils.pyx"))
 
 Running this code, we get some new files, namely \m{utils.c} and \m{utils.cp310-win_amd64.pyd}. This still functions exactly like a normal Python class however, and we still retain all of the functiosn that we had in the original class.
 
-\tbc
+\vs
+This is a justified change since the AI that we will be using later will need to be able to run the environment at very high speeds, and for that we need to able to 
 
-\subsection{\textcolor{red}{Game Loop HUD}}
+\subsection{Game Loop HUD}
 
 The Heads-up Display, will just be showing the score for each team, and the total amount of time left in the game. This will be done by tracking the amount of time that has passed in seconds, and then writing it to the screen using the button class we created. The score will be created using two more buttons on either side.
 
@@ -105,7 +108,7 @@ This code will produce the following output. As you can the score updates based 
 With this done, we can now return the total score for each team at the end of the game.
 
 
-\subsection{\textcolor{red}{Environment}}
+\subsection{Environment}
 
 The first thing we need to do before starting doing any AI is to create the environment. This involves converting our game loop into something that can be run by a program which is then used to train the AI.
 
@@ -617,7 +620,7 @@ Finally, we have some extra functions that we need to set, but these are fairly 
 \end{mpy}
 
 
-\subsection{\textcolor{red}{Training and AI}}
+\subsection{Training and AI}
 
 We will be using the standard implementation of PPO in the official PyTorchRL tutorials and documentation. We will modify this in order to use this in a IPPO context. Another change compared to the rest of this project is that we will be using Jupyter Notebooks for the AI training. This is because it is much more convenient that using a Python script, since we can re-run small sections of the code without having to re-run the entire script. This is useful since Python is an interpreted language, and AI scripts can take a very long time to run, and so if there is some problem later on in the program, we could potentially lose a lot of progress. However, using these Notebooks means that we can add code blocks on to the end and can re-run them if errors happen.
 
@@ -639,8 +642,7 @@ cuda:0
 \vs
 This confirms that we have indeed used the GPU. We will use this in all of our scripts in order to ensure that we have efficient code execution and improve performance. It also means that if there is a problem in the model when running it initially, we will not be too far behind and can retrain relatively easily.
 \vs
-
-The very first thing to do is to import all of the libraries that we need in order to train our agent. This is done as follows.
+This code takes some inspiration from \cite{multi_ppo} since the library is very new and this is the closest thing to a minimal working example that I could find. The very first thing to do is to import all of the libraries that we need in order to train our agent. This is done as follows.
 
 \begin{mpy}
 #Torch
@@ -738,43 +740,507 @@ team0_policy_module = TensorDictModule(
 Finally, we want to wrap this in a \m{ProbabilisticActor}. This will mean that the \m{loc} and \m{scale} that we produced earlier will now be used in a \m{TanhNormal} distribution (a combination of a $\tanh$ distribution and a normal distribution). This will produce a final action for the team.
 
 \vs
-Now, we want to replicate all of this but now for the second team. This is so that we can get two 
-
-
-\subsection{\textcolor{red}{Game Loop}}
-
+Now, we want to replicate all of this but now for the second team. This is so that we can get two teams which will play against each other. With this, we can now create the critic networks. This produces something known as a state. This is a numerical value assigned to each set of observations and reflects how advantageous the state is. In \m{TorchRL}, this is done as follows.
 
 \vs
-We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway.
-
 \begin{mpy}
-
-
-
+team1_critic_net = MultiAgentMLP(
+    n_agent_inputs = env.observation_spec["team1", "observation"].shape[-1],
+    n_agent_outputs=1,
+    n_agents=3,
+    centralised=True,
+    share_params=True,
+    device=device,
+    depth=2,
+    num_cells=128,
+    activation_class=torch.nn.Tanh,
+).to(device)
 \end{mpy}
 
-We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out. We can do this follows. The score, the damage dealt, the eliminations and the deaths will all be passed to the game over menu, which will then be able to render everything. We want to display the user's score and how they performed against the enemy team. We can track the game length using frames once more. We can find the total lengths of the games in frames by tracking the numbers of second the game should last and the frame rate.
+We can then wrap this in a \m{TensorDictModule} as we did before for the policy. This is done as follows.
 
 \begin{mpy}
-
-
+team0_critic = TensorDictModule(
+    module=team0_critic_net,
+    in_keys = [("team0", "observation")],
+    out_keys = [("team0", "state_value")],
+).to(device)
 \end{mpy}
 
-Now that the values have been returned we can decompose them and render the text to the screen. The code for the game over menu appears as follows.
-
+The input to the critic is the observation, and the output is the value of the state, and we use the key lists to specify where we are taking data from and where we are writing the data. We will now use the \m{ClipPPOLoss} in order to find some loss. This is used to find something to minimise and then this will allow for the teams to become better at playing the game. This is depicted in the original paper \cite{ppo}.
 
 \begin{mpy}
-
-
-
+team0_loss_module = ClipPPOLoss(
+    actor_network=team0_policy,
+    critic_network=team0_critic,
+    clip_epsilon=clip_epsilon,
+    entropy_coef=entropy_eps,
+    normalize_advantage=False,
+)
 \end{mpy}
 
-
-We can write the time left and the team scores on the screen whilst the game is running. We will set the round time to be short so that we can observe the game ending due to running out of time. We will be using the button class once more to write text to the screen and just update the text on the \m{Button} every tick.
+Additionally, we need to set the keys so that the module knows where to get the information from and where to write it.
 
 \begin{mpy}
-
-
+team0_loss_module.set_keys(
+    reward=env.reward_keys[0],
+    action=env.action_keys[0],
+    sample_log_prob=("team0", "sample_log_prob"),
+    value=("team0", "state_value"),
+    done=("team0", "done"),
+    terminated = ("team0", "terminated"),
+)
 \end{mpy}
 
-{\huge \textcolor{red}{INSERT FIGURE AND VIDEO HERE}}
+We now need to set our value estimator as GAE, which is the advantage computation algorithm that PPO uses.
+
+\begin{mpy}
+team0_loss_module.make_value_estimator(
+    ValueEstimators.GAE, gamma=gamma, lmbda=lmbda,
+)
+team0_GAE = team0_loss_module.value_estimator
+
+#Set the optimise
+team0_optim = torch.optim.Adam(team0_loss_module.parameters(), lr)
+\end{mpy}
+
+We also set the optimiser, which is the object which will take the parameters of our network, and then perform backpropagation in order to make the network more performant. Now, we will join the two policies together in order to make the data easier to work with. This is done as follows.
+
+\begin{mpy}
+policy = TensorDictSequential(
+   team0_policy,
+   team1_policy,
+)
+\end{mpy}
+
+Finally, we will use a \m{SyncDataCollector} which will let us gather data from the policies and the environment, which will allow us to rollout the policy and collect all of the observations, rewards, and dones from it.
+
+\begin{mpy}
+collector = SyncDataCollector(
+    env,
+    policy,
+    device=device,
+    storing_device=device,
+    frames_per_batch = frames_per_batch,
+    total_frames=total_frames,
+)
+\end{mpy}
+
+The replay buffer is then used to actually store the frames and then we can sample from these so that we can train the agents on them.
+
+\begin{mpy}
+replay_buffer = ReplayBuffer(
+    storage=LazyTensorStorage(
+        frames_per_batch,device=device,
+    ),
+    sampler=SamplerWithoutReplacement(),
+    batch_size=minibatch_size,
+)
+\end{mpy}
+
+Now, we can write the training loop. We start it by setting the groups in the environment, which is just the teams from before. Furthermore, we need to set the losses, the GAE computations and the optimisers for each team.
+
+\begin{mpy}
+episode_reward_mean_list = []
+
+groups = ["team0", "team1"]
+
+losses = {"team0": team0_loss_module, "team1": team1_loss_module}
+gaes = {"team0": team0_GAE, "team1": team1_GAE}
+optims = {"team0": team0_optim, "team1": team1_optim}
+\end{mpy}
+
+Now, we need to iterate through the data in the collector, so that we can train on it. Next, we will expand the data so that we can more easily access it and train on it.
+
+\begin{mpy}
+for tensordict_data in collector:
+    tensordict_data.set(
+        ("next", "team0", "done"),
+        tensordict_data.get(("next", "done"))
+        .unsqueeze(-1)
+        .expand(tensordict_data.get_item_shape(("next", env.reward_keys[0]))),
+    )
+    tensordict_data.set(
+        ("next", "team0", "terminated"),
+        tensordict_data.get(("next", "terminated"))
+        .unsqueeze(-1)
+        .expand(tensordict_data.get_item_shape(("next", env.reward_keys[0]))),
+    )
+
+    tensordict_data.set(
+        ("next", "team1", "done"),
+        tensordict_data.get(("next", "done"))
+        .unsqueeze(-1)
+        .expand(tensordict_data.get_item_shape(("next", env.reward_keys[1]))),
+    )
+    tensordict_data.set(
+        ("next", "team1", "terminated"),
+        tensordict_data.get(("next", "terminated"))
+        .unsqueeze(-1)
+        .expand(tensordict_data.get_item_shape(("next", env.reward_keys[1]))),
+    )
+\end{mpy}
+
+We also need to iterate through the groups and then train each one. Specifically, we can't train simultaneously, so for each team, we are going to exlude the data from the other team, and then use the remainder to train.
+
+\begin{mpy}
+    for group in groups:
+
+        if group == "team0":
+            excluded_group = "team1"
+        else:
+            excluded_group = "team0"
+
+        loss_module = losses[group]
+        gae = gaes[group]
+        optim = optims[group]
+\end{mpy}
+
+We use the dictionary from before to set the losses, GAE and optimiser for this specific group. After that is done, we need to compute the advantages, but to do this, we need to not have any gradient set up. Therefore, we use the \m{.no_grad()} function here.
+
+\begin{mpy}
+        with torch.no_grad():
+            gaes[group](
+                tensordict_data,
+                params=loss_module.critic_network_params,
+                target_params=loss_module.target_critic_network_params,
+            )  # Compute GAE and add it to the data
+    
+        data_view = tensordict_data.reshape(-1)
+        replay_buffer.extend(data_view)
+\end{mpy}
+
+We also added the new data from the next iteration to the replay buffer, so that we can train on the data. We will then iterate for the number of epochs we want to use, and then for the number of optimisation steps we want to take in each epoch.
+
+\begin{mpy}
+        for _ in range(num_epochs):
+            for _ in range(frames_per_batch // minibatch_size):
+                subdata = replay_buffer.sample()
+                subdata.exclude((excluded_group))
+                loss_vals = loss_module(subdata)
+\end{mpy}
+
+We use \m{.exlude()} in order to get rid of the data from the group we are not training in this iteration, and then compute the loss values needed. We then add the loss values we have, and then do back-propagation in order to find the gradients in the network.
+
+\begin{mpy}
+                loss_value = (
+                    loss_vals["loss_objective"]
+                    + loss_vals["loss_critic"]
+                    + loss_vals["loss_entropy"]
+                )
+    
+                loss_value.backward()
+\end{mpy}
+
+We will then clip the gradients in order to ensure that we don't have a problem with exploding gradients or excessive changes in the policy. This is also partially done with PPO, but this is anoter way to ensure it. The optimisers then update the network, and then we reset it for the next iteration.
+
+\begin{mpy}
+                torch.nn.utils.clip_grad_norm_(
+                    loss_module.parameters(), max_grad_norm
+                )  # Optional
+    
+                optim.step()
+                optim.zero_grad()
+                
+    collector.update_policy_weights_()
+\end{mpy}
+
+This takes a while to train, and once it is trained, we can save it using the following.
+
+\begin{mpy}
+torch.save(team0_policy, "team0_v2.pt")
+torch.save(team1_policy, "team1_v2.pt")
+\end{mpy}
+
+This will allow us to then later load the agents from another file. In order to do this, we need to copy most of the code, except for the critic networks, the loss modules, the optimisers and the training step. What we really need to do is to reset the environment and gather observations, and then to take the input and then use it to generate the action for the next step. We can load the agents as follows.
+
+\begin{mpy}
+team0_policy = torch.load("team0_v2.pt")
+team1_policy = torch.load("team0_v2.pt")
+\end{mpy}
+
+Then, we can use this as follows.
+
+\begin{mpy}
+output = policy(env.reset())
+
+for i in range(6000):
+    output = policy(env.step(output))
+\end{mpy}
+
+In the environment, I added a print statement every time damage was dealt to the enemies, and every time a kill was confirmed.
+
+\vs
+We can see the following output.
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/ai_2_testing.png}
+        \caption{A screenshot of the testing of the AI agents}
+        \label{fig:ai_2_testing}
+\end{figure}
+
+We can see that there is a large amount of action taking place in the environment suggesting that the agents are trained well and that they are able to play against each other.
+
+\vs
+In order to test for our success criteria related to how many kills we can get in a game, we can set the length to be 72000, the number of frames which we can get in 5 minutes of gameplay. This has the following output, which shows us that the agents can interact with the game properly, as seen in \ref{fig:ai_3_testing}.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/ai_3_testing.png}
+        \caption{A screenshot of the testing of the AI agents for a full-length game}
+        \label{fig:ai_3_testing}
+\end{figure}
+
+This input is heavily cropped due to the lack of space in this screenshot. The total output was actually over 170 lines long, and was processed as follows.
+
+\begin{mpy}
+output = """damage confirmed!
+damage confirmed!
+kill confirmed!
+damage confirmed!
+damage confirmed!
+...
+...
+...
+damage confirmed!
+damage confirmed!
+damage confirmed!
+damage confirmed!
+damage confirmed!
+kill confirmed!
+damage confirmed!"""
+
+elims = 0
+damage = 0
+for i in output:
+    if i[0] == "k":
+        elims += 1
+    if i[0] == "d":
+        damage += 1
+
+>>> elims
+33
+>>> damage
+140
+\end{mpy}
+
+This means that over the span of 5 minutes we had 33 eliminations and 140 successful hits. This equates to just over 6 eliminations per minute which is just shy of the goal that was set in our success criteria.
+
+The next thing to do is to integrate the AI with the game. To do this, we need to create a dummy environment, so that we can create the models in the \m{GameLoop} class. Therefore, we can get the following. In order to do this, we can copy all of the code from above, and we can simply take the observations from the game loop, and then we can output the actions and handle them as we did in the environment.
+
+\vs
+This code has been omitted from here as it is identical to the code above.
+
+\subsection{Game Loop}
+\vs
+We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway. This will run the game for 6000 frames, which is equivalent to 25 seconds of gameplay.
+
+We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out, we dealt with the timer in the previous iteration. We know the score of the teams, so we just need to set a limit. This is fairly standard.
+
+\begin{mpy}
+            for i in range(0, 2):
+                if self.scores[i] > self.max_score:
+                    running = False
+\end{mpy}
+
+We also need to return the player scores and the team scores to our next state. This is in the form of a dictionary as follows.
+
+\begin{mpy}
+        self.gameStateManager.setState("game_over")
+        return {"team_scores": self.scores, "player_scores": self.player_scores}
+\end{mpy}
+
+This at the end, after the \m{while} loop is over. This leads into the game over screen. This will simply display whether the player has won or not. The code for the game over screen is as follows.
+
+\begin{mpy}
+#Directed from the game loop
+class GameOver(Menu):
+
+    def __init__(self, display, gameStateManager):
+
+        #Cyan
+        cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]-200]
+
+        length0, length1 = 200, 120
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        text = "Back"
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.button = Button(button_centre, length0, length1, text, rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+
+    def specificMethods(self, keys, events, returnValues):
+        #Initialise variables
+        inPos = False
+
+        #Render the button
+        self.button.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over button
+        inPos = self.button.checkForClick(pos)
+
+        #If button clicked, go to game loop
+        if self.clicked and inPos:
+            self.gameStateManager.setState('main_menu')
+            self.running = False
+
+        #Vicory or defeat
+
+        if returnValues["team_scores"][0] > returnValues["team_scores"][1]:
+            text = "Victory!"
+        else:
+            text = "Defeat!"
+
+        vic_text_surface, vic_text_rect = text_font.render(text, 
+            fgcolor=(255, 255, 255), bgcolor=(0, 0, 255))
+
+        vic_text_rect.center = U.mult(self.SCREEN_DIMS, 0.5)
+        pygame.draw.rect(self.display, (0, 0, 255), vic_text_rect)
+        self.display.blit(vic_text_surface, vic_text_rect)
+
+        #pygame.image.save(self.display, "game_over.png")
+        
+        return returnValues
+\end{mpy}
+
+We can see that this works as follows. When we have won the game, we get this message.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/game_over_victory.png}
+        \caption{A screenshot of the testing of the game over menu when the user has won}
+        \label{fig:game_over_vic}
+\end{figure}
+
+Once we have lost the game, we get this message.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/game_over_defeat.png}
+        \caption{A screenshot of the testing of the game over menu when the user has lost}
+        \label{fig:game_over_def}
+\end{figure}
+
+Clicking the back button will take us to the main menu screen, which we will now implement. This will lead into all of other menus. This is written as follows.
+
+\begin{mpy}
+#Directed from the start page
+class MainMenu(Menu):
+    def __init__(self, display, gameStateManager):
+
+        #Cyan
+        cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, 400]
+
+        length0, length1 = 400, 200
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.setTimerButton = Button(button_centre, 300, 120, "Set Timer", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.createGameButton = Button([self.SCREEN_DIMS[0]//2, 550], 450, 120, "Create Game", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.leaderboardButton = Button([self.SCREEN_DIMS[0]//2, 700], 550, 120, "Leaderboard", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.exitButton = Button([self.SCREEN_DIMS[0]//2, 880], 200, 120, "Exit", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+
+        self.momentumLogo = pygame.transform.scale(pygame.image.load("assets/momentum_icon.png").convert_alpha(), (200, 200))
+
+    def specificMethods(self, keys, events):
+
+
+        #Initialise variables
+        inPos = False
+
+        #Render text
+        #text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
+        #text_rect.center = (self.SCREEN_DIMS[0] // 2, self.SCREEN_DIMS[1] // 2)
+
+        #Blit to surface
+        #self.display.blit(text_surface, text_rect)
+
+        #Render the button
+        self.setTimerButton.render(self.display, self.dt)
+        self.createGameButton.render(self.display, self.dt)
+        self.leaderboardButton.render(self.display, self.dt)
+        self.exitButton.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over button
+        inPosTimer = self.setTimerButton.checkForClick(pos)
+        inPosGame = self.createGameButton.checkForClick(pos)
+        inPosLb = self.leaderboardButton.checkForClick(pos)
+        inPosExit = self.exitButton.checkForClick(pos)
+
+        #If button clicked, go to timer
+        if self.clicked and inPosTimer:
+            self.gameStateManager.setState('set_timer')
+            self.running = False
+
+        #If button clicked, go to game loop
+        if self.clicked and inPosGame:
+            self.gameStateManager.setState('game_loop')
+            self.running = False
+
+        #If button clicked, go to leaderboard
+        if self.clicked and inPosLb:
+            self.gameStateManager.setState('leaderboard')
+            self.running = False
+
+        #If exit, exit the game
+        if self.clicked and inPosExit:
+            self.running = False
+            pygame.quit()
+            sys.exit()
+
+        #Render logo
+        self.display.blit(self.momentumLogo, (self.SCREEN_DIMS[0]//2 - 100, 100))
+        
+        return None
+\end{mpy}
+
+This code follows the same structure as the start screen from the previous iteration. We have also added the logo to the screen, however it does merge quite a lot with the background colour.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/main_menu.png}
+        \caption{A screenshot of the main menu in the game}
+        \label{fig:main_menu}
+\end{figure}
+
+Clicking on the buttons they lead to the appropriate menu as described in the design section. Additionally, we can get the inputs as follows.
+

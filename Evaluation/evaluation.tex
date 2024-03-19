@@ -1,20 +1,27 @@
-\subsection{\textcolor{red}{Usability Testing}}
+\subsection{Usability Testing}
 
-In order to evaluate how effective my final project was, I decided to let two of my stakeholders test out the game. I let them play for two rounds, and then interviewed them on how they found the experience. I decided to create some questions to ask them, and I have shown why I asked them these questions below.
+In order to evaluate how effective my final project was, I decided to let one of my stakeholders, Sanjay, test out the game. I let them play for two rounds, and then interviewed them on how they found the experience. I decided to create some questions to ask him, and here are the responses.
 
-\tbc
+\begin{enumerate}[label=\arabic*)]
+    \item \textbf{Was the experience intuitive?} Yes, I found the game to be easy to understand.
+    \item \textbf{Was the gameplay interesting?} The gameplay was a bit slow at first, but I am starting to warm up to it.
+    \item \textbf{Was the game easy to pick up?} I think there wasn't much explanation of the controls within the game, which would have really helped in understand how to control the character, but it was relatively simple once I understood it.
+    \item \textbf{Were the menu screens easy to navigate?} The menus were labelled clearly and the buttons worked as expected.
+    \item \textbf{Is there anything you would change about the game?} I think letting the user know the Elo of the team-mates and opponents would have been helpful.
+    \item \textbf{Would you play this game during the week?} I think having a feature which lets me control the time is useful, but I think I would have to better at the game to really want to play it more often.
+\end{enumerate}
 
-\subsection{\textcolor{red}{Reviewing Success Criteria}}
+\subsection{Reviewing Success Criteria}
 
 \begin{center}
 \begin{longtable}[c]{|p{4.5cm}|p{4cm}|p{5.7cm}|}
     \hline
-    Description & Met? & Discussion\\
+    Description & State & Discussion\\
     \hline
     \hline
-    Gameplay Length & Yes & The user is able to choose how long they would like to play for in the Set Timer menu, and the game closes after that amount of time and the game loop has finished running.\\
+    Gameplay Length & Success & The user is able to choose how long they would like to play for in the Set Timer menu, and the game closes after that amount of time and the game loop has finished running.\\
     \hline
-    Movement & Yes & The player is able to move using their keyboard and mouse and collisions are handled correctly between players, blocks and rays in a consistent manner.\\
+    Movement & Success & The player is able to move using their keyboard and mouse and collisions are handled correctly between players, blocks and rays in a consistent manner.\\
     \hline
     Player Login & Success & The player is able to login and their account is updated automatically at the end of a round.\\
     \hline
@@ -30,7 +37,7 @@ In order to evaluate how effective my final project was, I decided to let two of
     \hline
     Menu System & Success & The user is able to navigate through the game using the menus and the buttons are clearly labelled with their purpose.\\
     \hline
-    Difficulty Selection & Success & The user is able to select the difficult of opponent that they would like to play against.\\
+    Difficulty Selection & Partial & The user is not able to select the difficult of opponent that they would like to play against, however the weights of the agents have been saved, and the menu infrastructure is in place to allow this to occur.\\
     \hline
     Game Loop HUD & Success & The HUD shows the team scores and also show the user the time left in the game. This is kept up to date every single frame.\\
     \hline
@@ -41,19 +48,96 @@ In order to evaluate how effective my final project was, I decided to let two of
 \end{longtable}
 \end{center}
 
-\tbc
+We will now discuss the behaviours inside of some of these success criteria.
 
-\subsection{\textcolor{red}{Un-met Criteria}}
+\subsubsection{Weapon System}
 
-\tbc
+The weapons were able to be fired and behaved differently according to the behaviours laid out in the class files for them. It is easy to modify their behaviour and quickly test it out in order to see how this will affect gameplay. This improves maintainability and will help in future iterations if the stakeholders decide that certain weapons are too powerful.
+
+\vs
+Due to my modular approach, the code is efficient and is easily expandable to new weapons, and can be updated to handle things like semi-automatic weapons, in which the mouse can be held down constantly
+
+\vs
+Additionally, the zoom feature was able to show the user the environment around them in a capcity that was relevant to what they would need to see to effectively use their weapon (ie. they could see the blocks and enemy players around them).
+
+\vs
+As seen here, we can observe the zoom feature and the weapons interacting with other players to inflict damage. This is shown in the Figure below. In Box A, we can see that the player health is written in the boxes, and that in Box B, the HUD shows the score and the times.
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/eval_weapon.png}}
+    \annotatedFigureBox{0.185,0.7107}{0.264,0.9007}{A}{0.185,0.7107}%bl
+    \annotatedFigureBox{0.339,0.8904}{0.683,1.0004}{B}{0.339,0.8904}%bl
+\end{annotatedFigure}
+
+\subsubsection{Database System}
+
+As we can see here, new users have been created and we can access all of their information as seen through DB Browser for SQLite3.
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_1.png}}
+\end{annotatedFigure}
 
 
-\subsection{\textcolor{red}{Further Development}}
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_2.png}}
+\end{annotatedFigure}
+
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_3.png}}
+\end{annotatedFigure}
+
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_4.png}}
+\end{annotatedFigure}
+
+As we can see from these images the players have been successfully added to all of the tables as expected.
+
+\subsubsection{Inputs}
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/inputs.png}}
+\end{annotatedFigure}
+
+We can see here an input overlay over the video demonstrating that the game is able to take inputs.
+
+
+\subsubsection{Menu Screens}
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/main_menu.png}}
+\end{annotatedFigure}
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/game_over_victory.png}}
+\end{annotatedFigure}
+
+\begin{annotatedFigure}
+    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/game_over_defeat.png}}
+\end{annotatedFigure}
+
+This is all as expected, and the screens are able to lead from one to the next as laid out in the Design specification.
+
+\subsection{Un-met Criteria}
+
+One of the criteria that was partially unmet was the number of eliminations per game criteria. My original value was 9 eliminations per minute, however this was too steep of an ask, particularly due to the limited reload times of the weapons. However, I was still able to get 33 eliminations in 5 minutes worth of testing, which is still close to my original target. I was completely hardware limited in this regard, and if I had more time to train and train larger models, I would potentially have gotten better results. However, this is one that is unlikely to be immediately noticeable to the end user.
+
+\vs
+Additionally, the game was not as graphically appealling as it could have been. This was something that I didn't focus on as much since there are no marks in the coursework for having nice graphics, and therefore it was not a priority. In the future, I would consider using a more suitable colour palette and doing more prototyping with the design before-hand to get an idea of what stakeholders would like to see.
+
+\vs
+On top of this, the multiplayer aspect was never really included. This is primarily because it is a lot of work to do securely and efficiently in PyGame, and it was much more suitable to just focus on the AI aspect, since they would be able to effectively replace human players in that regard, and I still had the competitive aspect of the game in the form of the leaderboard and ratings.
+
+\vs
+Finally, user's weren't able to control how many rounds there were in a game, or how long each round was, but I deemed that it was easier for the stakeholders to understand having constant length rounds, and then a fixed timer that would forcefully quit the game once the time is over.
+
+\subsection{Further Development and Future Iterations}
 
 To develop my project further, I would consider changing the types of observations and monitoring how those would impact the agent's ability to play the game. Having different observation types would allow for a more diverse range of agents and seeing how these interact would allow me to choose the best type to use in the future.
 
 \vs
-Beyond this, I would also train the agents for longer, since this would allow them to converge on a better solution which would mean that they are able to play more effectively.
+Beyond this, I would also train the agents for longer, since this would allow them to converge on a better solution which would mean that they are able to play more effectively. Converging on a solution would mean that it is difficult to become better at the game, and usually agents that are trained using self-play are able to become super-humanly good at the game which would definitely pose a challenge for people and would keep the game fresh. This would be something that is usually only achieved with large amounts of computing power and times, such as using specialised GPUs designed only for AI and large data training such as the NVIDIA A100.
 
 \vs
 One of the other things that would be interesting to the players would be a menu to select the strenght of the bots that they are playing against and playing with. This would allow them to find a setting which they are comfortable in, or one that is extremely difficult as a challenge, which can be very rewarding. This would keep the game experience much more fresh, and would be very exciting for the player.
@@ -63,9 +147,9 @@ On top of this, if the game were to be put into a real production setting, then 
 
 \vs
 
-\tbc
+Additionally, the layout on some things could have been improved. For example, in the leaderboard menu, it would have been nice to implement a scrolling feature so that users can see more than just the first 5 players. This would have allowed for a more interactive user experience, and therefore would allow for a much more refined UI.
 
-\subsection{\textcolor{red}{Maintenance Issues}}
+\subsection{Maintenance Issues}
 
 One of the problems that I faced during the development of my NEA was lacking an understanding of how reinforcement learning libraries I was using worked, and how they handled inputs and outputs. If I understood this from before, it would have made the game much easier to program and convert into an environment.
 
@@ -79,9 +163,7 @@ Furthermore, there is a lot of conventions that were followed in the code that w
 Furthermore, since I used \m{Cython}, everytime the game code is changed, that change needs to be reflected in the compiled versions of the game code. However, I still believe that using this package was a net positive for the project, since it allowed for a much more performant version of the game, and static code that was not changing much was optimised by only needing to be compiled once. This significantly boosted the project's speed, and would mean that nicer graphics could eventually become a feature, if more improvements were to be made.
 
 
-\tbc
-
-\subsection{\textcolor{red}{Limitations of the Solution}}
+\subsection{Limitations of the Solution}
 
 Within my solution, I was unable to make the graphics much more visually appealing, but they were clear. The reason for this was that the code was not able to run at very high frame-rates due to the large amount of computation that was needed. In order to make this better in the future, I could port the game to a faster language in a framework that handles all of this, like Unity or Unreal Engine. I did discuss previously why these were not as suitable, but with more experience, I believe that those frameworks would allow for a much more performant game which was more appealing to new players.
 
@@ -89,11 +171,11 @@ Within my solution, I was unable to make the graphics much more visually appeali
 Furthermore, I was limited by the fact that I had hardware limitations. I was only able to use my desktop computer, which meant that I was limited in how much processing power was available to me. With better computer hardware, I could have trained more iterations of the agents which would have made them much more capable.
 
 \vs
-Despite this
+Despite this, I was able to produce a functioning AI that was able to play my game successfully and partially met my success criteria's expectations.
 
-\tbc
+\subsection{Developments on Limitations}
 
-\subsection{\textcolor{red}{Developments on Limitations}}
+As mentioned before, the main limitations were hardware and time. With better hardware it would have been possible to train a more capable model for a larger number of iterations, and with more time a more aesthetically pleasing game could have been built.
 
-
-\tbc
+\vs
+Additionally, if I were to redo an aspect of the game, I would rebuild the input system so that it works more in line with the actions that the AI can take. This would significantly help in trying to merge the AI and the original game together.

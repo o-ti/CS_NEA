@@ -2372,6 +2372,8 @@
     <bcf:citekey order="9" intorder="1">pygame_mouse_clicks</bcf:citekey>
     <bcf:citekey order="10" intorder="1">openai_emergent_tool</bcf:citekey>
     <bcf:citekey order="11" intorder="1">rectangle_circle_collision</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">multi_ppo</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">ppo</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">
