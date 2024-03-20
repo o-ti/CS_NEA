@@ -5,6 +5,9 @@ Based on our previous discussion of using the \m{Utility} class through its stat
 \vs
 This is a justified change since it improves efficiency both in terms of memory and in terms of time, since static methods are much faster in Python, and don't require an instance to already exist, which also makes the code more readable and maintainable.
 
+\vs
+Another thing we need to do is to add a function to get information for the leaderboard. This is important since it will allow us to 
+
 \subsection{Optimisation}
 
 One of the things that we will be improving in the project is optimisation. We need to be able to run many frames per second and therefore, we need to be able to optimise the code. In order to do this, we will use the package \m{Cython}. In order to do this, we will compile all of the classes that we have written in order to make them more efficient to prevent excessive recompilation.
