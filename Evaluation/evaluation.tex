@@ -63,51 +63,87 @@ Additionally, the zoom feature was able to show the user the environment around 
 \vs
 As seen here, we can observe the zoom feature and the weapons interacting with other players to inflict damage. This is shown in the Figure below. In Box A, we can see that the player health is written in the boxes, and that in Box B, the HUD shows the score and the times.
 
+\begin{figure}[h!t]
+
 \begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/eval_weapon.png}}
+    {
+    \setlength{\fboxsep}{0pt}%
+    \setlength{\fboxrule}{1pt}%
+    \fbox{
+    {\includegraphics[width=0.9\linewidth]{Evaluation/Images/eval_weapon.png}}
+    }}
     \annotatedFigureBox{0.185,0.7107}{0.264,0.9007}{A}{0.185,0.7107}%bl
     \annotatedFigureBox{0.339,0.8904}{0.683,1.0004}{B}{0.339,0.8904}%bl
 \end{annotatedFigure}
+\caption{A screen capture of the game loop}
+\label{fig:game_loop_ui}
+\end{figure}
+
 
 \subsubsection{Database System}
 
 As we can see here, new users have been created and we can access all of their information as seen through DB Browser for SQLite3.
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_1.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/db_1.png}
+        \caption{A screen capture of the MMR table in the database}
+        \label{fig:db_mmr}
+\end{figure}
 
+Figure \ref{fig:db_mmr} shows the MMR table, and shows that we were able to update MMR using the \m{DatabaseHandler} class. DB Browser always shows the primary key as the left-hand column, and therefore, we know that the \m{PlayerID} field is the primary key here.
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_2.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/db_2.png}
+        \caption{A screen capture of the Matches table in the database}
+        \label{fig:db_matches}
+\end{figure}
 
+Figure \ref{fig:db_matches} shows the matches table, and as before, the \m{PlayerID} is the primary key. Additionally, we can see the fields representing whether the match is won, and we always update when the game is played.
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_3.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/db_3.png}
+        \caption{A screen capture of the Player table in the database}
+        \label{fig:db_player}
+\end{figure}
 
+Figure \ref{fig:db_player} shows the player details, such as the ID, the email and the password. One of the things that I could have improved on was to change the password from being stored in plain text to being stored as a hash.
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/db_4.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/db_4.png}
+        \caption{A screen capture of the PlayerXP table in the database}
+        \label{fig:db_player_xp}
+\end{figure}
 
-As we can see from these images the players have been successfully added to all of the tables as expected.
+Finally, Figure \ref{fig:db_player_xp} shows the experience of each player, and is dependent on the score of the player in each game.
+
+\vs
+As we can see from these images the players have been successfully added to all of the tables as expected, and we can update the player information correctly.
 
 \subsubsection{Inputs}
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/inputs.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/inputs.png}
+        \caption{A screen capture of a video which has an overlay showing which keys we have pressed.}
+        \label{fig:game_inputs}
+\end{figure}
 
-We can see here an input overlay over the video demonstrating that the game is able to take inputs.
-
+We can see here an input overlay over the video demonstrating that the game is able to take inputs. This proves that the game is able to take inputs and that these were handled correctly, as can be seen by watching the videos, and reading the specification we defined for them.
 
 \subsubsection{Menu Screens}
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/main_menu.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/main_menu.png}
+        \caption{A screen capture of the main menu screen}
+        \label{fig:main_menu}
+\end{figure}
+
+This demonstrates that we are able to use the login menu to enter the Main menu.
 
 \begin{annotatedFigure}
     {\includegraphics[width=1.0\linewidth]{Evaluation/Images/game_over_victory.png}}

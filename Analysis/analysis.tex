@@ -328,6 +328,8 @@ This showed me roughly how long I should make the rounds in the game. For the mo
 
 There were also other questions that were asked, but here is a detailed version of what they revealed. The other results were relating the factors that deterred people from playing during the week. The most common factors were work, school, and a lack of time. Additionally, when asked whether people avoided games with longer round times, 53\% said yes, whilst 47\% said no. The difference was a lot more noticeable however, when asked whether people wanted shorter round times in their games. Here, 58\% said yes, and only 42\% said no. The distribution of round times that people preferred had an average of 6.7 minutes, however, in order to accommodate a strict limit of 3 rounds, we will use 6 minutes instead. This survey provided a useful insight into what people would need to have in a game in order for them to be able to play during their schedules, and made it clear that there is a large audience for this type of game.
 
+\vs
+The stakeholders will use the game by playing it, and will likely use it as a way to unwind after a long day of work or school. This means that we need to design our project specifications around allowing the stakeholders to use the game even in limited time settings.
 
 \subsection{Interviews}
 
@@ -455,7 +457,7 @@ This also would help them to solve the problem of having not enough time to play
 
 People mentioned that they would be more likely to play a game during a week if there was some kind of ranking system or a leaderboard of some kind.
 
-\subsection{Stakeholder and Public Requirements Summary}
+\subsection{Stakeholder and Essential Features}
 
 Here is a list of all of the stakeholder's requirements from my game so far, as well as some things that will improve overall user experience. These were compiled from the interviews, and are justified in the table below.
 
@@ -488,7 +490,7 @@ Here is a list of all of the stakeholder's requirements from my game so far, as 
     \hline
     Graphics & The game must be visually appealing, or at it should at least be easy to decipher what is going on.\\
     \hline
-    Multiplayer & This would allow people to play with friends and would make playing the game more enjoyable and immersive. This is a standard feature of most modern games and would be expected from stakeholders.\\
+    Multiplayer (Not essential) & This would allow people to play with friends and would make playing the game more enjoyable and immersive. This is a standard feature of most modern games and would be expected from stakeholders.\\
     \hline
 \end{longtable}
 \end{center}
@@ -553,7 +555,6 @@ This problem is solvable by computational methods, and is best suited to computa
 
 \vs
 Additionally, we can use computational methods such as abstraction in order to aid the development process. We will examine each in turn.
-
 \vs
 
 \subsubsection{Abstraction}
@@ -575,16 +576,58 @@ Additionally, we will be using classes in the game in order to create a modular 
 Another way we will be using computational methods is to decompose the problem into smaller, more manageable problems. In this case, we can use the class structure to make the problem much easier to visualise, and code small components of the project. For example, we can work on just the player movement, or the weapons system individually of each other, and then combine them at the end.
 
 \vs
+\subsubsection{Machine Learning}
+
+One of the tools available to us is machine learning and reinforcement learning. This is important because these tools have proven to be extremely effective in their purpose in an environment. We will briefly discuss how reinforcement learning works through this table.
+
+\begin{center}
+\begin{longtable}{|p{4cm}|p{6cm}|p{5cm}|}
+    \hline
+    Aspect & Purpose & Justification\\
+    \hline
+    \hline
+    Environment & An environment is something which contains agents which can interact with the environment using actions. The environment is responsible for handling observations, rewards and how the agents move. & This is the primary thing that the agents will be interacting with. For the purposes of a game, the user will also interact with the environment, but whilst the user is playing we don't actually need to consider the rewards during this phase, it is primarily used in training to improve the policy.\\
+    \hline
+    Observations & This is what the agent can see in the environment in a limited way. This is used by the critic and the policy to evaluate how good each state is and to produce an action respectively. This is similar to what a human would see on the screen, but in a more limited form. & We need this in order to train and the policies can't really do anything without some information about the environment, and they need to be able to see how their actions are affecting the environment.\\
+    \hline
+    Rewards & Positive rewards are given for actions that we want to encourage, such as winning the game, and negative rewards are given for actions that we want to discourage. These are sculpted in order to train the agents according to what we want to do. & The reward is a way to provide the policies with a metric for how well it is performing. We want to adjust the rewards to provide an agent which is able to perform well at the game. Rewards to RL is what datasets are to supervised learning - better reward structuring will provide a better final result.\\
+    \hline
+    Policies & Policies control agents and act based on observations. During the training phase, many optimisation steps occur in which the policy is updated using the observations and the rewards. This is controlled by the algorithm which we are using. & The policies need to exist in order to interact with the environments and so are a fundamental part of the RL structure.\\
+    \hline
+\end{longtable}
+\end{center}
+
+The most popular algorithm in modern RL and MARL (Multi-Agent Reinforcement Learning) literature is hands-down PPO (Proximal Policy Optimisation), which relies on an actor-critic style of training. This is suitable for a wide range of applications, since we don't need to rely on tables of data such as Q-learning and Deep-Q-Learning which rely on containing observations in bins, however this means that for a continuous observation and action space we can never contain a specific state exactly as it since, we need to round to fit in with the limit of finite memory that we have.
+
+\vs
+PPO in the other hand is able to work on both discrete and continuous action spaces, and is a very performant libray, even reaching the rank of Grandmaster in StarCraft II as shown in \cite{alpha_star}. The algorithm used in that instance was IPPO which is similar to what we are doing.
+\vs
 
 \subsection{Limitations of Proposed Solution}
+
+My project cannot be perfect or satisfy everyone's needs. To the best of my efforts I will attempt to meet the criteria, but it is inevitable that certain things will not be perfect. However, there are certain limitations that cannot be surpassed.
+
+\vs
+\subsubsection{Hardware Limitations}
 
 My main limitation is likely to be hardware. This is in two stages. Firstly, during training, which is done locally on my machine, I will need to use a GPU in order to get a reasonable completion time, as training of AI models can often take hours, or even days. Furthermore, when the player is playing the game, they will be running a model which controls 5 agents, and obviously, this is not an easy computational task, and so it is essential that a GPU is used, and that the game is well-optimised. This can be done using the CUDA library, and the GPU version of PyTorch.
 
 \vs
-Additionally, my game will be limited to 2D because I am using PyGame, and so any game that I do make will need to be either top-down or side-on. This means that I will need to use images as my graphics, and potentially use multiple images and cycle through them in order to create the illusion of animation. 
+This also runs under the assumption that they have a compatible GPU, which may not be the case, especially since it needs to be CUDA compatible and many older GPUs are not. However, most modern computers do have a CUDA-enabled GPU, and so this is not going to exclude a larger number of stakeholders from playing, and so is an acceptable limitation
+
+
+\subsubsection{Software Limitations}
+\vs
+My game will be limited to 2D if I am using PyGame, and so any game that I do make will need to be either top-down or side-on. This means that I will need to use images as my graphics, and potentially use multiple images and cycle through them in order to create the illusion of animation. However, rendering images is incredibly slow, and so even this may not be a possibility.
 
 \vs
 On top of this, another problem that may potentially arise is that people may not know how to run Python programs, or not have an NVIDIA GPU which is what many modern machine learning libraries run on and is likely what my project will also use. Therefore, it is important to create a list of system requirements for the game that is accessible to most people, and if a GPU is not available the program must be able to run somewhat efficiently on a CPU, which may be challenging. Additionally, packaging the program into an executable file will make it much easier to use for most people, since no specific requirements are needed if it is packaged, except for the platform, but we can package specifically for each platform if needed.
+
+\vs
+However, if I use another framework such as Unity or Unreal, this will allow for a more responsive 3D experience, however those frameworks also produce extremely large game files, and also require fairly modern software to both program and run. Additionally, I would need to compile to multiple formulas which would be inconvenient to make changes for.
+
+\vs
+Additionally, using these frameworks is a lot more restrictive and would reduce the amount I could alter the way the game works. This is important since being able to flexibly run the game is important to me, and will allow me to write more efficient code that is more suitable for running an environment.
 
 
 \subsection{Success Criteria}

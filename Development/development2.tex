@@ -1029,12 +1029,224 @@ This means that over the span of 5 minutes we had 33 eliminations and 140 succes
 The next thing to do is to integrate the AI with the game. To do this, we need to create a dummy environment, so that we can create the models in the \m{GameLoop} class. Therefore, we can get the following. In order to do this, we can copy all of the code from above, and we can simply take the observations from the game loop, and then we can output the actions and handle them as we did in the environment.
 
 \vs
-This code has been omitted from here as it is identical to the code above.
+We will create a new file which will copy the same format as the previous code, but will allow us to use the AI agents in the main game loop, which is what we ultimately want to do.
+
+\begin{mpy}
+import torch
+
+from tensordict import TensorDict
+from tensordict.nn import TensorDictModule, TensorDictSequential
+from tensordict.nn.distributions import NormalParamExtractor
+from torch import nn
+
+from torchrl.modules import ProbabilisticActor, ValueOperator, TanhNormal, MultiAgentMLP
+from torch import multiprocessing
+from torchrl.envs import RewardSum, TransformedEnv, check_env_specs, Transform
+
+from training.momentum_env.momentum_env import Momentum
+from torchrl.envs import PettingZooWrapper
+
+class MomentumAgents:
+
+    def __init__(self):
+        env = Momentum()
+        self.group_map = {"team0": ['player1', 'player2', 'player3'],
+                    "team1": ['player4', 'player5', 'player6']}
+
+        env = PettingZooWrapper(env, group_map=self.group_map)
+        device = torch.device("cpu")
+
+
+        team0_policy_net = torch.nn.Sequential(
+            MultiAgentMLP(
+                n_agent_inputs=env.observation_spec["team0", "observation"].shape[-1],
+                n_agent_outputs = 2 * 4,
+                n_agents = 3,
+                centralised = False,
+                share_params = False,
+                device=device,
+                depth=2,
+                num_cells = 128,
+                activation_class = torch.nn.Tanh,
+            ),
+            NormalParamExtractor(),
+        ).to(device)
+
+        team0_policy_module = TensorDictModule(
+            team0_policy_net,
+            in_keys = [("team0", "observation")],
+            out_keys = [("team0", "loc"), ("team0", "scale")],
+        ).to(device)
+
+        self.team0_policy = ProbabilisticActor(
+            module = team0_policy_module,
+            spec=env.action_spec["team0", "action"],
+            in_keys = [("team0", "loc"), ("team0", "scale")],
+            out_keys = [env.action_keys[0]],
+            distribution_class = TanhNormal,
+            distribution_kwargs = {
+                "min": env.action_spec[env.action_keys[0]].space.low[0],
+                "max": env.action_spec[env.action_keys[0]].space.high[0],
+            },
+        ).to(device)
+
+        team1_policy_net = torch.nn.Sequential(
+            MultiAgentMLP(
+                n_agent_inputs=env.observation_spec["team1", "observation"].shape[-1],
+                n_agent_outputs = 2 * 4,
+                n_agents = 3,
+                centralised = False,
+                share_params = False,
+                device=device,
+                depth=2,
+                num_cells = 128,
+                activation_class = torch.nn.Tanh,
+            ),
+            NormalParamExtractor(),
+        ).to(device)
+
+        team1_policy_module = TensorDictModule(
+            team1_policy_net,
+            in_keys = [("team1", "observation")],
+            out_keys = [("team1", "loc"), ("team1", "scale")],
+        ).to(device)
+
+        self.team1_policy = ProbabilisticActor(
+            module = team1_policy_module,
+            spec=env.action_spec["team1", "action"],
+            in_keys = [("team1", "loc"), ("team1", "scale")],
+            out_keys = [env.action_keys[1]],
+            distribution_class = TanhNormal,
+            distribution_kwargs = {
+                "min": env.action_spec[env.action_keys[1]].space.low[0],
+                "max": env.action_spec[env.action_keys[1]].space.high[0],
+            },
+        ).to(device)
+
+
+        self.groups = ["team0", "team1"]
+
+        self.team0_policy = torch.load("D:\\OjasWork\\OjasWork\\CS_NEA\\Momentum\\team0_v4.pt")
+        self.team1_policy = torch.load("D:\\OjasWork\\OjasWork\\CS_NEA\\Momentum\\team1_v4.pt")
+
+        self.policy = TensorDictSequential(
+           self.team0_policy,
+           self.team1_policy,
+        )
+\end{mpy}
+
+This code is identical to the above, except we have now create a dummy environment, so that we can keep the same definitions above, and this will make our job a bit easier.
+
+\vs
+We can now write some code to test our new file. This is relatively simple code, but this will ensure that we can access the environment and the policies accurately. Additionally, this will give us some more insight into how the information is stored.
+
+\begin{mpy}
+#Only run the code if we are running agents.py
+if __name__ == "__main__":
+    m = MomentumAgents()
+
+    #Create the environment
+    env = Momentum()
+
+    #Use the PettingZooWrapper for TorchRL
+    env = PettingZooWrapper(env, group_map=m.group_map)
+
+    #Set device
+    device = torch.device("cpu")
+
+    #Create instance of all agents
+    m = MomentumAgents()
+
+    #Reset the env
+    td = env.reset()
+
+    #
+    min_td = TensorDict(
+        {
+        "team0": 
+            {
+                "observation": td["team0", "observation"]
+            },
+        "team1": 
+            {
+                "observation": td["team1","observation"]
+            },
+        }, 
+        batch_size=torch.Size([]),
+    )
+
+    print(m.team0_policy(min_td)["team0", "action"])
+    print(m.team1_policy(min_td)["team1", "action"])
+
+>>> 
+tensor([[-0.5229, -0.7721,  2.5118,  0.9467],
+        [ 0.0291,  0.2319, -0.3161,  0.9268],
+        [-0.5620, -0.0368, -0.5187,  0.7792]], grad_fn=<AddBackward0>)
+tensor([[ 0.4453, -0.0706,  1.0908,  0.6683],
+        [ 0.3035, -0.0763,  1.2577,  0.4774],
+        [-0.0106, -0.2868, -0.0291,  0.8084]], grad_fn=<AddBackward0>)
+\end{mpy}
+
+This is in the expected format, and so we can edit our game loop to use this. We can do this by first creating an instance of the \m{MomentumAgents} class in the constructor. This will reduce loading times between the create game menu and the actual game.
+
+\begin{mpy}
+        m = MomentumAgents()
+        self.groups = m.groups
+        self.group_map = m.group_map
+        self.policy = m.policy
+        self.team0_policy = m.team0_policy
+        self.team1_policy = m.team1_policy
+\end{mpy}
+
+This will set the \m{GameLoop} to have all of these agents which will let us more easily access the policies which we want to use to run the game.
+
+\vs
+When we start in \m{run()}, we need to take an observation, so that we can get started with an action immediately.
+
+\begin{mpy}
+        observations = self.getObservations()
+\end{mpy}
+
+The next step is to add the code which will let us output some actions for the agents. We will then put this into the actions for all of the players.
+
+\begin{mpy}
+            #Team 0 actions
+            action0 = self.team0_policy(observations)["team0", "action"]
+
+            #Team 1 actions
+            action1 = self.team1_policy(observations)["team1", "action"]
+            
+            #Output from the model will go here
+            model_predictions = [
+                {"forward": directions[1], "right": directions[0], "rot_rate": 0, "firing": mouse_clicked},
+                {"forward": float(action0[1][0]), "right": float(action0[1][1]), "rot_rate": float(action0[1][2]), "firing": (float(action0[1][3]) > 0.5)},
+                {"forward": float(action0[2][0]), "right": float(action0[2][1]), "rot_rate": float(action0[2][2]), "firing": (float(action0[2][3]) > 0.5)},
+                {"forward": float(action1[0][0]), "right": float(action1[0][1]), "rot_rate": float(action1[0][2]), "firing": (float(action1[0][3]) > 0.5)},
+                {"forward": float(action1[1][0]), "right": float(action1[1][1]), "rot_rate": float(action1[1][2]), "firing": (float(action1[1][3]) > 0.5)},
+                {"forward": float(action1[2][0]), "right": float(action1[2][1]), "rot_rate": float(action1[2][2]), "firing": (float(action1[2][3]) > 0.5)},
+            ]
+\end{mpy}
+
+We can then see the output is as shown in Figure \ref{fig:ai_integration}. For this example, I set the zoom to be very small so that I could see almost all of the map in one go.
+
+\href{https://youtu.be/_eO4jJkE1xY}{This video demonstrates the AI in action, and we can see almost the entirety of the map here which helps to illustrate what is happening.}
+
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{\includegraphics[width=\linewidth]{Development/Images/ai_integration.png}}
+        }
+        \caption{A screen capture of the map zoomed out whilst the AI are playing the game}
+        \label{fig:ai_integration}
+\end{figure}
 
 \subsection{Game Loop}
 \vs
 We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway. This will run the game for 6000 frames, which is equivalent to 25 seconds of gameplay.
 
+\vs
 We also need to set an objective for the game and whether the game has ended or not. The main objective will be either eliminations or team score, and the game can end if the objective is met or if the timer has run out, we dealt with the timer in the previous iteration. We know the score of the teams, so we just need to set a limit. This is fairly standard.
 
 \begin{mpy}
@@ -1244,3 +1456,15 @@ This code follows the same structure as the start screen from the previous itera
 
 Clicking on the buttons they lead to the appropriate menu as described in the design section. Additionally, we can get the inputs as follows.
 
+\subsection{Additional Menu Screens}
+
+We need to construct the final few menu screens. We will begin with the login menu. The first thing we need to do is to get text input. The best way to do this is to use an external library, in this case \m{pygame-text-input}, which will handle this for us. This will make it significantly easier to work with.
+
+\vs
+This is justified because this will let us use this bit of code in other menus as well, such as the timer menu very easily, and will mean that the code is easier to debug, since the library is already tested, and so we know any issues are most likely caused on our end.
+
+\vs
+We also have a lot of features in this library which will let us 
+
+
+%https://github.com/Nearoo/pygame-text-input

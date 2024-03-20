@@ -528,9 +528,9 @@ In this menu, we want to be able to set the game's difficulty. This is done usin
     {\includegraphics[width=0.9\linewidth]{Design/Images/CreateGame.jpg}}
     }}
     %bottom left corner to top right
-    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.125,0.329}{0.99,0.7098}{C}{0.125,0.7098}%tl
-    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{J}{0.75,0.8}%br
+    \annotatedFigureBox{0.125,0.329}{0.99,0.7098}{K}{0.125,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{L}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the create game screen will look like}
 \label{fig:create_game_menu}
@@ -561,8 +561,8 @@ In the main game loop, we still have some UI elements to draw on. Primarily, we 
     {\includegraphics[width=0.9\linewidth]{Design/Images/GameLoop.jpg}}
     }}
     %bottom left corner to top right
-    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.5,0.1}{0.855,0.235}{D}{0.855,0.25}%tr
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{M}{0.75,0.8}%br
+    \annotatedFigureBox{0.5,0.1}{0.855,0.235}{N}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the game loop will look like}
 \label{fig:game_loop}
@@ -594,9 +594,9 @@ Also, blocks will be rendered on the screen so that the player can have a landma
     {\includegraphics[width=0.9\linewidth]{Design/Images/GameOver.jpg}}
     }}
     %bottom left corner to top right
-    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.02,0.329}{0.99,0.7098}{C}{0.04,0.7098}%tl
-    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{O}{0.75,0.8}%br
+    \annotatedFigureBox{0.02,0.329}{0.99,0.7098}{P}{0.04,0.7098}%tl
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{Q}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the game over screen will look like}
 \label{fig:game_over_menu}
@@ -625,8 +625,8 @@ The leaderboard will make a call to the database handler, and will select the pl
     {\includegraphics[width=0.9\linewidth]{Design/Images/LeaderBoard.jpg}}
     }}
     %bottom left corner to top right
-    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{B}{0.75,0.8}%br
-    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{D}{0.855,0.25}%tr
+    \annotatedFigureBox{0.225,0.8}{0.75,0.98}{R}{0.75,0.8}%br
+    \annotatedFigureBox{0.05,0.02}{0.855,0.235}{S}{0.855,0.25}%tr
 \end{annotatedFigure}
 \caption{A sketch of what the leaderboard screen will look like}
 \label{fig:leaderboard_menu}
@@ -639,8 +639,17 @@ This has a set format which will allow for the users to quickly see the informat
 \vs
 We also have a back button to allow the player to go back to the state that they were in previously, since there are no further options to move on to from here. The formatting of this leaderboard is justified since it provides all of the information needed, including the rankings, the player's ID and their rating in clear tabular manner, which is easy to process visually.
 
+
+\subsection{Buttons}
+
+We can abstract the idea of a button to simply being a rectangle with some text written on it, and we can observe whether the cursor is above the rectangle or not. We can then add transformations to the button to make it more reactive.
+
 \vs
+We can consider doing the checking for whether the cursor is above the rectangle or not, by simply considering whether the cursor is to the right of the left edge and to the left of the right edge. Finally, we need to do a similar process but for the vertical direction. This will allow us to detect whether the point is above the rectangle.
+
 \vs
+However, it turns out that PyGame implements their own \m{collidepoint} which can be used to determine whether a point is inside of a rectangle. This makes our job very simple, since we now just need to call this function on the cursor position on the screen.
+
 \vs
 
 \subsection{AI}
@@ -701,6 +710,32 @@ Both networks use the same input, which is the observation for that time-step to
 From the original paper, we can see the process unfolding as follows. We firstly initialise our networks, and start a loop, and we can train for as long as we like. We then execute something known as a policy roll-out. This is effectively running our agent in the environment for a few time-steps, and recording the observations, actions, rewards and resulting states. This will allow us to gather information to train our network with. We also compute something known as advantages. Effectively, this gives us an idea of how much better off we are due to an action. We use a discount parameter and a GAE parameter.
 
 \vs
+
+Furthermore, we will use a technique known as curriculum learning. This involves training an agent then making adjustments to the environment and re-training it. This is important since it means that we can incentivise behaviours that are conducive to engaging gameplay such as having the agents move towards the centre of the map, and shooting enemy players. However, at a certain point, we can either decrease or remove the reward which is given when moving towards the centre, and due to the agent having learnt that this behaviour was productive, it will continue to do it. Also, since we aren't penalising the agents for taking such an action, it is not important that they are still moving towards the centre.
+
+\vs
+In this case, we will run two main training loops. The first one will have a steep penalty for not being towards the centre of the map, and the second will have a much less strict penalty for this, so that the behaviour is not unlearnt.
+
+\vs
+We will now need to construct how we want to reward the agent. We want to first consider which things we want to consider for our reward, and what things we can most easilt access.
+
+\vs
+\begin{center}
+\begin{longtable}{|p{6cm}|p{9.5cm}|}
+    \hline
+    Metric & Justification\\
+    \hline
+    \hline
+    How much damage the agent has done in each frame & The policy should want to take actions which are more likely to create further interactions, and one of these is to fire at opponents.\\
+    \hline
+    How many eliminations the player has gotten in each frame & Actions taken to create a situation where an elimination is possible is good since this will allow for a much more engaging experience.\\
+    \hline
+    How close to the centre of the map the agent is & This is used to help allow PPO to function properly, since it relies on rewards which are frequent, and so when the agent is still unable to fire at opponents or get eliminations, this is a quick way to get a reward.\\
+    \hline
+    Whether the player has died in this frame & We want to ensure that the agents don't actively put themselves in situations where they could easily die. This will allow for much more interesting gameplay.\\
+    \hline
+\end{longtable}
+\end{center}
 
 
 \subsection{Utility Class}
@@ -785,3 +820,26 @@ Now that we have looked at how this works in theory, we should discuss how this 
 
 \vs
 The most popular scientific computing library in Python is \m{NumPy}, which provides a lot of different methods all written in native C code, and compiled providing extremely fast computations. However, there is one issue with this, in that in order to use \m{NumPy} methods we need to be working with NumPy objects. This is an issue because creating NumPy objects like arrays is incredibly slow, and therefore we will need to assess whether it is worth using this at all, since it is very plausible that casting to NumPy objects is slow enough to outweight the efficiency of using NumPy methods.
+
+\subsection{Usability Features}
+
+In order to make my game usable we need to consider some different features. Firstly, the menus need to be clear in their purpose, and not too cluttered. Ultimately, a menu should not try to achieve too many things as this may end up confusing the user.
+
+\vs
+Additionally, the menus must have clickable buttons, since this is quite a common way of interacting with such screens and so we need to communicate in a clear way that the buttons are clickable. This can be done using seperate background colours for the whole screen and for the button indicating where we can click on the button.
+
+\vs
+Additionally, the inputs need to be given using a keyboard and a mouse which is the most common input form for a desktop computer. Even if playing from a laptop, it is possible to join a mouse to it, which would provide a better playing experience.
+
+\subsection{Post-Development Testing}
+
+After the development is done, we need to cycle through all of the menus through the standard chain, which we described using the flow chart. This is justified because it will ensure that all of the menus work as expected and can be reached through the correct ways.
+
+\vs
+Additionally, we need to have a game playing against the AI, which is important, since we need to ensure that they perform as expected. However, in order to get a more accurate representation of how well the AI will perform, we will let stakeholders play the game so that we can get an unbiased second opinion about them.
+
+\vs
+It is in the nature of reinforcement learning to investigate all of the possible actions that it can take, therefore, if we run the AI for long enough, and it doesn't encounter any issues, then we can be relatively confident that there are no major breaking issues in the game. However, of course these are issues which will stop the game's execution, but there may be issues that are not as obvious.
+
+\vs
+However, in order to test this we can take extreme situations, such as using autoclickers to try and get multiple shots using the same weapon without waiting for the weapon to reload. This is part of our robustness testing.
