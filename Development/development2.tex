@@ -2246,8 +2246,6 @@ Finally, we need to render all of this information to the screen as done below, 
 
 With this all in place, we can now test the code to make sure that it works as expected. We can set the initial state to be in the set timer menu. This gives the output shown in \ref{fig:set_timer}, and as we can see this works as expected. However, we need to make changes to the actual game code in order to make use of this information.
 
-
-
 \vs
 In some cases, we won't always have the \m{"finish_time"} key set, and therefore, we need to check whether this in place first. This is done as follows.
 
@@ -2258,7 +2256,9 @@ In some cases, we won't always have the \m{"finish_time"} key set, and therefore
                     sys.exit()
 \end{mpy}
 
-This will ensure that if the current time has exceeded the final time, then we will close the application. However, if this comes just as the user has finished a game, we want to make sure that they can see whether they won or not before it closes the game.
+This will ensure that if the current time has exceeded the final time, then we will close the application. However, if this comes just as the user has finished a game, we want to make sure that they can see whether they won or not before it closes the game. Firstly, we will print the start time and finish time in order to prove that the finish time is set properly according to the input that we gave the menu.
+
+
 
 \vs
 We can now test out this code as \href{}{shown in this video, proving that the game will close down after the time is over}.
