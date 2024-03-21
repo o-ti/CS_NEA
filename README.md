@@ -26,3 +26,11 @@ Compile using `biber main & pdflatex --shell-escape Main/main.tex` in the root d
 
 - [ ] Walk through video - 10m
 
+Dev - Iteration 2
+- [ ] Create game menu screenshot and print difficulty
+- [ ] Set Timer menu screenshot and print finish time
+- [ ] Video demonstrating that game closes after time is over
+
+Evaluation
+- [ ] Video walkthrough
+- [ ] Screenshots
