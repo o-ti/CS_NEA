@@ -128,20 +128,18 @@ Then, we have the game state manager. This is effectively going to let us get an
     \hline
 \end{longtable}
 
-Furthermore, we can create instances of the states in each case, and then 
 
-
-\clearpage
-
-\begin{wrapfigure}{R}{0.42\textwidth}
-\vspace{-25pt}
+\begin{wrapfigure}{R}{0.38\textwidth}
+\vspace{-20pt}
 \begin{center}
     \includegraphics[width=0.95\linewidth]{Design/Images/Flowchart_Game_States.jpg}
 \caption{A flowchart depicting how the states will chain together}
 \label{fig:fc_game_states}
-\vspace{-40pt}
+\vspace{-20pt}
 \end{center}
 \end{wrapfigure}
+
+Furthermore, we can create instances of the states in each case, and then create a dictionary relating strings to instances of the state, so that we can more easily link between them.
 
 \vs
 We will need to pass values between the game states in order to allow things like global variables to exist in the game state. This will contain things like player settings, PlayerID, and the amount of time left until the game will close itself.
@@ -338,9 +336,9 @@ The database is normalised to reduce data redundancy and maintain data integrity
     \hline
     Email & String & This will let us create the account initially. Additionally, if the user needs to reset their password, then if they have their email they can get the game to send them an automatically generated password that they can change later.\\
     \hline
-    Player XP & Int & This will be the basis for the level system in the game and will be one of the criterion for the leaderboard. The leaderboard will be a key feature of the game as it will add a sense of competition to the game for those that enjoy it.\\
-    \hline
     Password & String & This will actually store the hash of the password, since storing the actual password in plain-text is extremely insecure, and will leave user details susceptible to being hacked. For example, if the database is somehow leaked, we don't also want it to mean that the passwords are all immediately revealed as well. However, we still need a secure way of authenticating users so that they can login, so the client version of the game will hash the password and then send a query to the server asking to verify the information.\\
+    \hline
+    Player XP & Int & This will be the basis for the level system in the game and will be one of the criterion for the leaderboard. The leaderboard will be a key feature of the game as it will add a sense of competition to the game for those that enjoy it.\\
     \hline
     Matches Won & Integer & One of the leaderboards will be based on the number of games won, and so therefore, we will need to store this information. Additionally, this might be one of the statistics that the users may want to know.\\
     \hline
@@ -369,20 +367,12 @@ This database structure is justified because it is in 3NF. This means that we ca
 UI is essential to ensure that a user is able to quickly understand what each button does, and how to access what they need. For this reason, the only buttons present on the main menu will be "Play", "Settings", "Exit". This reduces any confusions that players may have, and allows the game to be much easier to pick up.
 
 \vs
-Here are some flowcharts detailing how the UI will lead to different sections of the game.
-
-
-\vs
-
-Additionally, we will now examine some different elements of the UI and justify why they are designed in a specific manner.
+Here are some flowcharts detailing how the UI will lead to different sections of the game. Additionally, we will now examine some different elements of the UI and justify why they are designed in a specific manner.
 
 \vs
 Firstly, I have chosen Iosevka as my font, as it is a sleek, modern font which I think is quite readable, but is very unique. This adds a unique element to the game.
 
 \subsubsection{Start Menu}
-
-The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box A in Figure \ref{fig:start_menu}
-
 
 \begin{wrapfigure}{R}{0.5\textwidth}
 \vspace{-10pt}
@@ -402,6 +392,9 @@ The start menu will lead to the login menu, and so we really just want to provid
 \vspace{-10pt}
 \end{center}
 \end{wrapfigure}
+The start menu will lead to the login menu, and so we really just want to provide a button for the player to click on. This is shown in Box A in Figure \ref{fig:start_menu}.
+
+\vs
 
 The box will have a background colour which will be different to the rest of the screen in order to highlight that they can click there. This is important because usually in applications the cursor changes if you can click on something, however that is not the case here, and so we need to provide another way of conveying that information.
 
@@ -452,8 +445,6 @@ Additionally, the button for "Login", will be very similar to the button for the
 
 \subsubsection{Main Menu}
 
-The main menu will house all of the other options that are available to the user, and so as shown in Figure \ref{fig:main_menu}, I have placed buttons adjacent to each other in a way that is intuitive. This is a standard way of laying out a menu, and is similar to what is used in \emph{Rocket League} and \emph{Overwatch}.
-
 \begin{wrapfigure}{R}{0.5\textwidth}
 \vspace{-20pt}
 \begin{center}
@@ -474,11 +465,19 @@ The main menu will house all of the other options that are available to the user
 \end{center}
 \vspace{-15pt}
 \end{wrapfigure}
+
+The main menu will house all of the other options that are available to the user, and so as shown in Figure \ref{fig:main_menu}, I have placed buttons adjacent to each other in a way that is intuitive. This is a standard way of laying out a menu, and is similar to what is used in \emph{Rocket League} and \emph{Overwatch}.
+
 \vs
 Additionally, as seen in Box F, we can see that there is still a background behind each box as explained previously. Furthermore, in Box E, we can see the game's logo to create a sense of excitement, and this is fairly common for games to do.
 
 \vs
-Finally, we also have the exit button in Box G, which will let the player quit if they want to.
+Additionally, we have a set timer button, which will let the player set how long they would like to player for overall, and a create game button which will first take them to a set difficulty screen. This will allow the user to choose how difficult they would like their opponents to be, and how strong they would like their team-mates to be.
+
+\vs
+Finally, we also have the exit button in Box G, which will let the player quit if they want to. If the player is not in the game over menu or in a game, the game will shut down if they try to move between screens if the time is up. This allows to effectively enforce the time constraint in a more efficient way than checking it in every frame update, which would take a lot of processing time away from other more useful tasks.
+\vs
+
 
 \subsubsection{Set Timer}
 
@@ -540,14 +539,15 @@ In this menu, we want to be able to set the game's difficulty. This is done usin
 
 \vs
 Additionally, there will be two rows of text, one showing the level of the team-mates that the user will be playing with, and the level of the agents the user will be playing against. These can be adjusted as the user prefers, and we will use the Elo algorithm to adjust for this change when we are finding the amount that the user's rating should change by. This is justified, since a player that is just starting out would prefer to play against easier opponents, or have better team-mates, and as they get better at the game, they may prefer to have slightly worse team-mates and better opponents in ordet to get more of a challenge.
+\vs
+The user can change the difficulties by using buttons which is very intuitive and makes it much easier to regulate the inputs.
 
 \vs
 Furthermore, we have a start button allowing the user to start the game, which is fairly self-explanatory. Having this chain of screens will make the game much more intuitive to play for the user, even if they have never played it before, or seen others play it.
 
 \subsubsection{Game Loop}
 
-In the main game loop, we still have some UI elements to draw on. Primarily, we need to draw on the time as shown in Box B, and we can draw other elements in a more clear way, such as by writing the amount of health each player has on the player itself, which quite clearly shows what is going on.
-
+In the main game loop, we still have some UI elements to draw on. Primarily, we need to draw on the time as shown in Box M, and we can draw other elements in a more clear way, such as by writing the amount of health each player has on the player itself, which quite clearly shows what is going on.
 \vs
 
 \begin{wrapfigure}{L}{0.45\textwidth}
@@ -576,7 +576,7 @@ Within the game loop, we have multiple bits of information that we need to have 
 Additionally, the score is written for both teams in Box B. The background of the score will be written in the colour of the team. This is useful because it provides a clear way of understanding which team the score is attributed to.
 
 \vs
-Furthermore, the health of the player will be written on the player because it provides a quick way to see what the health of the player. On top of this, it is important to know the health of the player because the user's actions will be dependent on their own health and others health.
+Furthermore, the health of the player will be written on the player as shown in Box N, because it provides a quick way to see what the health of the player. On top of this, it is important to know the health of the player because the user's actions will be dependent on their own health and others health.
 
 \vs
 Also, blocks will be rendered on the screen so that the player can have a landmark relative to the map, and so that they can more easily see where they are moving.

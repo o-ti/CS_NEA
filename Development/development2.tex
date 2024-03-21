@@ -6,7 +6,20 @@ Based on our previous discussion of using the \m{Utility} class through its stat
 This is a justified change since it improves efficiency both in terms of memory and in terms of time, since static methods are much faster in Python, and don't require an instance to already exist, which also makes the code more readable and maintainable.
 
 \vs
-Another thing we need to do is to add a function to get information for the leaderboard. This is important since it will allow us to 
+Another thing we need to do is to add a function to get information for the leaderboard. This is important since it will allow us to more easily create and render the leaderboard. We need to craft our SQL statement carefully in order to allow this to work. Firstly, we only want to pull from the MMR table, and we only want the top $n$ players. In order to do this, we need to specify an $n$ parameter, and also when submitting the query we want to use \m{ORDER BY} on the MMR field, and set this to be \m{DESC}. This is written as shown below.
+
+\begin{mpy}
+    @staticmethod
+    def getLeaderboardPlayers(n=5):
+        connection, cursor = DatabaseHandler.SetupConnection()
+
+        result = cursor.execute(f"SELECT PlayerID, MMR FROM MMR ORDER BY MMR DESC LIMIT {n}")
+
+        result = result.fetchall()
+        return result
+\end{mpy}
+
+Since, we will most likely be using $n=5$ for our leaderboard, we can set it to be a default parameter, and if we need to, we can specify a specific value later if we want to.
 
 \subsection{Optimisation}
 
@@ -27,7 +40,7 @@ setup(ext_modules = cythonize("utils.pyx"))
 Running this code, we get some new files, namely \m{utils.c} and \m{utils.cp310-win_amd64.pyd}. This still functions exactly like a normal Python class however, and we still retain all of the functiosn that we had in the original class.
 
 \vs
-This is a justified change since the AI that we will be using later will need to be able to run the environment at very high speeds, and for that we need to able to 
+This is a justified change since the AI that we will be using later will need to be able to run the environment at very high speeds, since it will be using lots of samples in the environment and it learns by playing, and the faster it can play the better it can be at the game.
 
 \subsection{Game Loop HUD}
 
@@ -94,7 +107,6 @@ This can be done by adding text renders to the \m{GameLoop} class. We will creat
 \end{mpy}
 
 This code will produce the following output. As you can the score updates based on the things that are happening within the game.
-
 
 \begin{figure}[H]
         \centering
@@ -1245,6 +1257,37 @@ We can then see the output is as shown in Figure \ref{fig:ai_integration}. For t
         \label{fig:ai_integration}
 \end{figure}
 
+However, there is a major problem with this is that we don't have a border, and therefore when the agents are on the edge of the map, they have no observations and therefore get stuck. The easiest way to resolve this is to add borders to the game in order to get a more 
+\vs
+
+In order to do this, we can just add some more blocks as follows.
+
+\begin{mpy}
+        self.borderLeft = Block([-10, 2000], 20, 4000, (0, 0, 0), self.SCREEN_DIMS, self.player1.position)
+        self.borderRight = Block([4010, 2000], 20, 4000, (0, 0, 0), self.SCREEN_DIMS, self.player1.position)
+        self.borderTop = Block([2000, -10], 4040, 20, (0, 0, 0), self.SCREEN_DIMS, self.player1.position)
+        self.borderBottom = Block([2000, 4010], 4040, 20, (0, 0, 0), self.SCREEN_DIMS, self.player1.position)
+
+        #List of all blocks
+        self.blocks = [self.block1, self.block2, self.borderLeft, self.borderRight, self.borderTop, self.borderBottom]
+\end{mpy}
+
+Rendering this we see the following, as shown in Figure \ref{fig:map_border}.
+
+\begin{figure}[H]
+        \centering
+        {
+        \setlength{\fboxsep}{0pt}%
+        \setlength{\fboxrule}{1pt}%
+        \fbox{
+        \includegraphics[width=\linewidth]{Development/Images/map_border.png}}
+        }
+        \caption{A screenshot of the map border in the game loop}
+        \label{fig:map_border}
+\end{figure}
+
+Now that we have this, we can re-train the AI and as we can see below, it performs much better than the previous iterations.
+
 \subsection{Game Loop}
 \vs
 We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway. This will run the game for 6000 frames, which is equivalent to 25 seconds of gameplay.
@@ -1354,7 +1397,65 @@ Once we have lost the game, we get this message.
         \label{fig:game_over_def}
 \end{figure}
 
-Clicking the back button will take us to the main menu screen, which we will now implement. This will lead into all of other menus. This is written as follows.
+Clicking the back button will take us to the main menu screen, which we will now implement. This will lead into all of other menus. This is written in the next section. However, we have one more change to make and that is to update the user's score and rating based on whether they won the game or not. The first thing to do is to add a \m{setup()} function to the \m{Menu} parent class, since we need to be able to run some code to setup the instance every time we run the menu, especially if we are accessing menus multiple times, such as the game over menu. In the \m{GameOver} class, we need to have this function added.
+
+\begin{mpy}
+    def setup(self):
+        self.registered = False
+\end{mpy}
+
+Here, \m{self.registered} denotes whether the victory has been registered. We need to then add the following few lines in order to add the game to the database.
+
+\begin{mpy}
+        if not self.registered:
+            mmr = 5 if vic else -5
+            DatabaseHandler.UpdateAccount(returnValues["PlayerID"], returnValues["player_scores"]["player1"], mmr, vic)
+
+            self.registered = True
+\end{mpy}
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/game_over_1_mmr.png}
+        \caption{MMR Table}
+        \label{fig:go_1_a}
+        \end{subfigure}
+        \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/game_over_1_xp.png}
+        \caption{Player XP Table}
+        \label{fig:go_1_b}
+    \end{subfigure}
+    \caption{Screenshots of two tables from the database before the game was played}
+    \label{fig:game_over_1}
+\end{figure}
+
+
+We can check that this works as follows. Initially, we have the following, shown in \ref{fig:game_over_1}. In particular pay attention to the user with ID \m{'deepti_tiwari'}. Figure \ref{fig:game_over_2} shows what happens after the user has won a game, proving that we can edit the players as needed. Below, we can see the outcome of winning the game.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/game_over_2_mmr.png}
+        \caption{MMR Table}
+        \label{fig:go_2_a}
+        \end{subfigure}
+        \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width = \textwidth]{Development/Images/game_over_2_xp.png}
+        \caption{Player XP Table}
+        \label{fig:go_2_b}
+    \end{subfigure}
+    \caption{Screenshots of two tables from the database after the game was played}
+    \label{fig:game_over_2}
+\end{figure}
+
+
+\subsection{Main Menu}
 
 \begin{mpy}
 #Directed from the start page
@@ -1389,29 +1490,21 @@ class MainMenu(Menu):
         self.leaderboardButton = Button([self.SCREEN_DIMS[0]//2, 700], 550, 120, "Leaderboard", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
 
         self.exitButton = Button([self.SCREEN_DIMS[0]//2, 880], 200, 120, "Exit", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
 
+Here, we have created all of the buttons that are needed in order to navigate the menu, and all of them are clearly labelled allowing the user to intuitively use all of them.
 
-        self.momentumLogo = pygame.transform.scale(pygame.image.load("assets/momentum_icon.png").convert_alpha(), (200, 200))
-
+\begin{mpy}
     def specificMethods(self, keys, events):
-
-
-        #Initialise variables
-        inPos = False
-
-        #Render text
-        #text_surface, text_rect = text_font.render('Start Menu', fgcolor=(0, 0, 0), bgcolor=self.BG_COLOR)
-        #text_rect.center = (self.SCREEN_DIMS[0] // 2, self.SCREEN_DIMS[1] // 2)
-
-        #Blit to surface
-        #self.display.blit(text_surface, text_rect)
-
         #Render the button
         self.setTimerButton.render(self.display, self.dt)
         self.createGameButton.render(self.display, self.dt)
         self.leaderboardButton.render(self.display, self.dt)
         self.exitButton.render(self.display, self.dt)
+\end{mpy}
+We need to start by rendering all of the buttons, so that the user can actually see what they are doing. After this we need to find if any of the buttosn were hovered over in each frame. This information will be used in conjuction with click information to determine whether a button was clicked, and if so what actions to take.
 
+\begin{mpy}
         #Get mouse position
         pos = pygame.mouse.get_pos()
 
@@ -1420,7 +1513,11 @@ class MainMenu(Menu):
         inPosGame = self.createGameButton.checkForClick(pos)
         inPosLb = self.leaderboardButton.checkForClick(pos)
         inPosExit = self.exitButton.checkForClick(pos)
+\end{mpy}
 
+We can now access the \m{self.clicked} property from the \m{Menu} parent class's main \m{run()} function, and now we can see what buttons were clicked, and we can use the \m{gameStateManager} to change the state and start running the new state.
+
+\begin{mpy}
         #If button clicked, go to timer
         if self.clicked and inPosTimer:
             self.gameStateManager.setState('set_timer')
@@ -1457,17 +1554,848 @@ This code follows the same structure as the start screen from the previous itera
         \label{fig:main_menu}
 \end{figure}
 
-Clicking on the buttons they lead to the appropriate menu as described in the design section. Additionally, we can get the inputs as follows.
+Clicking on the buttons they lead to the appropriate menu as described in the design section.
 
-\subsection{Additional Menu Screens}
+\subsection{Text Inputs}
 
-We need to construct the final few menu screens. We will begin with the login menu. The first thing we need to do is to get text input. The best way to do this is to use an external library, in this case \m{pygame-text-input}, which will handle this for us. This will make it significantly easier to work with.
-
-\vs
-This is justified because this will let us use this bit of code in other menus as well, such as the timer menu very easily, and will mean that the code is easier to debug, since the library is already tested, and so we know any issues are most likely caused on our end.
+We need to construct the final few menu screens. The first thing we need to do for many of these is to get text input. Unfortunately, PyGame does not come prebuilt with any useful text input features, and therefore, in order to do this, I will be following this StackExchange post \cite{text_input_pygame}, and will be implementing it into a class in order to create many of these text input fields much more easily.
 
 \vs
-We also have a lot of features in this library which will let us 
+We will begin by creating the constructor for the class. This will need to take in the rectangle over which we want to write the inputs in, the colour of the text, the colour of the backing for the text, and the colour of the outline of the input box.
+
+\vs
+This is processed as shown below.
+
+\begin{mpy}
+#Handles textinputs
+class TextInput:
+
+    def __init__(self, rect, fgcolor=(0, 0, 0), bgcolor=(0, 255, 255), boxColor=(255, 0, 0)):
+        self.box = rect
+        self.active = False
+        self.fgcolor = fgcolor
+        self.bgcolor = bgcolor
+        self.boxColor = boxColor
+        self.text = ""
+\end{mpy}
+
+This will also initialise some of the variables that we need for the input box to work. The next thing to do is to write code which will allow for the text to be updated in the box. For this to occur, we need to write a function to update the text box every frame. In order to process this, we need to take every event that has occurred in that frame.
+
+\vs
+\begin{mpy}
+    def handleTextInput(self, events):
+
+        #Iterate events
+        for event in events:
+
+            #Mouse button down
+            if event.type == pygame.MOUSEBUTTONDOWN:
+
+                #If box selected, activate it
+                if self.box.collidepoint(event.pos):
+                    self.active = True
+
+                #Otherwise, deactivate it
+                else:
+                    self.active = False
+
+            #If key is pressed in that frame
+            if event.type == pygame.KEYDOWN:
+
+                #If box is selected
+                if self.active:
+
+                    #If enter, then deactive
+                    if event.key == pygame.K_RETURN:
+                        self.active = False
+
+                    #If backspace, splice string to remove last character
+                    elif event.key == pygame.K_BACKSPACE:
+                        self.text = self.text[:-1]
+
+                    #Else add the character
+                    else:
+                        self.text += event.unicode
+\end{mpy}
+
+This code will iterate through all events, and will take the appropriate action for the key that is pressed. Firstly, the box will have two states, either activated or deactivated. If the box is activated it will be able to be edited, otherwise, it is idle.
+
+\vs
+Therefore, we will be able to add and process text if the box is active as shown above, and will be able to activate the box by clicking on it. Finally, we need to be able to render the text in order to see what we are writing. This is done with a simple render function, similar to a lot of the text rendering that we have already done. We can align the text using the initial box that we defined, and we can stretch the input field if the user has input text which is larger than what we were expecting.
+
+\vs
+\begin{mpy}
+    def render(self, display):
+        user_surf, user_rect = small_font.render(self.text, fgcolor=self.fgcolor, bgcolor=self.bgcolor)
+        
+        self.box.w = max(300, user_rect.w + 10)
+
+        user_rect.center = self.box.center
+
+        pass_surf, pass_rect = small_font.render(self.text, fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        pygame.draw.rect(display, self.boxColor, self.box, 2)
+
+        display.blit(user_surf, user_rect)
+\end{mpy}
+
+We can't test this code directly, however, we can create a dummy menu and test it out in that. In order to do this, I have created a menu, so that I can visualise the box, and ensure that it is working.
+
+\begin{mpy}
+#Text input test
+class TestInput(Menu):
+    def __init__(self, display, gameStateManager):
+        #Cyan
+        cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, cyan)
+
+        #Boxes for inputs
+        self.userBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2 - 200, 250, 60)
 
 
-%https://github.com/Nearoo/pygame-text-input
+        #User input boxes
+        self.userInput = TextInput(self.userBox)
+
+    def specificMethods(self, key, events, returnValues):
+
+        #Handle text inputs and render
+        self.userInput.handleTextInput(events)
+        self.userInput.render(self.display)
+
+        #No modifications to returnValues
+        return returnValues
+\end{mpy}
+
+We can see this work as shown in \ref{fig:test_text_input} below, \href{https://youtu.be/74Md4S5FpcE}{and in this video as well}. This proves that the text inputs work, and we can move to the next stage.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/test_input.png}
+        \caption{A screenshot of the text input test}
+        \label{fig:test_text_input}
+\end{figure}
+
+
+\subsection{Login Menu}
+
+The user must be able to login according to my success criteria, and therefore, there must be a menu allowing the user to login. In order to facilitate this, we need to create a new class for processing logins, which will inherit from the \m{Menu} parent class.
+
+\vs
+Firstly, we need to create and position buttons that will be on the screen. The user must be able to select whether they want to login or register if they don't have an account. 
+
+\begin{mpy}
+#Initial page
+class Login(Menu):
+    def __init__(self, display, gameStateManager):
+        #Cyan
+        cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, cyan)
+
+        #Centre of the button
+        button_centre = [self.SCREEN_DIMS[0]//2, 400]
+
+        #Dims of the button
+        length0, length1 = 400, 200
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        #Text colour
+        textColour = (0, 0, 0)
+
+        #Button colour
+        rectangleBgColour = (129, 235, 182)
+        textBgColour = rectangleBgColour
+
+        #Create button instances
+        self.loginButton = Button([self.SCREEN_DIMS[0]//2, 700], 350, 120, "Login", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.registerButton = Button([self.SCREEN_DIMS[0]//2, 880], 700, 120, "Register Here!", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
+
+Also, we will need to import the \m{DatabaseHandler} library so that I can authenticate the user. Additionally, we need to create two rectangles for the user boxes, and this is as follows.
+
+\begin{mpy}
+        #Boxes for inputs
+        self.userBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2 - 200, 250, 60)
+        self.passBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2, 250, 60)
+\end{mpy}
+
+Furthermore, we need to wrap these boxes in the \m{TextInput} class, so that we can take in the text.
+
+\begin{mpy}
+        #User input boxes
+        self.userInput = TextInput(self.userBox)
+        self.passInput = TextInput(self.passBox)
+\end{mpy}
+
+Now, we need to adapt our \m{specificMethods()} in order to allow for the menu to work properly. Firstly, we need to render the buttons, and to get the position of the mouse and check whether the button is being hovered over.
+
+\begin{mpy}
+        #Render the button
+        self.loginButton.render(self.display, self.dt)
+        self.registerButton.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over button
+        loginPos = self.loginButton.checkForClick(pos)
+        registerPos = self.registerButton.checkForClick(pos)
+\end{mpy}
+
+Next, we need to be able to implement functionality in the buttons, which is done by considering the functions that we need to execute on each button press. Here, if the button is clicked, we will simply call the \m{AuthenticateAccount()} function using the username and password inputs, and then checking where the credentials are correct. Furthermore, if the register button is clicked, we need to move to the registration menu.
+
+\begin{mpy}
+        #If button clicked, go to game loop
+        if self.clicked and loginPos:
+            auth = DatabaseHandler.AuthenticateAccount(self.userInput.text, self.passInput.text)
+            if auth[0] == False and auth[1] == "invalid_id":
+                self.userInput.text = ""
+                self.passInput.text = ""
+            if auth[0] == False and auth[1] == "invalid_password":
+                self.passInput.text = ""
+
+            if auth[0]:
+                self.gameStateManager.setState('main')
+                self.running = False
+                returnValues["PlayerID"] = self.userInput.text
+
+
+        #If clicking the register button take to the register menu
+        if self.clicked and registerPos:
+            self.gameStateManager.setState("register")
+            self.running = False
+\end{mpy}
+
+We need to render text for the username and password labels, so that the user can see what they are typing to each box. This was one of our success criteria and will make our menus more usable.
+
+\begin{mpy}
+        #Render the user name text
+        login_text_surface, login_text_rect = small_font.render("Username", fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        #Get position of input field
+        temp = self.userBox.midleft
+
+        #Update text position to the left of the user input field
+        login_text_rect.midright = [temp[0] - 20, temp[1]]
+
+        #Update to screen
+        self.display.blit(login_text_surface, login_text_rect)
+
+        #Render the password text
+        pass_text_surface, pass_text_rect = small_font.render("Password", fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        #Get position of password field
+        temp = self.passBox.midleft
+
+        #Update text position to the left of pass field
+        pass_text_rect.midright = [temp[0] - 20, temp[1]]
+        
+        #Update to screen
+        self.display.blit(pass_text_surface, pass_text_rect)
+\end{mpy}
+
+Finally, we need to update and render the buttons, and return the \m{returnValues} for the next loop.
+
+\begin{mpy}
+        #Handle text inputs and render
+        self.userInput.handleTextInput(events)
+        self.userInput.render(self.display)
+
+        #Handle text inputs and render
+        self.passInput.handleTextInput(events)
+        self.passInput.render(self.display)
+
+        #No modifications to returnValues
+        return returnValues
+\end{mpy}
+
+Doing this, we can see the following in Figure \ref{fig:login_menu} and in \href{https://youtu.be/U6yLku2SGaw}{this video}.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/login_menu.png}
+        \caption{A screenshot of the login menu}
+        \label{fig:login_menu}
+\end{figure}
+
+The registration menu is incredibly similar to this but just with an additional field for the email, so that the player can be registered.
+
+\subsection{Register Menu}
+
+This code is copied from the login menu, and we just have one button to register the player.
+
+\begin{mpy}
+#Directed from the Login page
+class Register(Menu):
+    def __init__(self, display, gameStateManager):
+        #Cyan
+        cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, 400]
+
+        length0, length1 = 400, 200
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.registerButton = Button([self.SCREEN_DIMS[0]//2, 700], 400, 120, "Register", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.momentumLogo = pygame.transform.scale(pygame.image.load("assets/momentum_v3.png").convert_alpha(), (840, 140))
+
+        self.emailBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2 - 400, 250, 60)
+        self.userBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2 - 200, 250, 60)
+        self.passBox = pygame.Rect(self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]//2, 250, 60)
+
+        self.emailInput = TextInput(self.emailBox)
+        self.userInput = TextInput(self.userBox)
+        self.passInput = TextInput(self.passBox)
+
+        self.boxColor = (255, 0, 0)
+\end{mpy}
+
+We also need to overwrite the \m{specificMethods()} function, and handle the button functionality.
+
+\begin{mpy}
+    def specificMethods(self, key, events, returnValues):
+        #Render the button
+        self.registerButton.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over button
+        registerPos = self.registerButton.checkForClick(pos)
+
+        #If button clicked, go to game loop
+        if self.clicked and registerPos:
+            result = DatabaseHandler.CreateAccount(self.userInput.text, self.emailInput.text, self.passInput.text)
+            if result == False:
+                self.gameStateManager.setState("login")
+                self.running = False
+
+            if result:
+                self.gameStateManager.setState('main')
+                self.running = False
+                returnValues["PlayerID"] = self.userInput.text
+\end{mpy}
+
+We also need to draw labels so that the user can see what they are entering into each box.
+
+\begin{mpy}
+        #Email label
+        email_text_surface, email_text_rect = small_font.render("Email", fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        #Align the rect
+        temp = self.emailBox.midleft
+        email_text_rect.midright = [temp[0] - 20, temp[1]]
+
+        #Render the label
+        pygame.draw.rect(self.display, (0, 0, 255), email_text_rect)
+        self.display.blit(email_text_surface, email_text_rect)
+
+        #Login label
+        login_text_surface, login_text_rect = small_font.render("Username", fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        #Align the rect
+        temp = self.userBox.midleft
+        login_text_rect.midright = [temp[0] - 20, temp[1]]
+
+        #Render the label
+        pygame.draw.rect(self.display, (0, 0, 255), login_text_rect)
+        self.display.blit(login_text_surface, login_text_rect)
+
+        #Password label
+        pass_text_surface, pass_text_rect = small_font.render("Password", fgcolor=(0, 0, 0), bgcolor=(0, 255, 255))
+
+        #Align the rect
+        temp = self.passBox.midleft
+        pass_text_rect.midright = [temp[0] - 20, temp[1]]
+
+        #Render the label
+        pygame.draw.rect(self.display, (0, 0, 255), pass_text_rect)
+        self.display.blit(pass_text_surface, pass_text_rect)
+\end{mpy}
+
+Additionally, we need to handle the inputs into the boxes as follows.
+
+\begin{mpy}
+        #Handle the inputs and render
+        self.emailInput.handleTextInput(events)
+        self.userInput.handleTextInput(events)
+        self.passInput.handleTextInput(events)
+
+        self.emailInput.render(self.display)
+        self.userInput.render(self.display)
+        self.passInput.render(self.display)
+
+        #Return Values
+        return returnValues
+\end{mpy}
+
+Finally, we need to be able to see whether we have correctly added values to the database. To do this, we can register a new user, as follows.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/register_menu.png}
+        \caption{A screenshot of the register menu}
+        \label{fig:register_menu}
+\end{figure}
+
+Here is a screenshot shown in Figure \ref{fig:db_register} of the database proving that we successfully registered our user.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/db_register.png}
+        \caption{A screenshot of the register menu}
+        \label{fig:db_register}
+\end{figure}
+
+\subsection{Create Game Menu}
+
+Here, we need to set the difficulty of our agents, which was one of the success criteria we set out in the Analysis section.
+
+\begin{mpy}
+#Directed from the Start
+class CreateGame(Menu):
+    def __init__(self, display, gameStateManager):
+
+        #Cyan
+        self.cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, self.cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]-200]
+
+        length0, length1 = 400, 200
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.playButton = Button(button_centre, 550, 120, "Play!", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
+
+Here, we have created the buttons we need, and set up the logos that will be used. Primarily, we need 4 buttons, two for decreasing the difficulty and two for increasing the difficulty.
+
+\begin{mpy}
+        self.momentumLogo = pygame.transform.scale(pygame.image.load("assets/momentum_icon.png").convert_alpha(), (200, 200))
+
+        #Difficulties
+        self.friendlyDifficulty, self.enemyDifficulty = 0, 0
+
+        #Decrease friendly
+        self.friendlyMinus = Button([self.SCREEN_DIMS[0]//4 + 400, self.SCREEN_DIMS[1]//3], 100, 100, "-", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        #Increase friendly
+        self.friendlyPlus = Button([self.SCREEN_DIMS[0]//4 + 800, self.SCREEN_DIMS[1]//3], 100, 100, "+", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        #Decrease enemy
+        self.enemyMinus = Button([self.SCREEN_DIMS[0]//4 + 400, self.SCREEN_DIMS[1]//3 + 250], 100, 100, "-", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        #Increase enemy
+        self.enemyPlus = Button([self.SCREEN_DIMS[0]//4 + 800, self.SCREEN_DIMS[1]//3 + 250], 100, 100, "+", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
+
+We also need to overwrite the \m{specificMethods()} function so that we can render all of the buttons, the labels and also the difficulties for each team. Furthermore, we need to check each button to see whether we have clicked it in each frame or not. This will tell us whether to adjust it or not.
+
+\begin{mpy}
+    def specificMethods(self, keys, events, returnValues):
+
+        #Reset values
+        inPosFrMi, inPosFrPl, inPosEnMi, inPosEnPl = False, False, False, False
+
+        #Adjustment buttons
+        self.friendlyMinus.render(self.display, self.dt)
+        self.friendlyPlus.render(self.display, self.dt)
+        self.enemyMinus.render(self.display, self.dt)
+        self.enemyPlus.render(self.display, self.dt)
+
+        #Render play button
+        self.playButton.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over buttons
+        inPosFrMi = self.friendlyMinus.checkForClick(pos)
+        inPosFrPl = self.friendlyPlus.checkForClick(pos)
+        inPosEnMi = self.enemyMinus.checkForClick(pos)
+        inPosEnPl = self.enemyPlus.checkForClick(pos)
+
+        inPosPlay = self.playButton.checkForClick(pos)
+\end{mpy}
+
+Once we have found out whether we have clicked the buttons or not, we need to adjust the values, and we need to validate the difficulties to ensure that the value doesn't exceed 1, or go below 0, since we don't have entries above or below this level.
+
+\begin{mpy}
+        if self.clicked and inPosFrMi:
+            self.friendlyDifficulty = max(0, self.friendlyDifficulty-1)
+
+
+        if self.clicked and inPosFrPl:
+            self.friendlyDifficulty = min(1, self.friendlyDifficulty+1)
+            
+
+        if self.clicked and inPosEnMi:
+            self.enemyDifficulty = max(0, self.enemyDifficulty-1)
+
+
+        if self.clicked and inPosEnPl:
+            self.enemyDifficulty = min(1, self.enemyDifficulty+1)
+
+
+        #If exit, exit the game
+        if self.clicked and inPosPlay:
+            self.gameStateManager.setState("game_loop")
+            self.running = False
+\end{mpy}
+
+We also need to render the text for the labels and for the difficulty level for each one. This will let the player see the difficulties which is important in order to allow for usability of the menu.
+
+\begin{mpy}
+        friendly_text_surface, friendly_text_rect = med_font.render("Team-mate Strength", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        enemy_text_surface, enemy_text_rect = med_font.render("Enemy Strength", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+
+        frStrength_text_surface, frStrength_text_rect = med_font.render(str(self.friendlyDifficulty+1), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        enStrength_text_surface, enStrength_text_rect = med_font.render(str(self.enemyDifficulty+1), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+
+        friendly_text_rect.center = [self.SCREEN_DIMS[0]//4, self.SCREEN_DIMS[1]//3]
+        enemy_text_rect.center = [self.SCREEN_DIMS[0]//4, self.SCREEN_DIMS[1]//3 + 250]
+
+        frStrength_text_rect.center = [self.SCREEN_DIMS[0]//4 + 600, self.SCREEN_DIMS[1]//3]
+        enStrength_text_rect.center = [self.SCREEN_DIMS[0]//4 + 600, self.SCREEN_DIMS[1]//3 + 250]
+
+        self.display.blit(friendly_text_surface, friendly_text_rect)
+        self.display.blit(enemy_text_surface, enemy_text_rect)
+
+        self.display.blit(frStrength_text_surface, frStrength_text_rect)
+        self.display.blit(enStrength_text_surface, enStrength_text_rect)
+\end{mpy}
+
+Finally, we need to adjust the return values in order to set the values according to what we want.
+
+\begin{mpy}
+        returnValues["difficulty"] = [self.friendlyDifficulty, self.enemyDifficulty]
+        return returnValues
+\end{mpy}
+
+In order to prove that this works as expected, we can run this menu, and we can print out the values stored in the \m{"difficulty"} key.
+
+\subsection{Set Timer Menu}
+
+Here, we need to set the time before our game will close, as this is one of our main success criteria and our essential features.
+
+\begin{mpy}
+#Directed from the CreateGame Menu, leads to the Game Loop
+class SetTimer(Menu):
+    def __init__(self, display, gameStateManager):
+
+        #Cyan
+        self.cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, self.cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]-200]
+
+        length0, length1 = 400, 200
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.playButton = Button(button_centre, 550, 120, "Go!", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+
+        self.momentumLogo = pygame.transform.scale(pygame.image.load("assets/momentum_icon.png").convert_alpha(), (200, 200))
+\end{mpy}
+
+We need to create the buttons and position them in a way such that the users can intuitively understand how to use the menu and what each button does. The buttons are labelled with '+' or '-' which helps to clarify their purpose more meaningfully.
+
+\begin{mpy}
+        self.hours, self.minutes = 0, 0
+
+        self.hourMinus = Button([self.SCREEN_DIMS[0]//4 + 400, self.SCREEN_DIMS[1]//3], 100, 100, "-", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+        
+        self.hourPlus = Button([self.SCREEN_DIMS[0]//4 + 800, self.SCREEN_DIMS[1]//3], 100, 100, "+", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+        
+        self.minuteMinus = Button([self.SCREEN_DIMS[0]//4 + 400, self.SCREEN_DIMS[1]//3 + 250], 100, 100, "-", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+        
+        self.minutePlus = Button([self.SCREEN_DIMS[0]//4 + 800, self.SCREEN_DIMS[1]//3 + 250], 100, 100, "+", rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
+
+We need to overwrite the method once more to firstly render the buttons onto the screen, as done below.
+
+\begin{mpy}
+    def specificMethods(self, keys, events, returnValues):
+
+        #Reset values
+        inPosHrMi, inPosHrPl, inPosMiMi, inPosMiPl = False, False, False, False
+
+        #Adjustment buttons
+        self.hourMinus.render(self.display, self.dt)
+        self.hourPlus.render(self.display, self.dt)
+        self.minuteMinus.render(self.display, self.dt)
+        self.minutePlus.render(self.display, self.dt)
+
+        #Render play button
+        self.playButton.render(self.display, self.dt)
+\end{mpy}
+
+Furthermore, we need to get the position of the mouse and check if any buttons have been clicked. We reset these values at the start of every function call so that we don't get any errors with previous clicks that weren't on boxes.
+
+\begin{mpy}
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over buttons
+        inPosHrMi = self.hourMinus.checkForClick(pos)
+        inPosHrPl = self.hourPlus.checkForClick(pos)
+        inPosMiMi = self.minuteMinus.checkForClick(pos)
+        inPosMiPl = self.minutePlus.checkForClick(pos)
+
+        inPosPlay = self.playButton.checkForClick(pos)
+\end{mpy}
+
+Once we have this information, we just need to determine which action to take, and limit these values to be reasonable. If the number of minutes exceeds 60, we can just roll this over and convert it into another hour, which is the same length but provides a neater way of encoding the same information.
+
+\begin{mpy}
+        if self.clicked and inPosHrMi:
+            self.hours -= 1
+            self.hours = max(0, self.hours)
+
+
+        if self.clicked and inPosHrPl:
+            self.hours += 1
+            
+
+        if self.clicked and inPosMiMi:
+            self.minutes -= 1
+            self.minutes = max(0, self.minutes)
+
+
+        if self.clicked and inPosMiPl:
+            self.minutes += 1
+            if self.minutes >= 60:
+                self.hours += 1
+                self.minutes -= 60
+
+        #If exit, exit the game
+        if self.clicked and inPosPlay:
+            self.gameStateManager.setState("create_game")
+            self.running = False
+            deltatime = datetime.timedelta(hours=self.hours, minutes=self.minutes)
+            current_time = datetime.datetime.now()
+            returnValues["finish_time"] = current_time + deltatime
+\end{mpy}
+
+Finally, we need to render all of this information to the screen as done below, which is all code we have already tested before, but we will examine the positioning to ensure that it looks visually correct.
+
+\begin{mpy}
+        hour_text_surface, hour_text_rect = med_font.render("Hours", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        minute_text_surface, minute_text_rect = med_font.render("Minutes", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+
+        hrVal_text_surface, hrVal_text_rect = med_font.render(str(self.hours), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        minVal_text_surface, minVal_text_rect = med_font.render(str(self.minutes), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+
+        hour_text_rect.center = [self.SCREEN_DIMS[0]//4, self.SCREEN_DIMS[1]//3]
+        minute_text_rect.center = [self.SCREEN_DIMS[0]//4, self.SCREEN_DIMS[1]//3 + 250]
+
+        hrVal_text_rect.center = [self.SCREEN_DIMS[0]//4 + 600, self.SCREEN_DIMS[1]//3]
+        minVal_text_rect.center = [self.SCREEN_DIMS[0]//4 + 600, self.SCREEN_DIMS[1]//3 + 250]
+
+        self.display.blit(hour_text_surface, hour_text_rect)
+        self.display.blit(minute_text_surface, minute_text_rect)
+
+        self.display.blit(hrVal_text_surface, hrVal_text_rect)
+        self.display.blit(minVal_text_surface, minVal_text_rect)
+
+        return returnValues
+\end{mpy}
+
+With this all in place, we can now test the code to make sure that it works as expected. We can set the initial state to be in the set timer menu. This gives the output shown in \ref{fig:set_timer}, and as we can see this works as expected. However, we need to make changes to the actual game code in order to make use of this information.
+
+
+
+\vs
+In some cases, we won't always have the \m{"finish_time"} key set, and therefore, we need to check whether this in place first. This is done as follows.
+
+\begin{mpy}
+            if "finish_time" in self.returnValues.keys():
+                if self.gameStateManager.getState() != "game_over" and self.returnValues["finish_time"] <= datetime.datetime.now():
+                    pygame.quit()
+                    sys.exit()
+\end{mpy}
+
+This will ensure that if the current time has exceeded the final time, then we will close the application. However, if this comes just as the user has finished a game, we want to make sure that they can see whether they won or not before it closes the game.
+
+\vs
+We can now test out this code as \href{}{shown in this video, proving that the game will close down after the time is over}.
+
+\subsection{Leaderboard}
+
+\begin{mpy}
+#Directed from the start
+class Leaderboard(Menu):
+    def __init__(self, display, gameStateManager):
+        #Cyan
+        self.cyan = (0, 255, 255)
+
+        #Cyan background
+        super().__init__(display, gameStateManager, self.cyan)
+
+        #Create button instance to use
+        #colour, SCREEN_DIMS, text, bg_color, hoverColour=None, hoverScale=1
+
+        button_centre = [self.SCREEN_DIMS[0]//2, self.SCREEN_DIMS[1]-100]
+
+        length0, length1 = 200, 120
+
+        #Text background colour
+        textBgColour = (16, 26, 94)
+
+        textColour = (0, 0, 0)
+
+        text = "Back"
+
+        rectangleBgColour = (129, 235, 182)#(180, 193, 233)
+        textBgColour = rectangleBgColour
+
+        self.button = Button(button_centre, length0, length1, text, rectangleBgColour, textBgColour, textColour, self.SCREEN_DIMS)
+\end{mpy}
+
+We have created the button that will be used to take the player back to the main menu. After this, we want to get the players which are at the top of the leaderboard, and we don't want to fetch this multiple times, so we will define \m{self.fetched} which will tell us whether the leaderboard has been fetched yet or not.
+
+\begin{mpy}
+        self.fetched = False
+
+        self.players = []
+\end{mpy}
+
+If we have not fetched yet, we will fetch the players, and we can set the \m{fetched} flag to be set to \m{True}, since we have fetched it now.
+
+\begin{mpy}
+    def specificMethods(self, keys, events, returnValues):
+
+        if not self.fetched:
+            
+            self.players = DatabaseHandler.getLeaderboardPlayers()
+
+            self.fetched = True
+\end{mpy}
+
+
+We firstly, need to handle our button rendering, and detect if we have clicked the button or not. If we have clicked it, then we want to be taken back to the main menu.
+
+\begin{mpy}
+        #Initialise variables
+        inPos = False
+
+        #Render the button
+        self.button.render(self.display, self.dt)
+
+        #Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        #Check if over button
+        inPos = self.button.checkForClick(pos)
+
+        #If button clicked, go to game loop
+        if self.clicked and inPos:
+            self.gameStateManager.setState('main')
+            self.running = False
+\end{mpy}
+
+We need to create headers at the start of the table, which will make it very obvious what each column of data is for. This makes the menu's purpose very clear, even though we haven't explicitly written "leaderboard" anywhere.
+
+\begin{mpy}
+        rank_text_surface, rank_text_rect = med_font.render("Rank", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        playerID_text_surface, playerID_text_rect = med_font.render("Player", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+        mmr_text_surface, mmr_text_rect = med_font.render("MMR", fgcolor=(0, 0, 0), bgcolor=self.cyan)
+\end{mpy}
+
+Furthermore, we need to position the labels, and we will use offsets between each label to make the positioning and formatting consistent and more visually appealing. Additionally, this will make it very easy to make small changes to the leaderboard to make it look better according to feedback from users.
+
+\begin{mpy}
+        initial_x, initial_y = 500, 250
+        offset_y = 150
+        offset_x_1 = 500
+        offset_x_2 = 900
+
+        rank_text_rect.center = [initial_x, initial_y - offset_y]
+        playerID_text_rect.center = [initial_x + offset_x_1, initial_y - offset_y]
+        mmr_text_rect.center = [initial_x + offset_x_2, initial_y - offset_y]
+
+        self.display.blit(rank_text_surface, rank_text_rect)
+        self.display.blit(playerID_text_surface, playerID_text_rect)
+        self.display.blit(mmr_text_surface, mmr_text_rect)
+\end{mpy}
+
+We need to iterate through each player, and we can use the offsets and the index to determine how far offset each label needs to be from the initial positions defined above.
+
+\begin{mpy}
+        #Render three text surfaces for each player
+        for i, player in enumerate(self.players):
+
+            rank = i+1
+            playerID, mmr = player
+
+            rank_text_surface, rank_text_rect = med_font.render(str(rank), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+            playerID_text_surface, playerID_text_rect = med_font.render(playerID, fgcolor=(0, 0, 0), bgcolor=self.cyan)
+            mmr_text_surface, mmr_text_rect = med_font.render(str(mmr), fgcolor=(0, 0, 0), bgcolor=self.cyan)
+
+            rank_text_rect.center = [initial_x, initial_y + i*offset_y]
+            playerID_text_rect.center = [initial_x + offset_x_1, initial_y + i*offset_y]
+            mmr_text_rect.center = [initial_x + offset_x_2, initial_y + i*offset_y]
+
+            self.display.blit(rank_text_surface, rank_text_rect)
+            self.display.blit(playerID_text_surface, playerID_text_rect)
+            self.display.blit(mmr_text_surface, mmr_text_rect)
+
+        return returnValues
+
+    def setup(self):
+        self.fetched = False
+\end{mpy}
+
+This then appears as follows as shown in \ref{fig:leaderboard}. Additionally, clicking the button works appropriately, and we will demonstrate this further in the post-development testing section.
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/leaderboard.png}
+        \caption{A screen capture of the leaderboard screen}
+        \label{fig:leaderboard}
+\end{figure}
+
+Additionally, we can see that only the top 5 players were returned, although there is the problem that if there are multiple players with the same MMR, it will return the players in alphabetically order, but at different indices. However, this is something that is unlikely to occur very often in a real setting.

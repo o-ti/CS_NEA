@@ -2375,6 +2375,7 @@
     <bcf:citekey order="12" intorder="1">rectangle_circle_collision</bcf:citekey>
     <bcf:citekey order="13" intorder="1">multi_ppo</bcf:citekey>
     <bcf:citekey order="14" intorder="1">ppo</bcf:citekey>
+    <bcf:citekey order="15" intorder="1">text_input_pygame</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">
