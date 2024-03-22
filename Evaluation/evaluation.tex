@@ -55,7 +55,7 @@ We will now discuss the behaviours inside of some of these success criteria, and
 The weapons were able to be fired and behaved differently according to the behaviours laid out in the class files for them. It is easy to modify their behaviour and quickly test it out in order to see how this will affect gameplay. This improves maintainability and will help in future iterations if the stakeholders decide that certain weapons are too powerful.
 
 \vs
-Due to my modular approach, the code is efficient and is easily expandable to new weapons, and can be updated to handle things like semi-automatic weapons, in which the mouse can be held down constantly
+Due to my modular approach, the code is efficient and is easily expandable to new weapons, and can be updated to handle things like semi-automatic weapons, in which the mouse can be held down constantly, which would just mean looking for key up and key down events.
 
 \vs
 Additionally, the zoom feature was able to show the user the environment around them in a capcity that was relevant to what they would need to see to effectively use their weapon (ie. they could see the blocks and enemy players around them).
@@ -157,7 +157,7 @@ This is all as expected, and the screens are able to lead from one to the next a
 
 \subsubsection{AI}
 
-
+As is shown by the screenshots and video below, we can observe that the AI is able to take actions in the game, and this allows for the user to play against them. Additionally, we can see that the AI is able to fire properly and rotate their characters as needed.
 
 \subsection{Un-met Criteria}
 
@@ -189,6 +189,12 @@ On top of this, if the game were to be put into a real production setting, then 
 
 Additionally, the layout on some things could have been improved. For example, in the leaderboard menu, it would have been nice to implement a scrolling feature so that users can see more than just the first 5 players. This would have allowed for a more interactive user experience, and therefore would allow for a much more refined UI.
 
+\vs
+Furthermore, we could add different algorithms to train the AI and compare them. Furthermore, we could use league training which would produce the best policies and would mean that we have many different agents we can play against, increasing the range of difficulties available.
+
+\vs
+Additionally, it would be helpful for the user to see how much time they have left before the game will close, which will tell 
+
 \subsection{Maintenance Issues}
 
 One of the problems that I faced during the development of my NEA was lacking an understanding of how reinforcement learning libraries I was using worked, and how they handled inputs and outputs. If I understood this from before, it would have made the game much easier to program and convert into an environment.
@@ -215,7 +221,7 @@ Despite this, I was able to produce a functioning AI that was able to play my ga
 
 \subsection{Developments on Limitations}
 
-As mentioned before, the main limitations were hardware and time. With better hardware it would have been possible to train a more capable model for a larger number of iterations, and with more time a more aesthetically pleasing game could have been built.
+As mentioned before, the main limitations were hardware and time. With better hardware it would have been possible to train a more capable model for a larger number of iterations, and with more time a more aesthetically pleasing game could have been built. Additionally, the PyGame framework uses Python which makes it quite slow, and so if another framework were used to write the game it could quite possibly run much faster. This would allow for more iterations of the environment to run which would allow for better training in a shorter period of time.
 
 \vs
-Additionally, if I were to redo an aspect of the game, I would rebuild the input system so that it works more in line with the actions that the AI can take. This would significantly help in trying to merge the AI and the original game together.
+Additionally, if I were to redo an aspect of the game, I would rebuild the input system so that it works more in line with the actions that the AI can take. This would significantly help in trying to merge the AI and the original game together. This would allow for a more uniform workflow.
