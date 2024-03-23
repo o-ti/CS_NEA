@@ -50,6 +50,28 @@ In order to evaluate how effective my final project was, I decided to let one of
 
 We will now discuss the behaviours inside of some of these success criteria, and prove that they work as intended.
 
+\vs
+On top of this, we need to ensure that all of the different sections of the game work, and that they are linked correctly. The only way to correctly prove that they are indeed functional is to record my screen whilst I am using the project.
+
+\vs
+
+\href{https://youtu.be/9JaKmo6fSd0}{This video is a complete demonstration of the project and shows me moving through all of the different menu screens, and shows that they work as intended. This also forms the post-development testing, as this proves }
+
+\vs
+This shows that all of the systems work accordingly, and that they are linked properly. We will also investigate and report on each individual section to ensure that there are no breaking issues in each one.
+
+
+
+\vs
+\subsection{Cross-Referencing From Figures and Videos}
+
+We will now examine each of the other criteria laid out in the success criteria to ensure that they are all met as well, but we have already shown these to work, so therefore, we will just be referring to figures in the development section.
+
+\subsubsection{HUD \& Game Loop}
+
+\vs
+As we can see in Figure \ref{fig:map_border}, there is a clearly drawn heads up display on the screen, showing the time left in the round, the scores for both teams, colour coded to make it easier to interpret, and the actual game itself behind it. This ensures that the HUD can be visible at all times, which is essential.
+
 \subsubsection{Weapon System}
 
 The weapons were able to be fired and behaved differently according to the behaviours laid out in the class files for them. It is easy to modify their behaviour and quickly test it out in order to see how this will affect gameplay. This improves maintainability and will help in future iterations if the stakeholders decide that certain weapons are too powerful.
@@ -61,7 +83,7 @@ Due to my modular approach, the code is efficient and is easily expandable to ne
 Additionally, the zoom feature was able to show the user the environment around them in a capcity that was relevant to what they would need to see to effectively use their weapon (ie. they could see the blocks and enemy players around them).
 
 \vs
-As seen here, we can observe the zoom feature and the weapons interacting with other players to inflict damage. This is shown in the Figure below. In Box A, we can see that the player health is written in the boxes, and that in Box B, the HUD shows the score and the times.
+As seen here, we can observe the zoom feature and the weapons interacting with other players to inflict damage. This is shown in Figure \ref{fig:eval_weapon} below. In Box A, we can see that the player health is written in the boxes, and that in Box B, the HUD shows the score and the times.
 
 \begin{figure}[h!t]
 
@@ -75,8 +97,8 @@ As seen here, we can observe the zoom feature and the weapons interacting with o
     \annotatedFigureBox{0.185,0.7107}{0.264,0.9007}{A}{0.185,0.7107}%bl
     \annotatedFigureBox{0.339,0.8904}{0.683,1.0004}{B}{0.339,0.8904}%bl
 \end{annotatedFigure}
-\caption{A screen capture of the game loop}
-\label{fig:game_loop_ui}
+\caption{A screen capture of the game loop demonstrating that the weapons work properly}
+\label{fig:eval_weapon}
 \end{figure}
 
 
@@ -134,6 +156,22 @@ As we can see from these images the players have been successfully added to all 
 
 We can see here an input overlay over the video demonstrating that the game is able to take inputs. This proves that the game is able to take inputs and that these were handled correctly, as can be seen by watching the videos, and reading the specification we defined for them.
 
+
+
+
+\subsubsection{AI}
+
+As is shown by the screenshots and video below, we can observe that the AI is able to take actions in the game, and this allows for the user to play against them. Additionally, we can see that the AI is able to fire properly and rotate their characters as needed.
+
+\vs
+Primarily, we have shown that the AI is able to play against the players in the game, which is the primary success criteria that we had in our game.
+
+
+\subsubsection{Time Limit}
+
+The video from before demonstrates that the time limit works, and this was one of our primary success criteria. This was one of the most important success criteria and as we can see in the video, once the time is up, the game shuts down as expected. 
+
+
 \subsubsection{Menu Screens}
 
 \begin{figure}[H]
@@ -145,19 +183,24 @@ We can see here an input overlay over the video demonstrating that the game is a
 
 This demonstrates that we are able to use the login menu to enter the Main menu.
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/game_over_victory.png}}
-\end{annotatedFigure}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/game_over_victory.png}
+        \caption{A screen capture of the screen shown when victory is obtained after a game}
+        \label{fig:eval_vic}
+\end{figure}
 
-\begin{annotatedFigure}
-    {\includegraphics[width=1.0\linewidth]{Evaluation/Images/game_over_defeat.png}}
-\end{annotatedFigure}
+Figure \ref{fig:eval_vic} shows the screen that is displayed after a victory. It clearly has a label indicating that the user's team won and has a back button so that the user can back to the main menu and choose what to do from there.
 
-This is all as expected, and the screens are able to lead from one to the next as laid out in the Design specification.
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Evaluation/Images/game_over_defeat.png}
+        \caption{A screen capture of the screen shown after a defeat is obtained after a game}
+        \label{fig:eval_def}
+\end{figure}
 
-\subsubsection{AI}
+This is all as expected, and the screens are able to lead from one to the next as laid out in the Design specification. This is very similar to before.
 
-As is shown by the screenshots and video below, we can observe that the AI is able to take actions in the game, and this allows for the user to play against them. Additionally, we can see that the AI is able to fire properly and rotate their characters as needed.
 
 \subsection{Un-met Criteria}
 

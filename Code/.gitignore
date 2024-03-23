@@ -1,0 +1,8 @@
+__pycache__
+__pycache__/*.cpython-310.pyc
+__pycache__/game.cpython-310.pyc
+__pycache__/menu.cpython-310.pyc
+__pycache__/player.cpython-310.pyc
+__pycache__/utils.cpython-310.pyc
+__pycache__/weapon.cpython-310.pyc
+__pycache__/game.cpython-310.pyc

@@ -1288,7 +1288,7 @@ Rendering this we see the following, as shown in Figure \ref{fig:map_border}.
 
 Now that we have this, we can re-train the AI and as we can see below, it performs much better than the previous iterations.
 
-\subsection{Game Loop}
+\subsection{Game Loop \& Game Over Menu}
 \vs
 We have a few more changes to make before we can finalise the game. Firstly, we need to find a way to find the score of each player. This is different to the reward function, but still needs to be done. Primarily, we want to credit for damage dealt and any eliminations in the whole game, and penalise for any deaths. This is appears as following in the code. We can do this for each frame, but we need to have a dictionary handling this for every player in the map. We only need to do this at the end of the game loop, since the score won't be visible to the player during the round anyway. This will run the game for 6000 frames, which is equivalent to 25 seconds of gameplay.
 
@@ -2104,7 +2104,21 @@ Finally, we need to adjust the return values in order to set the values accordin
         return returnValues
 \end{mpy}
 
-In order to prove that this works as expected, we can run this menu, and we can print out the values stored in the \m{"difficulty"} key.
+In order to prove that this works as expected, we can run this menu, and we can print out the values stored in the \m{"difficulty"} key. This produces the following menu screen, and when we click on the "Play" button, we get the following as shown in Figure \ref{fig:create_game_diff}
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/create_menu.png}
+        \caption{A screen capture of the game creation menu}
+        \label{fig:create_game_diff}
+\end{figure}
+
+\begin{mpy}
+>>>
+[1, 0]
+\end{mpy}
+
+Thererfore, we have the difficulty set as it should be and we have the menu working as expected.
 
 \subsection{Set Timer Menu}
 
@@ -2256,9 +2270,23 @@ In some cases, we won't always have the \m{"finish_time"} key set, and therefore
                     sys.exit()
 \end{mpy}
 
-This will ensure that if the current time has exceeded the final time, then we will close the application. However, if this comes just as the user has finished a game, we want to make sure that they can see whether they won or not before it closes the game. Firstly, we will print the start time and finish time in order to prove that the finish time is set properly according to the input that we gave the menu.
+This will ensure that if the current time has exceeded the final time, then we will close the application. However, if this comes just as the user has finished a game, we want to make sure that they can see whether they won or not before it closes the game. Firstly, we will print the start time and finish time in order to prove that the finish time is set properly according to the input that we gave the menu. We can see that this menu appears as follows in Figure \ref{fig:set_timer}, and below that we have the output from the game when we click on "Play".
 
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{Development/Images/set_timer.png}
+        \caption{A screen capture of the set timer menu}
+        \label{fig:set_timer}
+\end{figure}
 
+\begin{mpy}
+>>>
+{'PlayerID': 'ojas_tiwari'}
+Start Time: 2024-03-22 18:09:49.279042
+Finish Time: 2024-03-22 20:24:49.279042
+\end{mpy}
+
+The "playerID" is there from before, but it proves that were logged in successfully and that the game is able to maintain it's state. We also have the correct start and end times, which is useful.
 
 \vs
 We can now test out this code as \href{}{shown in this video, proving that the game will close down after the time is over}.
